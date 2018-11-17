@@ -63,15 +63,13 @@ class AIDataset(Dataset):
         self.inputSize = inputSize
         self.transforms = transforms
 
-        self.datapoints = []
+        if not os.path.isfile(self.MAP_FILE):
+            self.createDatapoints(features_json)
 
         cached_mappings = load_obj(self.MAP_FILE)
 
         self.datapoints = cached_mappings['file']
         self.indexes = cached_mappings['index']
-
-        # populate datapoints
-        # self.createDatapoints(features_json)
 
     def __len__(self):
         return len(self.datapoints)
