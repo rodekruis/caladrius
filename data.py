@@ -78,7 +78,7 @@ class AIDataset(Dataset):
         objectID = self.datapoints[idx]
         df_index = self.indexes[idx]
         before_image, after_image = self.loadDatapointImages(objectID)
-        damage = self.df['_damage'][idx]
+        damage = self.df['_damage'][df_index]
 
         if self.transforms:
             before_image = self.transforms(before_image)
