@@ -63,18 +63,30 @@ class AIDataset(Dataset):
         self.inputSize = inputSize
         self.transforms = transforms
 
-        # self.datapoints = load_obj(self.MAP_FILE)
+        self.datapoints = []
+
+        cached_mappings = load_obj(self.MAP_FILE)
+
+        self.datapoints = cached_mappings['file']
+        self.indexes = cached_mappings['index']
 
         # populate datapoints
-        self.createDatapoints(features_json)
+        # self.createDatapoints(features_json)
 
     def __len__(self):
         return len(self.datapoints)
 
     def __getitem__(self, idx):
-        print(self.df[idx])
-        objectID = feature['properties']['OBJECTID']
-        return self.loadDatapointImages(idx)
+        objectID = self.datapoints[idx]
+        df_index = self.indexes[idx]
+        before_image, after_image = self.loadDatapointImages(objectID)
+        damage = self.df['_damage'][idx]
+
+        if self.transforms:
+            before_image = self.transforms(before_image)
+            after_image = self.transforms(after_image)
+
+        return (before_image, after_image, self.onehot(damage))
 
     def createDatapoints(self, features):
 
@@ -82,7 +94,8 @@ class AIDataset(Dataset):
 
         BEFORE_FILE = os.path.join(self.BEFORE_FOLDER, 'IGN_Feb2017_20CM.tif')
 
-        feature_file_mapping = {}
+        feature_file_mapping = []
+        feature_index_mapping = []
 
         with rasterio.open(BEFORE_FILE) as source_before_image:
 
@@ -109,14 +122,22 @@ class AIDataset(Dataset):
                 objectID = feature['properties']['OBJECTID']
 
                 try:
-                    self.getCroppedImage(source_before_image, geoms, 'b{}.png'.format(objectID))
-                    self.getAfterImage(geoms, 'a{}.png'.format(objectID))
-                    feature_file_mapping[index] = objectID
-                    count += 1
+                    before_file = self.getCroppedImage(source_before_image, geoms, 'b{}.png'.format(objectID))
+                    after_file = self.getAfterImage(geoms, 'a{}.png'.format(objectID))
+                    if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) and os.path.isfile(after_file):
+                        feature_file_mapping.append(objectID)
+                        feature_index_mapping.append(index)
+                        count += 1
                 except ValueError as ve:
                     continue
 
-        save_obj(feature_file_mapping, self.MAP_FILE)
+                if (index+1) % 20 == 0:
+                    break
+
+        save_obj({
+            'file': feature_file_mapping,
+            'index': feature_index_mapping
+        }, self.MAP_FILE)
 
         logger.info('Created {} Datapoints'.format(count))
 
@@ -136,9 +157,11 @@ class AIDataset(Dataset):
                 "width": image.shape[2],
                 "transform": transform
             })
-
-            with rasterio.open(os.path.join(self.CACHED_DATA_FOLDER, name), "w", **out_meta) as dest:
+            file_path = os.path.join(self.CACHED_DATA_FOLDER, name)
+            with rasterio.open(file_path, "w", **out_meta) as dest:
                 dest.write(image)
+            return file_path
+        return None
 
     def getAfterImage(self, geometry, name):
         after_files = [os.path.join(self.AFTER_FOLDER, after_file) for after_file in os.listdir(self.AFTER_FOLDER)]
@@ -148,7 +171,7 @@ class AIDataset(Dataset):
                     return self.getCroppedImage(after_file, geometry, name)
             except:
                 pass
-        raise ValueError('No Matching After File')
+        return None
 
     def onehot(self, damage):
         index = DAMAGE_TYPES.index(damage)
