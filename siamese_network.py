@@ -28,11 +28,16 @@ def create_model(conv_layers_parameters):
     return nn.Sequential(*layers)
 
 
-def create_twins(conv_layers_parameters):
-    twin1 = create_model(conv_layers_parameters)
-    twin2 = create_model(conv_layers_parameters)
+def create_twins(conv_layers_parameters, share_instance: bool=False):
+    twin = create_model(conv_layers_parameters)
 
-    return twin1, twin2
+    if share_instance:
+        return twin, twin
+    else:
+        twin2 = create_model(conv_layers_parameters)
+        return twin, twin2
+
+    return twin, twin2
 
 
 def create_sequential_for_twin(input_dim, nclasses):
@@ -40,7 +45,7 @@ def create_sequential_for_twin(input_dim, nclasses):
         nn.Linear(input_dim, 32),
         nn.ReLU(inplace=True),
         nn.Linear(32, nclasses),
-        nn.Softmax()
+        nn.Softmax(0)
     )
     return fc
 
@@ -64,10 +69,10 @@ class SiameseNet(nn.Module):
         out = self.fc1(combined)
         return out
 
+# %%
 def main():
-    # %%
     twins = create_twins(conv_layers_parameters)
-    sequential = create_sequential_for_twin(input_dim=(input_dim[1]**2)*conv_layers_parameters[-1]['out_channels'], nclasses=4)
+    sequential = create_sequential_for_twin(input_dim=(input_dim['fully']**2)*conv_layers_parameters[-1]['out_channels'], nclasses=4)
 
     s = SiameseNet(twins, sequential)
 
@@ -75,7 +80,7 @@ def main():
     data2 = torch.zeros((32, 1, input_dim['image'], input_dim['image']))
     data = (data1, data2)
 
-    s(data)
+    return s(data)
 
 if __name__ == '__main__':
     main()
