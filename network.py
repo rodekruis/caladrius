@@ -185,9 +185,9 @@ class QuasiSiameseNetwork(object):
             if idx == 0:
                 break
 
-        epoch_loss = running_loss / self.dataset_sizes[phase]
+        epoch_loss = running_loss / running_n
         epoch_acc = running_corrects.double() / \
-            self.dataset_sizes[phase]
+            running_n
 
         log.info('{}: Loss: {:.4f} Acc: {:.4f}'.format(
             phase, epoch_loss, epoch_acc))
