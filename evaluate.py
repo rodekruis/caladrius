@@ -8,6 +8,20 @@ from sklearn.metrics import f1_score
 log = logging.getLogger(__name__)
 
 
+class RollingEval(object):
+    def __init__(self):
+        self.y_true = []
+        self.y_pred = []
+
+    def add(self, y_t, y_p):
+        print(y_t, y_p)
+        self.y_true.extend(y_t.detach().numpy())
+        self.y_pred.extend(y_p.detach().numpy())
+
+    def f1_score(self):
+        return f1_score(y_true, y_pred, average="micro")
+
+
 class Evaluator(object):
     def __init__(self, model, sets):
 
@@ -20,7 +34,7 @@ class Evaluator(object):
         log.info("Starting evaluation of model")
         y_true, y_pred = self.gather_outputs(
             self.model, self.datasets[set_name])
-        f1_score = f1_score(y_true, y_pred)
+        f1_score = f1_score(y_true, y_pred, average="micro")
 
         log.info("F1-Score ({}) : {}".format(set_name, f1_score))
         return f1_score
