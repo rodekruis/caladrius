@@ -1,12 +1,14 @@
 # https://github.com/delijati/pytorch-siamese/blob/master/net.py
-
+# %%
 import numpy as np
 
 import torch
 import torch.nn as nn
+import torch.functional as F
 
+# %%
 input_dim = dict(image=32, fully=11)
-input_dim = dict(image=256, fully=30)
+# input_dim = dict(image=256, fully=30)
 
 conv_layers_parameters = []
 in_channels = 1
@@ -15,7 +17,7 @@ conv_layers_parameters.append(dict(in_channels=conv_layers_parameters[-1]['out_c
 conv_layers_parameters.append(dict(in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=128, kernel_size=4))
 conv_layers_parameters.append(dict(in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=256, kernel_size=4))
 
-
+# %%
 def create_model(conv_layers_parameters):
     layers = []
     for conv_spec in conv_layers_parameters:
@@ -35,13 +37,15 @@ def create_twins(conv_layers_parameters):
 
 def create_sequential_for_twin(input_dim, nclasses):
     fc = nn.Sequential(
-        nn.Linear(input_dim, 64),
+        nn.Linear(input_dim, 32),
         nn.ReLU(inplace=True),
-        nn.Linear(64, nclasses),
+        nn.Linear(32, nclasses),
+        nn.Softmax()
     )
     return fc
 
 
+# %%
 class SiameseNet(nn.Module):
     def __init__(self, twins, sequential):
         super().__init__()
@@ -66,13 +70,15 @@ class SiameseNet(nn.Module):
         out = self.fc1(combined)
         return out
 
+
+# %%
 twins = create_twins(conv_layers_parameters)
 sequential = create_sequential_for_twin(input_dim=11*11*conv_layers_parameters[-1]['out_channels'], nclasses=4)
 
 s = SiameseNet(twins, sequential)
 
-data1 = torch.zeros(64, 1, input_dim['image'], input_dim['image'])
-data2 = torch.zeros((64, 1, input_dim['image'], input_dim['image']))
+data1 = torch.zeros(32, 1, input_dim['image'], input_dim['image'])
+data2 = torch.zeros((32, 1, input_dim['image'], input_dim['image']))
 data = (data1, data2)
 
 s(data)
