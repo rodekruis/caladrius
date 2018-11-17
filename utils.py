@@ -1,5 +1,6 @@
 import os
 import argparse
+import pickle
 
 import torch
 
@@ -28,6 +29,16 @@ def makeDirectory(directoryPath):
     if not os.path.isdir(directoryPath):
         os.makedirs(directoryPath)
     return directoryPath
+
+
+def save_obj(obj, path):
+    with open(path, 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_obj(path):
+    with open(path, 'rb') as f:
+        return pickle.load(f)
 
 
 def configuration():
