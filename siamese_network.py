@@ -52,12 +52,6 @@ class SiameseNet(nn.Module):
         self.twin1, self.twin2 = twins
         self.fc1 = sequential
 
-    def forward_once(self, x):
-        output = self.cnn1(x)
-        output = output.view(output.size()[0], -1)
-        output = self.fc1(output)
-        return output
-
     def get_conv_output_shape(self, x):
         return self.twin1(x).shape
 
@@ -70,15 +64,18 @@ class SiameseNet(nn.Module):
         out = self.fc1(combined)
         return out
 
+def main():
+    # %%
+    twins = create_twins(conv_layers_parameters)
+    sequential = create_sequential_for_twin(input_dim=(input_dim[1]**2)*conv_layers_parameters[-1]['out_channels'], nclasses=4)
 
-# %%
-twins = create_twins(conv_layers_parameters)
-sequential = create_sequential_for_twin(input_dim=11*11*conv_layers_parameters[-1]['out_channels'], nclasses=4)
+    s = SiameseNet(twins, sequential)
 
-s = SiameseNet(twins, sequential)
+    data1 = torch.zeros(32, 1, input_dim['image'], input_dim['image'])
+    data2 = torch.zeros((32, 1, input_dim['image'], input_dim['image']))
+    data = (data1, data2)
 
-data1 = torch.zeros(32, 1, input_dim['image'], input_dim['image'])
-data2 = torch.zeros((32, 1, input_dim['image'], input_dim['image']))
-data = (data1, data2)
+    s(data)
 
-s(data)
+if __name__ == '__main__':
+    main()
