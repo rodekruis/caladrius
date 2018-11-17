@@ -228,8 +228,7 @@ class QuasiSiameseNetwork(object):
         log.info('Training complete in {:.0f}m {:.0f}s'.format(
             time_elapsed // 60, time_elapsed % 60))
 
-        log.info('Best val Acc: {:4f}. Best val F1: {:4f}.'.format(
-            best_acc, best_f1))
+        log.info('Best val F1: {:4f}.'.format(best_f1))
 
     def test(self, datasets, device):
         pass
