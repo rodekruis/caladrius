@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.functional as F
+import torchvision.transforms as transforms
 
 
 def create_model(conv_layers_parameters):
@@ -68,12 +69,12 @@ def build_net(image_size, n_classes, in_channels=3):
         in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=128, kernel_size=3))
     conv_layers_parameters.append(dict(
         in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=128, kernel_size=3))
-    conv_layers_parameters.append(dict(
-        in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=256, kernel_size=3))
-    conv_layers_parameters.append(dict(
-        in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=256, kernel_size=3))
-    conv_layers_parameters.append(dict(
-        in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=256, kernel_size=3))
+    # conv_layers_parameters.append(dict(
+    #     in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=256, kernel_size=3))
+    # conv_layers_parameters.append(dict(
+    #     in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=256, kernel_size=3))
+    # conv_layers_parameters.append(dict(
+    #     in_channels=conv_layers_parameters[-1]['out_channels'], out_channels=256, kernel_size=3))
 
     twins = create_twins(conv_layers_parameters)
 
@@ -116,7 +117,7 @@ def get_transforms(set_name, input_shape):
 
 
 if __name__ == '__main__':
-    net = build_net((299, 299), 3)
+    net = build_net((32, 32), 3)
     print(net)
-    out = net(torch.zeros(3, 3, 299, 299), torch.zeros(3, 3, 299, 299))
+    out = net(torch.zeros(3, 3, 32, 32), torch.zeros(3, 3, 32, 32))
     print(out.size())
