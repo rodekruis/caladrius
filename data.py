@@ -21,6 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 DAMAGE_TYPES = ['destroyed', 'significant', 'partial', 'none']
+REV_DAMAGE_TYPES = {idx: lab for idx, lab in enumerate(DAMAGE_TYPES)}
 
 
 class AIDataset(Dataset):
@@ -138,6 +139,9 @@ class AIDataset(Dataset):
         one_hot[index] = 1
         return np.array(one_hot, dtype=np.float32)
 
+    def unonehot(self, onhot):
+        # what a horrible name
+        pass
 
 class Datasets(object):
 

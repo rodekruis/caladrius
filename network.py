@@ -159,7 +159,7 @@ class QuasiSiameseNetwork(object):
             print(image1.size(), image2.size(), labels.size())
             if phase == "train":
                 # zero the parameter gradients
-                optimizer.zero_grad()
+                self.optimizer.zero_grad()
 
             with torch.set_grad_enabled(phase == "train"):
                 outputs = self.model(image1, image2)
