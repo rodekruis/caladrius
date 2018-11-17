@@ -51,7 +51,7 @@ def configuration():
     parser.add_argument('--cudaDevice', type=int, default=0,
                         help='specify which GPU to use')
     parser.add_argument('--torchSeed', type=int,
-                        help='set a torch seed')
+                        help='set a torch seed', default=42)
 
     parser.add_argument('--inputSize', type=int, default=32,
                         help='extent of input layer in the network')
@@ -61,6 +61,10 @@ def configuration():
                         help='batch size for training')
     parser.add_argument('--learningRate', type=float, default=0.001,
                         help='learning rate for training')
+
+    parser.add_argument("--outputType", type=str,
+                        choices={"soft-targets", "softmax"}, help="influences the output of the model",
+                        default="softmax")
 
     args = parser.parse_args()
 
@@ -72,16 +76,18 @@ def configuration():
         arg_vars['torchSeed'] = torch.initial_seed()
 
     checkpointFolderName = '{}-{}-{}'.format(
-                            arg_vars['datasetName'],
-                            arg_vars['inputSize'],
-                            arg_vars['learningRate']
-                        )
+        arg_vars['datasetName'],
+        arg_vars['inputSize'],
+        arg_vars['learningRate']
+    )
 
-    arg_vars['checkpointPath'] = makeDirectory(os.path.join(arg_vars['checkpointPath'], checkpointFolderName))
+    arg_vars['checkpointPath'] = makeDirectory(os.path.join(
+        arg_vars['checkpointPath'], checkpointFolderName))
 
     if torch.cuda.is_available() and not arg_vars['disableCuda']:
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
-        arg_vars['device'] = torch.device('cuda:{}'.format(arg_vars['cudaDevice']))
+        arg_vars['device'] = torch.device(
+            'cuda:{}'.format(arg_vars['cudaDevice']))
     else:
         arg_vars['device'] = torch.device('cpu')
 
