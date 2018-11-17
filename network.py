@@ -162,15 +162,16 @@ class QuasiSiameseNetwork(object):
 
             with torch.set_grad_enabled(phase == "train"):
                 outputs = self.model(image1, image2)
-                loss = self.criterion(outputs, labels)
+                _, preds = torch.max(outputs, 1)
+                loss = self.criterion(preds, labels)
 
                 if phase == 'train':
                     loss.backward()
                     self.optimizer.step()
 
-            running_loss += loss.item() * inputs.size(0)
+            running_loss += loss.item() * image1.size(0)
             running_corrects += torch.sum(preds == labels.data)
-            running_n += inputs.size(0)
+            running_n += image1.size(0)
 
             if batch_idx % 10 == 0:
                 log.info("\tBatch {}: Loss: {:.4f} Acc: {:.4f}".format(
