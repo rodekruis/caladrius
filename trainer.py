@@ -1,3 +1,5 @@
+import logging
+
 from torch.optim import Adam
 from sklearn.metrics import f1_score
 from torch.nn.modules import loss as nnloss
@@ -10,6 +12,7 @@ from siamese_network import build_net
 from network import get_pretrained_iv3_transforms, SiameseNetwork
 from siamese_network import build_net, get_transforms
 
+log = logging.getLogger(__name__)
 
 class QuasiSiameseNetwork(object):
 
