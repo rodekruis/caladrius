@@ -38,7 +38,7 @@ def get_pretrained_iv3(output_size, num_to_freeze=7):
     return model_conv
 
 
-def get_pretrained_iv3_transforms(set):
+def get_pretrained_iv3_transforms(set_name):
     mean = [0.5, 0.5, 0.5]
     std = [0.5, 0.5, 0.5]
     scale = 360
@@ -62,7 +62,7 @@ def get_pretrained_iv3_transforms(set):
         "train": train_transform,
         "val": test_transform,
         "test": test_transform
-    }
+    }[set_name]
 
 
 class SiameseNetwork(nn.Module):

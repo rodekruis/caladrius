@@ -123,7 +123,7 @@ class AIDataset(Dataset):
 
     def getCroppedImage(self, source, geometry):
         image, _ = rasterio.mask.mask(source, [geometry], crop=True)
-        cropped_image = Image.fromarray(np.moveaxis(image.filled(), 0, -1))
+        cropped_image = Image.fromarray(np.moveaxis(image, 0, -1))
         return cropped_image
 
     def getAfterImage(self, geometry):
