@@ -3,7 +3,7 @@ import json
 import logging
 
 import torch
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, recall_score, confusion_matrix
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +20,11 @@ class RollingEval(object):
     def f1_score(self):
         return f1_score(self.y_true, self.y_pred, average="micro")
 
+    def recall(self):
+        return recall_score(self.y_true, self.y_pred, average="micro")
+    
+    def confusion_matrix(self):
+        pass
 
 class Evaluator(object):
     def __init__(self, model, sets):

@@ -17,6 +17,7 @@ from siamese_network import build_net, get_transforms
 
 log = logging.getLogger(__name__)
 
+
 class QuasiSiameseNetwork(object):
 
     def __init__(self, train_config, net_config, input_size, n_freeze=7):
@@ -94,17 +95,19 @@ class QuasiSiameseNetwork(object):
             running_corrects += torch.sum(preds == labels.data)
             running_n += image1.size(0)
 
-            if idx % 10 == 0:
-                log.info("\tBatch {}: Loss: {:.4f} Acc: {:.4f} F1: {:.4f}".format(
-                    idx, running_loss / running_n, running_corrects.double() / running_n, rolling_eval.f1_score()))
+            if idx % 1 == 0:
+                log.info("\tBatch {}: Loss: {:.4f} Acc: {:.4f} F1: {:.4f} Recall: {:.4f}".format(
+                    idx, running_loss / running_n, running_corrects.double() / running_n,
+                    rolling_eval.f1_score(), rolling_eval.recall()))
 
         epoch_loss = running_loss / running_n
         epoch_acc = running_corrects.double() / \
             running_n
         epoch_f1 = rolling_eval.f1_score()
+        epoch_recall = rolling_eval.recall()
 
-        log.info('{}: Loss: {:.4f} Acc: {:.4f} F1:{:.4f}'.format(
-            phase, epoch_loss, epoch_acc, epoch_f1))
+        log.info('{}: Loss: {:.4f} Acc: {:.4f} F1:{:.4f} Recall: {:.4f}'.format(
+            phase, epoch_loss, epoch_acc, epoch_f1, epoch_recall))
 
         return epoch_loss, epoch_acc, epoch_f1
 
