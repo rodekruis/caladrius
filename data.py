@@ -37,6 +37,8 @@ class AIDataset(Dataset):
         self.AFTER_FOLDER = os.path.join(directory, 'After')
 
         self.CACHED_DATA_FOLDER = os.path.join('.', 'cached')
+        if not os.path.exists(self.CACHED_DATA_FOLDER):
+            os.makedirs(self.CACHED_DATA_FOLDER)
         self.MAP_FILE = os.path.join('.', 'map.pkl')
 
         GEOJSON_FOLDER = os.path.join(directory, 'Building Info')
