@@ -4,7 +4,7 @@ import logging
 
 from data import Datasets
 from utils import configuration
-from network import QuasiSiameseNetwork
+from trainer import QuasiSiameseNetwork
 
 # logging
 
@@ -36,7 +36,8 @@ if __name__ == '__main__':
 
     logger.info('START with Configuration : {}'.format(args))
 
-    qsn = QuasiSiameseNetwork(args.outputType)
+    qsn = QuasiSiameseNetwork(
+        args.outputType, args.networkType, (args.inputSize, args.inputSize))
     datasets = Datasets(args, qsn.transforms)
     qsn.train(args.numberOfEpochs, datasets, args.device,
               os.path.join(args.checkpointPath, "best_model_wts.pkl"))

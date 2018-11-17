@@ -66,6 +66,10 @@ def configuration():
                         choices={"soft-targets", "softmax"}, help="influences the output of the model",
                         default="softmax")
 
+    parser.add_argument("--networkType", type=str,
+                        choices={"pre-trained", "full"}, help="type of network to train",
+                        default="pre-trained")
+
     args = parser.parse_args()
 
     arg_vars = vars(args)
