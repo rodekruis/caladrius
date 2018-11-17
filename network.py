@@ -143,8 +143,8 @@ class QuasiSiameseNetwork(object):
         assert phase in ("train", "val", "test")
 
         self.model = self.model.to(device)
-        self.model.left_network = self.model.left_network.to(device)
-        self.model.right_network = self.model.right_network.to(device)
+        #self.model.left_network = self.model.left_network.to(device)
+        #self.model.right_network = self.model.right_network.to(device)
 
         log.info("Phase: {}, Epoch: {}".format(phase, epoch))
 
@@ -158,8 +158,9 @@ class QuasiSiameseNetwork(object):
         running_n = 0.0
 
         for idx, (image1, image2, labels) in enumerate(loader):
-            print(image1, image2, labels)
-            print(image1.size(), image2.size(), labels.size())
+            image1 = image1.to(device)
+            image2 = image2.to(device)
+            labels = image2.to(device)
             if phase == "train":
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
