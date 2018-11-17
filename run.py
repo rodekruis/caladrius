@@ -38,7 +38,8 @@ if __name__ == '__main__':
 
     qsn = QuasiSiameseNetwork(args.outputType)
     datasets = Datasets(args, qsn.transforms)
-    qsn.train(args.numberOfEpochs, datasets, args.device, args.checkpointPath)
+    qsn.train(args.numberOfEpochs, datasets, args.device,
+              os.path.join(args.checkpointPath, "best_model_wts.pkl"))
 
     # Initialize Model
     # model = Model(Siamese, data, args)
