@@ -164,6 +164,7 @@ class QuasiSiameseNetwork(object):
                 outputs = self.model(image1, image2)
                 _, preds = torch.max(outputs, 1)
                 _, labels = torch.max(labels, 1)
+                print(preds, labels)
                 loss = self.criterion(preds, labels)
 
                 if phase == 'train':
