@@ -108,9 +108,7 @@ class SiameseNetwork(nn.Module):
             left_features = left_features[0]
             right_features = right_features[0]
 
-        print(left_features.size(), right_features.size())
-        # TODO: maybe need to flatten
-        features = torch.cat([left_features, right_features])
+        features = torch.cat([left_features, right_features], 1)
 
         print(features.size())
 
