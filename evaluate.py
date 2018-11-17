@@ -19,7 +19,7 @@ class RollingEval(object):
         self.y_pred.extend(y_p.cpu().numpy())
 
     def f1_score(self):
-        return f1_score(y_true, y_pred, average="micro")
+        return f1_score(self.y_true, self.y_pred, average="micro")
 
 
 class Evaluator(object):
