@@ -1,6 +1,7 @@
 import logging
 from collections import OrderedDict
 
+import torch
 import torchvision
 from torch import nn
 from torch.nn.modules import loss as nnloss
