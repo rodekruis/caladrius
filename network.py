@@ -188,9 +188,6 @@ class QuasiSiameseNetwork(object):
                 log.info("\tBatch {}: Loss: {:.4f} Acc: {:.4f} F1: {:.4f}".format(
                     idx, running_loss / running_n, running_corrects.double() / running_n, rolling_eval.f1_score()))
 
-            if idx == 10:
-                break
-
         epoch_loss = running_loss / running_n
         epoch_acc = running_corrects.double() / \
             running_n

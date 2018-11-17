@@ -14,7 +14,6 @@ class RollingEval(object):
         self.y_pred = []
 
     def add(self, y_t, y_p):
-        print(y_t, y_p)
         self.y_true.extend(y_t.cpu().numpy())
         self.y_pred.extend(y_p.cpu().numpy())
 
