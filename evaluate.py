@@ -15,8 +15,8 @@ class RollingEval(object):
 
     def add(self, y_t, y_p):
         print(y_t, y_p)
-        self.y_true.extend(y_t.detach().numpy())
-        self.y_pred.extend(y_p.detach().numpy())
+        self.y_true.extend(y_t.cpu().numpy())
+        self.y_pred.extend(y_p.cpu().numpy())
 
     def f1_score(self):
         return f1_score(y_true, y_pred, average="micro")
