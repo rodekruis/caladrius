@@ -57,7 +57,7 @@ def configuration():
                         help='extent of input layer in the network')
     parser.add_argument('--numberOfEpochs', type=int, default=100,
                         help='number of epochs for training')
-    parser.add_argument('--batchSize', type=int, default=128,
+    parser.add_argument('--batchSize', type=int, default=32,
                         help='batch size for training')
     parser.add_argument('--learningRate', type=float, default=0.001,
                         help='learning rate for training')
