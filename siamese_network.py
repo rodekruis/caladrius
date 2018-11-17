@@ -35,22 +35,12 @@ def create_twins(conv_layers_parameters):
 
 def create_sequential_for_twin(input_dim, nclasses):
     fc = nn.Sequential(
-        nn.Linear((input_dim ** 2) *2, 64),
+        nn.Linear(input_dim, 64),
         nn.ReLU(inplace=True),
         nn.Linear(64, nclasses),
     )
     return fc
 
-a = create_twins(conv_layers_parameters)
-
-torch.zeros(2,3, 4)
-
-
-
-data1 = torch.zeros(64, 1, input_dim['image'], input_dim['image'])
-data2 = torch.zeros((64, 1, input_dim['image'], input_dim['image']))
-
-data = (data1, data2)
 
 class SiameseNet(nn.Module):
     def __init__(self, twins, sequential):
@@ -71,22 +61,18 @@ class SiameseNet(nn.Module):
         out1 = self.twin1(x[0])
         out2 = self.twin2(x[1])
         combined = torch.cat([out1, out2])
-        #return combined
+
         combined = combined.view(combined.size(0), -1)
         out = self.fc1(combined)
         return out
 
 twins = create_twins(conv_layers_parameters)
-sequential = create_sequential_for_twin(input_dim=11, nclasses=4)
-
+sequential = create_sequential_for_twin(input_dim=11*11*conv_layers_parameters[-1]['out_channels'], nclasses=4)
 
 s = SiameseNet(twins, sequential)
 
+data1 = torch.zeros(64, 1, input_dim['image'], input_dim['image'])
+data2 = torch.zeros((64, 1, input_dim['image'], input_dim['image']))
+data = (data1, data2)
+
 s(data)
-
-t.shape
-p = s((t.float(), t.float()))
-p
-s.get_conv_output_shape(t.float())
-
-p.shape
