@@ -1,0 +1,47 @@
+# README
+
+
+- Data collection bias
+  - Data are collected from areas where people think disasters may occur
+  - How it's done?
+   - Census data / govt data
+   - Drone data
+- Data: 
+ - Data before disaster
+  - Taken in Feb last year
+  - Map was updated from it
+  - OSM was used
+  - Remapped
+  - 6k buildings + few kms of streets
+ - Data after disaster
+  - Blue tarps is a really good indicator
+  - Data source is not sometimes aligned
+ - Another type of data
+  - Sateliile image from digital globe from before the hurricane
+   - RGB -> HSL 
+   - Both have been subtracted
+   - difference map 
+    - before - after
+    - clouds!
+   - all datasets have clouds
+    - problem: buildings will show up as change
+   - not all data is aligned
+    - raw data
+    - not lined up
+   - qgis
+    - realign
+    - ground reference points
+    - thin plate spline
+     - different shifts of images
+     - some are (x,y)
+      - bends + 2 bends
+      - thin plate spline
+     - square cutouts
+  - manual work to label all data
+   - hurricane irma, maria
+ - existing methods
+  - existing method works very well on current dataset
+  - doesn't generalize well
+  - dan can point to the solution
+   - ping him on slack
+  - 
