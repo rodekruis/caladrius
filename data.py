@@ -40,6 +40,7 @@ class AIDataset(Dataset):
         if not os.path.exists(self.CACHED_DATA_FOLDER):
             os.makedirs(self.CACHED_DATA_FOLDER)
         self.MAP_FILE = os.path.join('.', 'map.pkl')
+        self.SPLIT_FILE = os.path.join('.', 'map-split.pkl')
 
         GEOJSON_FOLDER = os.path.join(directory, 'Building Info')
 
@@ -68,10 +69,13 @@ class AIDataset(Dataset):
         if not os.path.isfile(self.MAP_FILE):
             self.createDatapoints(features_json)
 
-        cached_mappings = load_obj(self.MAP_FILE)
+        if not os.path.isfile(self.SPLIT_FILE):
+            self.splitDatapoints()
 
-        self.datapoints = cached_mappings['file']
-        self.indexes = cached_mappings['index']
+        cached_mappings = load_obj(self.SPLIT_FILE)
+
+        self.datapoints = cached_mappings[self.name]['file']
+        self.indexes = cached_mappings[self.name]['index']
 
     def __len__(self):
         return len(self.datapoints)
@@ -139,6 +143,43 @@ class AIDataset(Dataset):
         }, self.MAP_FILE)
 
         logger.info('Created {} Datapoints'.format(count))
+
+        self.splitDatapoints()
+
+    def splitDatapoints(self):
+        cached_mappings = load_obj(self.MAP_FILE)
+
+        datapoints = cached_mappings['file']
+        indexes = cached_mappings['index']
+
+        allIndexes = list(range(len(datapoints)))
+
+        np.random.shuffle(allIndexes)
+
+        training_offset = int(len(allIndexes) * 0.8)
+
+        validation_offset = int(len(allIndexes) * 0.9)
+
+        training_indexes = allIndexes[:training_offset]
+
+        validation_indexes = allIndexes[training_offset:validation_offset]
+
+        testing_indexes = allIndexes[validation_offset:]
+
+        save_obj({
+            'train': self.getValues(datapoints, indexes, training_indexes),
+            'val': self.getValues(datapoints, indexes, validation_indexes),
+            'test': self.getValues(datapoints, indexes, testing_indexes)
+        }, self.SPLIT_FILE)
+
+
+    def getValues(self, datapoints, indexes, selectIndexes):
+        mapping = {
+            'file': [datapoints[i] for i in selectIndexes],
+            'index': [indexes[i] for i in selectIndexes]
+        }
+        return mapping
+
 
     def loadDatapointImages(self, objectID):
         before_image = Image.open(os.path.join(
