@@ -143,6 +143,8 @@ class QuasiSiameseNetwork(object):
         assert phase in ("train", "val", "test")
 
         self.model = self.model.to(device)
+        self.model.left_network = self.model.left_network.to(device)
+        self.model.right_network = self.model.right_network.to(device)
 
         log.info("Phase: {}, Epoch: {}".format(phase, epoch))
 
