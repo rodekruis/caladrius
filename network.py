@@ -1,15 +1,21 @@
+import time
+import copy
 import logging
 from collections import OrderedDict
 
 import torch
 import torchvision
 from torch import nn
-from torch.nn.modules import loss as nnloss
 from torch.optim import Adam
-
+from sklearn.metrics import f1_score
+from torch.nn.modules import loss as nnloss
 import torchvision.transforms as transforms
 
+
+from evaluate import RollingEval
+
 # TODO: DataParallel
+# TODO: Save based on F1 instead of accuracy
 
 
 log = logging.getLogger(__name__)
@@ -151,6 +157,8 @@ class QuasiSiameseNetwork(object):
         running_corrects = 0
         running_n = 0.0
 
+        rolling_eval = RollingEval()
+
         for idx, (image1, image2, labels) in enumerate(loader):
             image1 = image1.to(device)
             image2 = image2.to(device)
@@ -170,39 +178,57 @@ class QuasiSiameseNetwork(object):
                     loss.backward()
                     self.optimizer.step()
 
+                rolling_eval.add(labels, preds)
+
             running_loss += loss.item() * image1.size(0)
             running_corrects += torch.sum(preds == labels.data)
             running_n += image1.size(0)
 
             if idx % 10 == 0:
-                log.info("\tBatch {}: Loss: {:.4f} Acc: {:.4f}".format(
-                    idx, running_loss / running_n, running_corrects.double() / running_n))
+                log.info("\tBatch {}: Loss: {:.4f} Acc: {:.4f} F1: {:.4f}".format(
+                    idx, running_loss / running_n, running_corrects.double() / running_n, rolling_eval.f1_score()))
 
-        epoch_loss = running_loss / self.dataset_sizes[phase]
+        epoch_loss = running_loss / running_n
         epoch_acc = running_corrects.double() / \
-            self.dataset_sizes[phase]
+            running_n
+        epoch_f1 = rolling_eval.f1_score()
 
-        log.info('{}: Loss: {:.4f} Acc: {:.4f}'.format(
-            phase, epoch_loss, epoch_acc))
+        log.info('{}: Loss: {:.4f} Acc: {:.4f} F1:{:.4f}'.format(
+            phase, epoch_loss, epoch_acc, epoch_f1))
 
-        return epoch_loss, epoch_acc
+        return epoch_loss, epoch_acc, epoch_f1
 
-    def train(self, n_epochs, datasets, device):
+    def train(self, n_epochs, datasets, device, save_path):
         train_set, train_loader = datasets.load("train")
         #val_set, val_loader = datasets.load("val")
 
+        best_f1, best_model_wts = 0.0, copy.deepcopy(
+            self.model.state_dict())
+
+        start_time = time.time()
         for epoch in range(n_epochs):
             # train network
-            train_loss, train_acc = self.run_epoch(
+            train_loss, train_acc, train_f1 = self.run_epoch(
                 epoch, train_loader, device, phase="train")
 
             # eval on validation
             #self.run_epoch(epoch, loader, device, phase="val")
 
+            # TODO: change when you get validation accuracy
+            val_f1 = train_f1
+
+            if val_f1 > best_f1:
+                best_f1 = val_f1
+                best_model_wts = copy.deepcopy(self.model.state_dict())
+
+                log.info("Checkpoint: Saving to {}".format(save_path))
+                torch.save(best_model_wts, save_path)
+
+        time_elapsed = time.time() - start_time
+        log.info('Training complete in {:.0f}m {:.0f}s'.format(
+            time_elapsed // 60, time_elapsed % 60))
+
+        log.info('Best val F1: {:4f}.'.format(best_f1))
+
     def test(self, datasets, device):
         pass
-
-
-if __name__ == '__main__':
-    qsn = QuasiSiameseNetwork("soft-targets")
-    print(qsn)
