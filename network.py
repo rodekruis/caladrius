@@ -155,6 +155,7 @@ class QuasiSiameseNetwork(object):
         running_n = 0.0
 
         for idx, (image1, image2, labels) in enumerate(loader):
+            print(image1, image2, labels)
             print(image1.size(), image2.size(), labels.size())
             if phase == "train":
                 # zero the parameter gradients

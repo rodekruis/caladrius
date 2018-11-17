@@ -117,7 +117,8 @@ class AIDataset(Dataset):
                 datapoint.label = self.onehot(damage)
 
                 # add to datapoints
-                self.datapoints.append((datapoint.before, datapoint.after, datapoint.label))
+                self.datapoints.append(
+                    (datapoint.before, datapoint.after, datapoint.label))
 
         logger.info('Processed Dataset Size {}'.format(len(self.datapoints)))
 
@@ -135,7 +136,7 @@ class AIDataset(Dataset):
         index = DAMAGE_TYPES.index(damage)
         one_hot = [0] * len(DAMAGE_TYPES)
         one_hot[index] = 1
-        return one_hot
+        return np.array(one_hot, dtype=np.float32)
 
 
 class Datasets(object):
