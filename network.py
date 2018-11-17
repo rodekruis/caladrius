@@ -176,14 +176,14 @@ class QuasiSiameseNetwork(object):
 
     def train(self, n_epochs, datasets, device):
         train_set, train_loader = datasets.load("train")
-        val_set, val_loader = datasets.load("val")
+        #val_set, val_loader = datasets.load("val")
 
         for epoch in range(n_epochs):
             # train network
             self.run_epoch(epoch, train_loader, device, phase="train")
 
             # eval on validation
-            self.run_epoch(epoch, loader, device, phase="val")
+            #self.run_epoch(epoch, loader, device, phase="val")
 
     def test(self, datasets, device):
         pass
