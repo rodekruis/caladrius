@@ -1,15 +1,19 @@
+import time
+import copy
 import logging
 from collections import OrderedDict
 
 import torch
 import torchvision
 from torch import nn
-from torch.nn.modules import loss as nnloss
 from torch.optim import Adam
-
+from sklearn.metrics import f1_score
+from torch.nn.modules import loss as nnloss
 import torchvision.transforms as transforms
 
+
 # TODO: DataParallel
+# TODO: Save based on F1 instead of accuracy
 
 
 log = logging.getLogger(__name__)
@@ -178,6 +182,9 @@ class QuasiSiameseNetwork(object):
                 log.info("\tBatch {}: Loss: {:.4f} Acc: {:.4f}".format(
                     idx, running_loss / running_n, running_corrects.double() / running_n))
 
+            if idx == 0:
+                break
+
         epoch_loss = running_loss / self.dataset_sizes[phase]
         epoch_acc = running_corrects.double() / \
             self.dataset_sizes[phase]
@@ -187,10 +194,13 @@ class QuasiSiameseNetwork(object):
 
         return epoch_loss, epoch_acc
 
-    def train(self, n_epochs, datasets, device):
+    def train(self, n_epochs, datasets, device, save_path):
         train_set, train_loader = datasets.load("train")
         #val_set, val_loader = datasets.load("val")
 
+        best_acc, best_model_wts = 0.0, copy.deepcopy(self.model.state_dict())
+
+        start_time = time.time()
         for epoch in range(n_epochs):
             # train network
             train_loss, train_acc = self.run_epoch(
@@ -199,10 +209,21 @@ class QuasiSiameseNetwork(object):
             # eval on validation
             #self.run_epoch(epoch, loader, device, phase="val")
 
+            # TODO: change when you get validation accuracy
+            val_acc = train_acc
+
+            if val_acc > best_acc:
+                best_acc = val_acc
+                best_model_wts = copy.deepcopy(self.model.state_dict())
+
+                log.info("Checkpoint: Saving to {}".format(save_path))
+                torch.save(best_model_wts, save_path)
+
+        time_elapsed = time.time() - start_time
+        log.info('Training complete in {:.0f}m {:.0f}s'.format(
+            time_elapsed // 60, time_elapsed % 60))
+
+        log.info('Best val Acc: {:4f}'.format(best_acc))
+
     def test(self, datasets, device):
         pass
-
-
-if __name__ == '__main__':
-    qsn = QuasiSiameseNetwork("soft-targets")
-    print(qsn)
