@@ -35,8 +35,7 @@ def create_sequential_for_twin(input_dim, n_classes):
         nn.BatchNorm1d(512),
         nn.ReLU(inplace=True),
         nn.Dropout(0.5),
-        nn.Linear(512, n_classes),
-        nn.Softmax(0)
+        nn.Linear(512, n_classes)
     )
     return fc
 
