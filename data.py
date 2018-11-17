@@ -120,17 +120,16 @@ class AIDataset(Dataset):
                 objectID = feature['properties']['OBJECTID']
 
                 try:
-                    before_file = self.getCroppedImage(source_before_image, geoms, 'b{}.png'.format(objectID))
-                    after_file = self.getAfterImage(geoms, 'a{}.png'.format(objectID))
+                    before_file = self.getCroppedImage(
+                        source_before_image, geoms, 'b{}.png'.format(objectID))
+                    after_file = self.getAfterImage(
+                        geoms, 'a{}.png'.format(objectID))
                     if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) and os.path.isfile(after_file):
                         feature_file_mapping.append(objectID)
                         feature_index_mapping.append(index)
                         count += 1
                 except ValueError as ve:
                     continue
-
-                if (index+1) % 20 == 0:
-                    break
 
         save_obj({
             'file': feature_file_mapping,
@@ -140,15 +139,17 @@ class AIDataset(Dataset):
         logger.info('Created {} Datapoints'.format(count))
 
     def loadDatapointImages(self, objectID):
-        before_image = Image.open(os.path.join(self.CACHED_DATA_FOLDER, 'b{}.png'.format(objectID)))
-        after_image = Image.open(os.path.join(self.CACHED_DATA_FOLDER, 'a{}.png'.format(objectID)))
+        before_image = Image.open(os.path.join(
+            self.CACHED_DATA_FOLDER, 'b{}.png'.format(objectID)))
+        after_image = Image.open(os.path.join(
+            self.CACHED_DATA_FOLDER, 'a{}.png'.format(objectID)))
         return before_image, after_image
 
     def getCroppedImage(self, source, geometry, name):
         image, transform = rasterio.mask.mask(source, geometry, crop=True)
         out_meta = source.meta.copy()
         if np.sum(image) > 0:
-            # save the resulting raster  
+            # save the resulting raster
             out_meta.update({
                 "driver": "PNG",
                 "height": image.shape[1],
@@ -162,7 +163,8 @@ class AIDataset(Dataset):
         return None
 
     def getAfterImage(self, geometry, name):
-        after_files = [os.path.join(self.AFTER_FOLDER, after_file) for after_file in os.listdir(self.AFTER_FOLDER)]
+        after_files = [os.path.join(self.AFTER_FOLDER, after_file)
+                       for after_file in os.listdir(self.AFTER_FOLDER)]
         for index, file in enumerate(after_files):
             try:
                 with rasterio.open(file) as after_file:
@@ -205,22 +207,22 @@ class AIDataset(Dataset):
         # update ranges
         rangeX = maxx - minx
         rangeY = maxy - miny
-    
+
         # add some extra border
         minx -= rangeX/extension_factor
         maxx += rangeX/extension_factor
         miny -= rangeY/extension_factor
         maxy += rangeY/extension_factor
         geoms = [{
-                        "type": "MultiPolygon",
-                        "coordinates": [[[
-                                        [minx, miny],
-                                        [minx, maxy],
-                                        [maxx, maxy],
-                                        [maxx, miny],
-                                        [minx, miny]
-                                    ]]]
-                    }]
+            "type": "MultiPolygon",
+            "coordinates": [[[
+                [minx, miny],
+                [minx, maxy],
+                [maxx, maxy],
+                [maxx, miny],
+                [minx, miny]
+            ]]]
+        }]
 
         return geoms
 
