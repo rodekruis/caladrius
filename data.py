@@ -3,7 +3,7 @@ import os
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
-from utils import dotdict
+from utils import dotdict, save_obj, load_obj
 
 import rasterio
 import geopandas
@@ -36,6 +36,9 @@ class AIDataset(Dataset):
 
         self.AFTER_FOLDER = os.path.join(directory, 'After')
 
+        self.CACHED_DATA_FOLDER = os.path.join('.', 'cached')
+        self.MAP_FILE = os.path.join('.', 'map.pkl')
+
         GEOJSON_FOLDER = os.path.join(directory, 'Building Info')
 
         ALL_BUILDINGS_GEOJSON_FILE = os.path.join(
@@ -53,85 +56,120 @@ class AIDataset(Dataset):
 
         GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, geojson_file[name])
 
-        df = geopandas.read_file(GEOJSON_FILE)
-        dataset_json = json.loads(df.to_json())
+        self.df = geopandas.read_file(GEOJSON_FILE)
+        dataset_json = json.loads(self.df.to_json())
         features_json = dataset_json['features']
 
         self.inputSize = inputSize
         self.transforms = transforms
 
-        self.datapoints = []
+        if not os.path.isfile(self.MAP_FILE):
+            self.createDatapoints(features_json)
 
-        # populate datapoints
-        self.loadDatapoints(features_json)
+        cached_mappings = load_obj(self.MAP_FILE)
+
+        self.datapoints = cached_mappings['file']
+        self.indexes = cached_mappings['index']
 
     def __len__(self):
         return len(self.datapoints)
 
     def __getitem__(self, idx):
-        return self.datapoints[idx]
+        objectID = self.datapoints[idx]
+        df_index = self.indexes[idx]
+        before_image, after_image = self.loadDatapointImages(objectID)
+        damage = self.df['_damage'][idx]
 
-    def loadDatapoints(self, features):
+        if self.transforms:
+            before_image = self.transforms(before_image)
+            after_image = self.transforms(after_image)
 
-        logger.info('Raw Dataset Size {}'.format(len(features)))
+        return (before_image, after_image, self.onehot(damage))
+
+    def createDatapoints(self, features):
+
+        logger.info('Feature Size {}'.format(len(features)))
 
         BEFORE_FILE = os.path.join(self.BEFORE_FOLDER, 'IGN_Feb2017_20CM.tif')
 
+        feature_file_mapping = []
+        feature_index_mapping = []
+
         with rasterio.open(BEFORE_FILE) as source_before_image:
 
+            count = 0
+
             for index, feature in enumerate(features):
-                # initialize empty datapoint
-                datapoint = dotdict({})
 
-                datapoint.id = int(feature['id'])
-                geometry = feature['geometry']
-
-                # before image
-                if geometry is None:
-                    continue
-
-                try:
-                    before_image = self.getCroppedImage(
-                        source_before_image, geometry)
-                except ValueError as ve:
-                    continue
-
-                # after image
-
-                after_image = self.getAfterImage(geometry)
-
-                # get image according to geometry
-                # apply mask using geometry
-
-                if self.transforms is None:
-                    datapoint.before = before_image
-                    datapoint.after = before_image
-                else:
-                    datapoint.before = self.transforms(before_image)
-                    datapoint.after = self.transforms(before_image)
-
+                # filter based on damage
                 damage = feature['properties']['_damage']
 
                 if damage not in DAMAGE_TYPES:
                     continue
 
-                datapoint.label = self.onehot(damage)
+                geometry = feature['geometry']
 
-                # add to datapoints
-                self.datapoints.append(
-                    (datapoint.before, datapoint.after, datapoint.label))
+                # filter unstable data
+                if geometry is None:
+                    continue
 
-        logger.info('Processed Dataset Size {}'.format(len(self.datapoints)))
+                bounds = self.df['geometry'][index][0].bounds
+                geoms = self.makesquare(*bounds)
 
-    def getCroppedImage(self, source, geometry):
-        image, _ = rasterio.mask.mask(source, [geometry], crop=True)
-        cropped_image = Image.fromarray(np.moveaxis(image, 0, -1))
-        return cropped_image
+                # identify data point
+                objectID = feature['properties']['OBJECTID']
 
-    def getAfterImage(self, geometry):
-        # logger.info(self.AFTER_FOLDER)
-        image = None
-        return image
+                try:
+                    before_file = self.getCroppedImage(source_before_image, geoms, 'b{}.png'.format(objectID))
+                    after_file = self.getAfterImage(geoms, 'a{}.png'.format(objectID))
+                    if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) and os.path.isfile(after_file):
+                        feature_file_mapping.append(objectID)
+                        feature_index_mapping.append(index)
+                        count += 1
+                except ValueError as ve:
+                    continue
+
+                if (index+1) % 20 == 0:
+                    break
+
+        save_obj({
+            'file': feature_file_mapping,
+            'index': feature_index_mapping
+        }, self.MAP_FILE)
+
+        logger.info('Created {} Datapoints'.format(count))
+
+    def loadDatapointImages(self, objectID):
+        before_image = Image.open(os.path.join(self.CACHED_DATA_FOLDER, 'b{}.png'.format(objectID)))
+        after_image = Image.open(os.path.join(self.CACHED_DATA_FOLDER, 'a{}.png'.format(objectID)))
+        return before_image, after_image
+
+    def getCroppedImage(self, source, geometry, name):
+        image, transform = rasterio.mask.mask(source, geometry, crop=True)
+        out_meta = source.meta.copy()
+        if np.sum(image) > 0:
+            # save the resulting raster  
+            out_meta.update({
+                "driver": "PNG",
+                "height": image.shape[1],
+                "width": image.shape[2],
+                "transform": transform
+            })
+            file_path = os.path.join(self.CACHED_DATA_FOLDER, name)
+            with rasterio.open(file_path, "w", **out_meta) as dest:
+                dest.write(image)
+            return file_path
+        return None
+
+    def getAfterImage(self, geometry, name):
+        after_files = [os.path.join(self.AFTER_FOLDER, after_file) for after_file in os.listdir(self.AFTER_FOLDER)]
+        for index, file in enumerate(after_files):
+            try:
+                with rasterio.open(file) as after_file:
+                    return self.getCroppedImage(after_file, geometry, name)
+            except:
+                pass
+        return None
 
     def onehot(self, damage):
         index = DAMAGE_TYPES.index(damage)
@@ -142,6 +180,50 @@ class AIDataset(Dataset):
     def unonehot(self, onhot):
         # what a horrible name
         pass
+
+    def makesquare(self, minx, miny, maxx, maxy):
+        rangeX = maxx - minx
+        rangeY = maxy - miny
+
+        # 20 refers to 5% added to each side
+        extension_factor = 20
+
+        # Set image to a square if not square
+        if rangeX == rangeY:
+            pass
+        elif rangeX > rangeY:
+            difference_range = rangeX - rangeY
+            miny -= difference_range/2
+            maxy += difference_range/2
+        elif rangeX < rangeY:
+            difference_range = rangeY - rangeX
+            minx -= difference_range/2
+            maxx += difference_range/2
+        else:
+            pass
+
+        # update ranges
+        rangeX = maxx - minx
+        rangeY = maxy - miny
+    
+        # add some extra border
+        minx -= rangeX/extension_factor
+        maxx += rangeX/extension_factor
+        miny -= rangeY/extension_factor
+        maxy += rangeY/extension_factor
+        geoms = [{
+                        "type": "MultiPolygon",
+                        "coordinates": [[[
+                                        [minx, miny],
+                                        [minx, maxy],
+                                        [maxx, maxy],
+                                        [maxx, miny],
+                                        [minx, miny]
+                                    ]]]
+                    }]
+
+        return geoms
+
 
 class Datasets(object):
 

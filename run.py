@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 logging.getLogger('Fiona').setLevel(logging.ERROR)
 logging.getLogger('fiona.collection').setLevel(logging.ERROR)
 logging.getLogger('rasterio').setLevel(logging.ERROR)
+logging.getLogger('PIL.PngImagePlugin').setLevel(logging.ERROR)
 
 
 def exceptionLogger(exceptionType, exceptionValue, exceptionTraceback):
