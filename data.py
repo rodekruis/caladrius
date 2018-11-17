@@ -137,7 +137,7 @@ class AIDataset(Dataset):
         index = DAMAGE_TYPES.index(damage)
         one_hot = [0] * len(DAMAGE_TYPES)
         one_hot[index] = 1
-        return np.array(one_hot, dtype=np.float32)
+        return np.array(one_hot, dtype=np.long)
 
     def unonehot(self, onhot):
         # what a horrible name

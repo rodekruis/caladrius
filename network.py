@@ -109,17 +109,8 @@ class SiameseNetwork(nn.Module):
             right_features = right_features[0]
 
         features = torch.cat([left_features, right_features], 1)
-
-        print(features.size())
-
         sim_features = self.similarity(features)
-
-        print(sim_features.size())
-
         output = self.output(sim_features)
-
-        print(output.size())
-
         return output
 
 
@@ -163,7 +154,8 @@ class QuasiSiameseNetwork(object):
         for idx, (image1, image2, labels) in enumerate(loader):
             image1 = image1.to(device)
             image2 = image2.to(device)
-            labels = image2.to(device)
+            labels = labels.to(device)
+
             if phase == "train":
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
