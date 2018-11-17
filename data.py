@@ -11,7 +11,6 @@ import json
 
 import numpy as np
 from PIL import Image
-import pprint as pp
 
 import rasterio.mask
 import rasterio.features
@@ -34,7 +33,7 @@ class AIDataset(Dataset):
 
         self.BEFORE_FOLDER = os.path.join(directory, 'Before')
 
-        AFTER_FOLDER = os.path.join(directory, 'After')
+        self.AFTER_FOLDER = os.path.join(directory, 'After')
 
         GEOJSON_FOLDER = os.path.join(directory, 'Building Info')
 
@@ -77,7 +76,7 @@ class AIDataset(Dataset):
 
         BEFORE_FILE = os.path.join(self.BEFORE_FOLDER, 'IGN_Feb2017_20CM.tif')
 
-        with rasterio.open(BEFORE_FILE) as src:
+        with rasterio.open(BEFORE_FILE) as source_before_image:
 
             for index, feature in enumerate(features):
                 # initialize empty datapoint
@@ -91,19 +90,23 @@ class AIDataset(Dataset):
                     continue
 
                 try:
-                    out_image, out_transform = rasterio.mask.mask(src, [geometry], crop=True)
-                    out_image = Image.fromarray(np.moveaxis(out_image.filled(), 0, -1))
+                    before_image = self.getCroppedImage(source_before_image, geometry)
                 except ValueError as ve:
                     continue
 
                 # after image
 
+                after_image = self.getAfterImage(geometry)
+
+                # get image according to geometry
+                # apply mask using geometry
+
                 if self.transforms is None:
-                    datapoint.before = out_image
-                    datapoint.after = out_image
+                    datapoint.before = before_image
+                    datapoint.after = before_image
                 else:
-                    datapoint.before = self.transforms(out_image)
-                    datapoint.after = self.transforms(out_image)
+                    datapoint.before = self.transforms(before_image)
+                    datapoint.after = self.transforms(before_image)
 
                 damage = feature['properties']['_damage']
 
@@ -114,10 +117,18 @@ class AIDataset(Dataset):
 
                 # add to datapoints
                 self.datapoints.append(datapoint)
-                if (index+1) % 3 == 0:
-                    break
 
         logger.info('Processed Dataset Size {}'.format(len(self.datapoints)))
+
+    def getCroppedImage(self, source, geometry):
+        image, _ = rasterio.mask.mask(source, [geometry], crop=True)
+        cropped_image = Image.fromarray(np.moveaxis(image.filled(), 0, -1))
+        return cropped_image
+
+    def getAfterImage(self, geometry):
+        # logger.info(self.AFTER_FOLDER)
+        image = None
+        return image
 
     def onehot(self, damage):
         index = DAMAGE_TYPES.index(damage)
