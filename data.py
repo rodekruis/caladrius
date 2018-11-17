@@ -37,7 +37,8 @@ class AIDataset(Dataset):
 
         GEOJSON_FOLDER = os.path.join(directory, 'Building Info')
 
-        ALL_BUILDINGS_GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, 'AllBuildingOutline.geojson')
+        ALL_BUILDINGS_GEOJSON_FILE = os.path.join(
+            GEOJSON_FOLDER, 'AllBuildingOutline.geojson')
         all_buildings_df = geopandas.read_file(ALL_BUILDINGS_GEOJSON_FILE)
         self.all_buildings_json = json.loads(all_buildings_df.to_json())
 
@@ -62,7 +63,6 @@ class AIDataset(Dataset):
 
         # populate datapoints
         self.loadDatapoints(features_json)
-
 
     def __len__(self):
         return len(self.datapoints)
@@ -90,7 +90,8 @@ class AIDataset(Dataset):
                     continue
 
                 try:
-                    before_image = self.getCroppedImage(source_before_image, geometry)
+                    before_image = self.getCroppedImage(
+                        source_before_image, geometry)
                 except ValueError as ve:
                     continue
 
@@ -137,7 +138,19 @@ class AIDataset(Dataset):
         return one_hot
 
 
-def loadDataset(args, transforms):
-    dataset = AIDataset(args.dataPath, name=args.datasetName, transforms=transforms)
-    dataLoader = DataLoader(dataset, batch_size=args.batchSize, shuffle=(args.datasetName == 'train'))
-    return dataLoader
+class Datasets(object):
+
+    def __init__(self, args, transforms):
+        self.args = args
+        self.dataPath = args.dataPath
+        self.batchSize = args.batchSize
+        self.transforms = transforms
+
+    def load(self, set_name):
+        assert set_name in {"train", "val", "test"}
+        dataset = AIDataset(self.dataPath, name=set_name,
+                            transforms=self.transforms[set_name])
+        dataLoader = DataLoader(
+            dataset, batch_size=self.batchSize, shuffle=(set_name == 'train'))
+
+        return dataset, dataLoader

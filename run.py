@@ -1,12 +1,10 @@
 import os
 import sys
-
-# from model import Model
-# from network import Siamese
-from data import loadDataset
-from utils import configuration
-
 import logging
+
+from data import Datasets
+from utils import configuration
+from network import QuasiSiameseNetwork
 
 # logging
 
@@ -17,7 +15,8 @@ logging.getLogger('rasterio').setLevel(logging.ERROR)
 
 
 def exceptionLogger(exceptionType, exceptionValue, exceptionTraceback):
-    logger.error("Uncaught Exception", exc_info=(exceptionType, exceptionValue, exceptionTraceback))
+    logger.error("Uncaught Exception", exc_info=(
+        exceptionType, exceptionValue, exceptionTraceback))
 
 
 sys.excepthook = exceptionLogger
@@ -37,8 +36,9 @@ if __name__ == '__main__':
 
     logger.info('START with Configuration : {}'.format(args))
 
-    # Load Dataset
-    dataset = loadDataset(args, transforms=None)
+    qsn = QuasiSiameseNetwork(args.outputType)
+    datasets = Datasets(args, qsn.transforms)
+    qsn.train(args.numberOfEpochs, datasets, args.device)
 
     # Initialize Model
     # model = Model(Siamese, data, args)

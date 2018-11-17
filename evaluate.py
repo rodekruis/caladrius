@@ -41,9 +41,7 @@ class Evaluator(object):
         return y_true, y_pred
 
     def evaluate(self, results_path):
-        results = {
-
-        }
+        results = {}
         for set_name, dataset in self.datasets.items():
             results[set_name] = self.evaluate_set(set_name)
 
