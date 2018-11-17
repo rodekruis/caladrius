@@ -162,7 +162,7 @@ class QuasiSiameseNetwork(object):
 
             with torch.set_grad_enabled(phase == "train"):
                 outputs = self.model(image1, image2)
-                _, preds = torch.max(outputs, 1)
+                #_, preds = torch.max(outputs, 1)
                 _, labels = torch.max(labels, 1)
                 print(preds, labels)
                 loss = self.criterion(preds, labels)
