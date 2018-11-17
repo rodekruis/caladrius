@@ -100,8 +100,21 @@ class SiameseNetwork(nn.Module):
         left_features = self.left_network(image_1)
         right_features = self.right_network(image_2)
 
+        print(left_features.size(), right_features.size())
         # TODO: maybe need to flatten
         features = torch.cat([left_features, right_features])
+
+        print(features.size())
+
+        sim_features = self.similarity(features)
+
+        print(sim_features.size())
+
+        output = self.output(sim_features)
+
+        print(output.size())
+
+        return output
 
 
 class QuasiSiameseNetwork(object):
@@ -142,9 +155,7 @@ class QuasiSiameseNetwork(object):
         running_n = 0.0
 
         for idx, (image1, image2, labels) in enumerate(loader):
-            image1 = self.transforms[phase](image1)
-            image2 = self.transforms[phase](image2)
-
+            print(image1.size(), image2.size(), labels.image())
             if phase == "train":
                 # zero the parameter gradients
                 optimizer.zero_grad()

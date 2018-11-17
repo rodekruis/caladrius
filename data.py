@@ -117,7 +117,7 @@ class AIDataset(Dataset):
                 datapoint.label = self.onehot(damage)
 
                 # add to datapoints
-                self.datapoints.append(datapoint)
+                self.datapoints.append((datapoint.before, datapoint.after, datapoint.label))
 
         logger.info('Processed Dataset Size {}'.format(len(self.datapoints)))
 
