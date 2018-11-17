@@ -101,6 +101,13 @@ class SiameseNetwork(nn.Module):
         left_features = self.left_network(image_1)
         right_features = self.right_network(image_2)
 
+        # for some weird reason, iv3 returns both
+        # the 1000 class softmax AND the n_classes softmax
+        # if train = True, so this is filthy, but necessary
+        if self.training:
+            left_features = left_features[0]
+            right_features = right_features[0]
+
         print(left_features.size(), right_features.size())
         # TODO: maybe need to flatten
         features = torch.cat([left_features, right_features])
@@ -143,8 +150,6 @@ class QuasiSiameseNetwork(object):
         assert phase in ("train", "val", "test")
 
         self.model = self.model.to(device)
-        #self.model.left_network = self.model.left_network.to(device)
-        #self.model.right_network = self.model.right_network.to(device)
 
         log.info("Phase: {}, Epoch: {}".format(phase, epoch))
 
@@ -185,7 +190,7 @@ class QuasiSiameseNetwork(object):
         epoch_acc = running_corrects.double() / \
             self.dataset_sizes[phase]
 
-        log.info('{} Loss: {:.4f} Acc: {:.4f}'.format(
+        log.info('{}: Loss: {:.4f} Acc: {:.4f}'.format(
             phase, epoch_loss, epoch_acc))
 
         return epoch_loss, epoch_acc
@@ -196,7 +201,8 @@ class QuasiSiameseNetwork(object):
 
         for epoch in range(n_epochs):
             # train network
-            self.run_epoch(epoch, train_loader, device, phase="train")
+            train_loss, train_acc = self.run_epoch(
+                epoch, train_loader, device, phase="train")
 
             # eval on validation
             #self.run_epoch(epoch, loader, device, phase="val")
