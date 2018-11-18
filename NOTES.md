@@ -1,6 +1,5 @@
 # README
 
-
 - Data collection bias
   - Data are collected from areas where people think disasters may occur
   - How it's done?
@@ -40,8 +39,6 @@
   - manual work to label all data
    - hurricane irma, maria
  - existing methods
-  - existing method works very well on current dataset
+  - existing method works well on current dataset
   - doesn't generalize well
   - dan can point to the solution
-   - ping him on slack
-  - 
