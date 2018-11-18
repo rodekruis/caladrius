@@ -81,7 +81,7 @@ def configuration():
                         default="pre-trained")
     parser.add_argument("--numFreeze", type=int, default=7,
                         help="(- number of layers to not freeze)")
-    parser.add_argument("--test", type=bool, action="store_true",
+    parser.add_argument("--test", action="store_true", default=False,
                         help="test the model on the test set instead of training")
 
     args = parser.parse_args()
