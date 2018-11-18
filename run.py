@@ -41,7 +41,7 @@ if __name__ == '__main__':
     datasets = Datasets(args, qsn.transforms)
     save_path = os.path.join(args.checkpointPath, "best_model_wts.pkl")
     if args.test:
-        log.info("Testing the model")
+        logger.info("Testing the model")
         qsn.test(datasets, args.device, save_path)
     else:
         qsn.train(args.numberOfEpochs, datasets, args.device, save_path)
