@@ -51,13 +51,13 @@ class AIDataset(Dataset):
 
         geojson_file = {
             'train': 'TrainingDataset.geojson',
-            'val': 'TestSet_1.geojson',
-            'test': 'TestSet_2.geojson'
+            'test_1': 'TestSet_1.geojson',
+            'test_2': 'TestSet_2.geojson'
         }
 
         self.name = name
 
-        GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, geojson_file[name])
+        GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, geojson_file["train"])
 
         self.df = geopandas.read_file(GEOJSON_FILE)
         dataset_json = json.loads(self.df.to_json())
