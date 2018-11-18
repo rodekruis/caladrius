@@ -1,9 +1,11 @@
 import time
 import json
 import logging
-
+import numpy as np
 import torch
-from sklearn.metrics import f1_score, recall_score, confusion_matrix
+from sklearn.metrics import f1_score, recall_score, confusion_matrix, classification_report
+
+from data import DAMAGE_TYPES
 
 log = logging.getLogger(__name__)
 
@@ -22,9 +24,13 @@ class RollingEval(object):
 
     def recall(self):
         return recall_score(self.y_true, self.y_pred, average="micro")
-    
+
     def confusion_matrix(self):
         pass
+
+    def every_measure(self):
+        return classification_report(self.y_true, self.y_pred, target_names=DAMAGE_TYPES)
+
 
 class Evaluator(object):
     def __init__(self, model, sets):
