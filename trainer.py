@@ -20,11 +20,16 @@ log = logging.getLogger(__name__)
 
 class QuasiSiameseNetwork(object):
 
-    def __init__(self, train_config, net_config, input_size, n_freeze=7):
+    def __init__(self, args, n_freeze=7):
+        train_config = args.outputType
+        net_config = args.networkType
+        input_size = (args.inputSize, args.inputSize)
+
         assert train_config in ("soft-targets", "softmax")
         assert net_config in ("pre-trained", "full")
         self.train_config = train_config
         self.input_size = input_size
+        self.lr = args.learningRate
 
         if train_config == "soft-targets":
             self.n_classes = 1
@@ -50,7 +55,7 @@ class QuasiSiameseNetwork(object):
         log.debug("Num params: {}".format(
             len([_ for _ in self.model.parameters()])))
 
-        self.optimizer = Adam(self.model.parameters())
+        self.optimizer = Adam(self.model.parameters(), lr=self.lr)
 
     def run_epoch(self, epoch, loader, device, phase="train"):
         assert phase in ("train", "val", "test")
