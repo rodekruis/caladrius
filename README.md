@@ -95,9 +95,3 @@ optional arguments:
                         (- number of layers to not freeze)
   --test                test the model on the test set instead of training
 ```
-
-
-## Implementation Notes
-We used
-
-## TODO
