@@ -22,12 +22,12 @@ def get_pretrained_iv3(output_size, num_to_freeze=7):
     num_ftrs = model_conv.fc.in_features
     model_conv.fc = nn.Linear(num_ftrs, output_size)
 
-    ct = []
+    ct = 0
     for name, child in model_conv.named_children():
-        if "Conv2d_4a_3x3" in ct:
-            for params in child.parameters():
-                params.requires_grad = True
-        ct.append(name)
+        ct += 1
+        if ct < num_to_freeze:
+            for name2, params in child.named_parameters():
+                params.requires_grad = False
 
     # To view which layers are freeze and which layers are not freezed:
     for name, child in model_conv.named_children():
