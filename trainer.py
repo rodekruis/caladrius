@@ -7,6 +7,7 @@ from torch.optim import Adam
 from sklearn.metrics import f1_score
 from torch.nn.modules import loss as nnloss
 import torchvision.transforms as transforms
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from evaluate import RollingEval
 from siamese_network import build_net
@@ -20,9 +21,10 @@ log = logging.getLogger(__name__)
 
 class QuasiSiameseNetwork(object):
 
-    def __init__(self, args, n_freeze=7):
+    def __init__(self, args):
         train_config = args.outputType
         net_config = args.networkType
+        n_freeze = args.numFreeze
         input_size = (args.inputSize, args.inputSize)
 
         assert train_config in ("soft-targets", "softmax")
@@ -56,6 +58,7 @@ class QuasiSiameseNetwork(object):
             len([_ for _ in self.model.parameters()])))
 
         self.optimizer = Adam(self.model.parameters(), lr=self.lr)
+        self.lr_scheduler = ReduceLROnPlateau(self.optimizer)
 
     def run_epoch(self, epoch, loader, device, phase="train"):
         assert phase in ("train", "val", "test")
@@ -146,5 +149,7 @@ class QuasiSiameseNetwork(object):
 
         log.info('Best val F1: {:4f}.'.format(best_f1))
 
-    def test(self, datasets, device):
-        pass
+    def test(self, datasets, device, load_path):
+        self.model.load_state_dict(torch.load(load_path))
+        test_set, test_loader = datasets.load("test")
+        self.run_epoch(0, test_loader, device, phase="test")

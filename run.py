@@ -39,19 +39,11 @@ if __name__ == '__main__':
 
     qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
-    qsn.train(args.numberOfEpochs, datasets, args.device,
-              os.path.join(args.checkpointPath, "best_model_wts.pkl"))
-
-    # Initialize Model
-    # model = Model(Siamese, data, args)
-
-    # if args.train:
-    #     trainResult = model.train(save=True)
-    #     # plt.plot(trainResult)
-    #     # plt.savefig(os.path.join(args.checkpointPath, 'trainingLoss.png'))
-
-    # model.eval()
-    # if args.eval is not None:
-    #     model.predict()
+    save_path = os.path.join(args.checkpointPath, "best_model_wts.pkl")
+    if args.test:
+        log.info("Testing the model")
+        qsn.test(datasets, args.device, save_path)
+    else:
+        qsn.train(args.numberOfEpochs, datasets, args.device, save_path)
 
     logger.info('END')
