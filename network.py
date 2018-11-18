@@ -16,8 +16,8 @@ log = logging.getLogger(__name__)
 def get_pretrained_iv3(output_size, num_to_freeze=7):
     model_conv = torchvision.models.inception_v3(pretrained='imagenet')
 
-    for i, param in model_conv.named_parameters():
-        param.requires_grad = False
+    # for i, param in model_conv.named_parameters():
+    #     param.requires_grad = False
 
     num_ftrs = model_conv.fc.in_features
     model_conv.fc = nn.Linear(num_ftrs, output_size)
