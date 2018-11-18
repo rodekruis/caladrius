@@ -51,8 +51,8 @@ class AIDataset(Dataset):
 
         geojson_file = {
             'train': 'TrainingDataset.geojson',
-            'test_1': 'TestSet_1.geojson',
-            'test_2': 'TestSet_2.geojson'
+            'val': 'TestSet_1.geojson',
+            'test': 'TestSet_2.geojson'
         }
 
         self.name = name
