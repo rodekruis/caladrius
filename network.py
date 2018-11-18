@@ -27,7 +27,6 @@ def get_pretrained_iv3(output_size, num_to_freeze=7):
         if "Conv2d_4a_3x3" in ct:
             for params in child.parameters():
                 params.requires_grad = True
-            break
         ct.append(name)
 
     # To view which layers are freeze and which layers are not freezed:
