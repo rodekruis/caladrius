@@ -113,7 +113,7 @@ class QuasiSiameseNetwork(object):
 
     def train(self, n_epochs, datasets, device, save_path):
         train_set, train_loader = datasets.load("train")
-        #val_set, val_loader = datasets.load("val")
+        val_set, val_loader = datasets.load("val")
 
         best_f1, best_model_wts = 0.0, copy.deepcopy(
             self.model.state_dict())
@@ -125,10 +125,8 @@ class QuasiSiameseNetwork(object):
                 epoch, train_loader, device, phase="train")
 
             # eval on validation
-            #self.run_epoch(epoch, loader, device, phase="val")
-
-            # TODO: change when you get validation accuracy
-            val_f1 = train_f1
+            val_loss, val_acc, val_f1 = self.run_epoch(
+                epoch, val_loader, device, phase="val")
 
             if val_f1 > best_f1:
                 best_f1 = val_f1
