@@ -37,8 +37,7 @@ if __name__ == '__main__':
 
     logger.info('START with Configuration : {}'.format(args))
 
-    qsn = QuasiSiameseNetwork(
-        args.outputType, args.networkType, (args.inputSize, args.inputSize))
+    qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
     qsn.train(args.numberOfEpochs, datasets, args.device,
               os.path.join(args.checkpointPath, "best_model_wts.pkl"))
