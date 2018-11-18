@@ -101,8 +101,9 @@ class QuasiSiameseNetwork(object):
             running_n += image1.size(0)
 
             if idx % 1 == 0:
-                log.info("\tBatch {}: Loss: {:.4f} \nReport: {}".format(
-                    idx, running_loss / running_n, rolling_eval.every_measure()))
+                log.info("\tBatch {}: Loss: {:.4f} Acc: {:.4f} F1: {:.4f} Recall: {:.4f}".format(
+                    idx, running_loss / running_n, running_corrects.double() / running_n,
+                    rolling_eval.f1_score(), rolling_eval.recall()))
 
         epoch_loss = running_loss / running_n
         epoch_acc = running_corrects.double() / \
