@@ -140,7 +140,7 @@ class QuasiSiameseNetwork(object):
             val_loss, val_acc, val_f1 = self.run_epoch(
                 epoch, val_loader, device, phase="val")
 
-            self.scheduler.step(val_loss)
+            self.lr_scheduler.step(val_loss)
 
             if val_f1 > best_f1:
                 best_f1 = val_f1
