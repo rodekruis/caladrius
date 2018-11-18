@@ -16,18 +16,18 @@ log = logging.getLogger(__name__)
 def get_pretrained_iv3(output_size, num_to_freeze=7):
     model_conv = torchvision.models.inception_v3(pretrained='imagenet')
 
-    # for i, param in model_conv.named_parameters():
-    #     param.requires_grad = False
+    for i, param in model_conv.named_parameters():
+        param.requires_grad = False
 
     num_ftrs = model_conv.fc.in_features
     model_conv.fc = nn.Linear(num_ftrs, output_size)
 
-    ct = 0
+    ct = len([0 for _, _ in model_conv.named_children()])
     for name, child in model_conv.named_children():
-        ct += 1
-        if ct < num_to_freeze:
+        ct -= 1
+        if ct > num_to_freeze:
             for name2, params in child.named_parameters():
-                params.requires_grad = False
+                params.requires_grad = True
 
     # To view which layers are freeze and which layers are not freezed:
     for name, child in model_conv.named_children():
