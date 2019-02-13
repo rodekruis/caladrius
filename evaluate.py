@@ -5,8 +5,6 @@ import numpy as np
 import torch
 from sklearn.metrics import f1_score, recall_score, confusion_matrix, classification_report
 
-from data import DAMAGE_TYPES
-
 log = logging.getLogger(__name__)
 
 
@@ -29,7 +27,7 @@ class RollingEval(object):
         pass
 
     def every_measure(self):
-        return classification_report(self.y_true, self.y_pred, target_names=DAMAGE_TYPES)
+        return classification_report(self.y_true, self.y_pred)
 
 
 class Evaluator(object):

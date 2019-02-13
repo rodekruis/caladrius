@@ -1,4 +1,5 @@
-# Artificial Incompetence - Red Cross #1 - damage assessment of buildings after a disaster
+# Caladrius - Assessing Building Damage caused by Natural Disasters using Satellite Images
+## Created by: Artificial Incompetence for the Red Cross #1 Challenge in the 2018 Hackathon for Peace, Justice and Security
 
 ## Approach
 
@@ -13,7 +14,6 @@ We are using (quasi-) Siamese-networks (in the pretrained case the weights are n
 
 #### Requirements:
 - Python 3.6.5
-- virtualenv (optional, but recommended)
 - Install the required libraries:
 
 ```
