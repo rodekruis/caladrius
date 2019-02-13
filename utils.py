@@ -47,7 +47,7 @@ def configuration():
     # General arguments
     parser.add_argument('--checkpointPath', type=str, default=os.path.join('.', 'temp'),
                         help='output path')
-    parser.add_argument('--dataPath', type=str, default=os.path.join('.', 'data', 'RC Challenge 1', '1'),
+    parser.add_argument('--dataPath', type=str, default=os.path.join('.', 'data', 'Sint-Maarten-2018'),
                         help='data path')
     parser.add_argument('--datasetName', type=str, default='train',
                         choices=['train', 'test_1', 'test_2'],
