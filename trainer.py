@@ -27,6 +27,10 @@ class QuasiSiameseNetwork(object):
 
         self.model = SiameseNetwork()
 
+        if torch.cuda.device_count() > 1:
+            log.info('Using {} GPUs'.format(torch.cuda.device_count()))
+            self.model = nn.DataParallel(self.model)
+
         for s in ('train', 'validation', 'test'):
             self.transforms[s] = get_pretrained_iv3_transforms(s)
 
@@ -59,7 +63,7 @@ class QuasiSiameseNetwork(object):
         for idx, (image1, image2, labels) in enumerate(loader):
             image1 = image1.to(device)
             image2 = image2.to(device)
-            labels = labels.to(device)
+            labels = labels.float().to(device)
 
             if phase == 'train':
                 # zero the parameter gradients
