@@ -50,10 +50,11 @@ class Datasets(object):
         self.dataPath = args.dataPath
         self.batchSize = args.batchSize
         self.transforms = transforms
+        self.numberOfWorkers = args.numberOfWorkers
 
     def load(self, set_name):
         assert set_name in {'train', 'validation', 'test'}
         dataset = CaladriusDataset(os.path.join(self.dataPath, set_name), transforms=self.transforms[set_name])
-        dataLoader = DataLoader(dataset, batch_size=self.batchSize, shuffle=(set_name == 'train'), num_workers=8)
+        dataLoader = DataLoader(dataset, batch_size=self.batchSize, shuffle=(set_name == 'train'), num_workers=self.numberOfWorkers)
 
         return dataset, dataLoader

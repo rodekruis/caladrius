@@ -54,7 +54,7 @@ def configuration():
                         help='name of dataset to use')
     parser.add_argument('--logStep', type=int, default=100,
                         help='batch step size for logging information')
-    parser.add_argument('--numberOfWorkers', type=int, default=4,
+    parser.add_argument('--numberOfWorkers', type=int, default=8,
                         help='number of threads used by data loader')
 
     parser.add_argument('--disableCuda', action='store_true',
