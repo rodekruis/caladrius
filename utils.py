@@ -73,16 +73,8 @@ def configuration():
     parser.add_argument('--learningRate', type=float, default=0.001,
                         help='learning rate for training')
 
-    parser.add_argument("--outputType", type=str,
-                        choices={"soft-targets", "softmax"}, help="influences the output of the model",
-                        default="softmax")
-    parser.add_argument("--networkType", type=str,
-                        choices={"pre-trained", "full"}, help="type of network to train",
-                        default="pre-trained")
-    parser.add_argument("--numFreeze", type=int, default=7,
-                        help="(- number of layers to not freeze)")
-    parser.add_argument("--test", action="store_true", default=False,
-                        help="test the model on the test set instead of training")
+    parser.add_argument('--test', action='store_true', default=False,
+                        help='test the model on the test set instead of training')
 
     args = parser.parse_args()
 
