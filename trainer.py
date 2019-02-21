@@ -45,7 +45,7 @@ class QuasiSiameseNetwork(object):
                                               min_lr=1e-5,
                                               verbose=True)
 
-    def run_epoch(self, epoch, loader, device, phase='train', accuracy_threshold=0.01):
+    def run_epoch(self, epoch, loader, device, phase='train', accuracy_threshold=0.1):
         assert phase in ('train', 'validation', 'test')
 
         self.model = self.model.to(device)
@@ -83,38 +83,37 @@ class QuasiSiameseNetwork(object):
             running_n += image1.size(0)
 
             if idx % 1 == 0:
-                logger.info('\tBatch {}: Loss: {:.4f} Acc: {:.4f}'.format(
+                logger.debug('\tBatch {}: Loss: {:.4f} Accuracy: {:.4f}'.format(
                     idx, running_loss / running_n, running_corrects.double() / running_n))
 
         epoch_loss = running_loss / running_n
-        epoch_acc = running_corrects.double() / running_n
+        epoch_accuracy = running_corrects.double() / running_n
 
-        logger.info('{}: Loss: {:.4f}'.format(
-            phase, epoch_loss))
+        logger.info('{}: Loss: {:.4f} Accuracy: {:.4f}'.format(phase, epoch_loss, epoch_accuracy))
 
-        return epoch_loss, epoch_acc
+        return epoch_loss, epoch_accuracy
 
     def train(self, n_epochs, datasets, device, save_path):
         train_set, train_loader = datasets.load('train')
         validation_set, validation_loader = datasets.load('validation')
 
-        best_acc, best_model_wts = 0.0, copy.deepcopy(
+        best_accuracy, best_model_wts = 0.0, copy.deepcopy(
             self.model.state_dict())
 
         start_time = time.time()
-        for epoch in range(n_epochs):
+        for epoch in range(1, n_epochs + 1):
             # train network
-            train_loss, train_acc = self.run_epoch(
+            train_loss, train_accuracy = self.run_epoch(
                 epoch, train_loader, device, phase='train')
 
             # eval on validation
-            validation_loss, validation_acc = self.run_epoch(
+            validation_loss, validation_accuracy = self.run_epoch(
                 epoch, validation_loader, device, phase='validation')
 
             self.lr_scheduler.step(validation_loss)
 
-            if validation_acc > best_acc:
-                best_acc = validation_acc
+            if validation_accuracy > best_accuracy:
+                best_accuracy = validation_accuracy
                 best_model_wts = copy.deepcopy(self.model.state_dict())
 
                 logger.info('Checkpoint: Saving to {}'.format(save_path))
@@ -124,9 +123,9 @@ class QuasiSiameseNetwork(object):
         logger.info('Training complete in {:.0f}m {:.0f}s'.format(
             time_elapsed // 60, time_elapsed % 60))
 
-        logger.info('Best validation Accuracy: {:4f}.'.format(best_acc))
+        logger.info('Best validation Accuracy: {:4f}.'.format(best_accuracy))
 
     def test(self, datasets, device, load_path):
         self.model.load_state_dict(torch.load(load_path))
         test_set, test_loader = datasets.load('test')
-        self.run_epoch(0, test_loader, device, phase='test')
+        self.run_epoch(1, test_loader, device, phase='test')

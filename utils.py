@@ -134,7 +134,7 @@ def create_logger(module_name):
 
     streamhandler = logging.StreamHandler(sys.stdout)
     streamhandler.setFormatter(formatter)
-    streamhandler.setLevel(logging.INFO)
+    streamhandler.setLevel(logging.DEBUG)
 
     logger = logging.getLogger(module_name)
 
