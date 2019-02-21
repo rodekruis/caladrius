@@ -109,9 +109,9 @@ def get_transforms(set_name, input_shape):
         transforms.Normalize(mean, std)])
 
     return {
-        "train": train_transform,
-        "val": test_transform,
-        "test": test_transform
+        'train': train_transform,
+        'validation': test_transform,
+        'test': test_transform
     }[set_name]
 
 

@@ -55,7 +55,7 @@ class Datasets(object):
     def load(self, set_name):
         assert set_name in {'train', 'validation', 'test'}
         t = transforms.Compose([
-            transforms.Resize((64, 64)),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
         ])
         dataset = CaladriusDataset(os.path.join(self.dataPath, set_name), transforms=t)#self.transforms[set_name])
