@@ -1,8 +1,17 @@
 import os
+import sys
 import argparse
 import pickle
+import logging
 
 import torch
+
+# logging
+
+logging.getLogger('Fiona').setLevel(logging.ERROR)
+logging.getLogger('fiona.collection').setLevel(logging.ERROR)
+logging.getLogger('rasterio').setLevel(logging.ERROR)
+logging.getLogger('PIL.PngImagePlugin').setLevel(logging.ERROR)
 
 
 class dotdict(dict):
@@ -102,3 +111,38 @@ def configuration():
         arg_vars['device'] = torch.device('cpu')
 
     return args
+
+
+def attach_exception_hook(logger):
+    def exception_logger(exceptionType, exceptionValue, exceptionTraceback):
+        logger.error('Uncaught Exception', exc_info=(exceptionType, exceptionValue, exceptionTraceback))
+    return exception_logger
+
+
+def create_logger(module_name):
+    args = configuration()
+
+    debug_filehandler = logging.FileHandler(os.path.join(args.checkpointPath, 'run_debug.log'))
+    info_filehandler = logging.FileHandler(os.path.join(args.checkpointPath, 'run_info.log'))
+
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+    debug_filehandler.setFormatter(formatter)
+    info_filehandler.setFormatter(formatter)
+
+    debug_filehandler.setLevel(logging.DEBUG)
+    info_filehandler.setLevel(logging.INFO)
+
+    streamhandler = logging.StreamHandler(sys.stdout)
+    streamhandler.setFormatter(formatter)
+    streamhandler.setLevel(logging.INFO)
+
+    logger = logging.getLogger(module_name)
+
+    logger.addHandler(debug_filehandler)
+    logger.addHandler(info_filehandler)
+    logger.addHandler(streamhandler)
+
+    logger.setLevel(logging.DEBUG)
+
+    return logger
+

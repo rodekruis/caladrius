@@ -1,14 +1,8 @@
 import os
-
+from PIL import Image
 from tqdm import tqdm
 
 from torch.utils.data import Dataset, DataLoader
-
-from PIL import Image
-
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class CaladriusDataset(Dataset):

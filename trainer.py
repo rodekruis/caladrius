@@ -1,4 +1,3 @@
-import logging
 import copy
 import time
 import torch
@@ -9,8 +8,10 @@ import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from network import get_pretrained_iv3_transforms, SiameseNetwork
+from utils import create_logger
 
-log = logging.getLogger(__name__)
+
+logger = create_logger(__name__)
 
 
 class QuasiSiameseNetwork(object):
@@ -28,13 +29,13 @@ class QuasiSiameseNetwork(object):
         self.model = SiameseNetwork()
 
         if torch.cuda.device_count() > 1:
-            log.info('Using {} GPUs'.format(torch.cuda.device_count()))
+            logger.info('Using {} GPUs'.format(torch.cuda.device_count()))
             self.model = nn.DataParallel(self.model)
 
         for s in ('train', 'validation', 'test'):
             self.transforms[s] = get_pretrained_iv3_transforms(s)
 
-        log.debug('Num params: {}'.format(
+        logger.debug('Num params: {}'.format(
             len([_ for _ in self.model.parameters()])))
 
         self.optimizer = Adam(self.model.parameters(), lr=self.lr)
@@ -49,7 +50,7 @@ class QuasiSiameseNetwork(object):
 
         self.model = self.model.to(device)
 
-        log.info('Phase: {}, Epoch: {}'.format(phase, epoch))
+        logger.info('Phase: {}, Epoch: {}'.format(phase, epoch))
 
         if phase == 'train':
             self.model.train()  # Set model to training mode
@@ -82,13 +83,13 @@ class QuasiSiameseNetwork(object):
             running_n += image1.size(0)
 
             if idx % 1 == 0:
-                log.info('\tBatch {}: Loss: {:.4f} Acc: {:.4f}'.format(
+                logger.info('\tBatch {}: Loss: {:.4f} Acc: {:.4f}'.format(
                     idx, running_loss / running_n, running_corrects.double() / running_n))
 
         epoch_loss = running_loss / running_n
         epoch_acc = running_corrects.double() / running_n
 
-        log.info('{}: Loss: {:.4f}'.format(
+        logger.info('{}: Loss: {:.4f}'.format(
             phase, epoch_loss))
 
         return epoch_loss, epoch_acc
@@ -116,14 +117,14 @@ class QuasiSiameseNetwork(object):
                 best_acc = validation_acc
                 best_model_wts = copy.deepcopy(self.model.state_dict())
 
-                log.info('Checkpoint: Saving to {}'.format(save_path))
+                logger.info('Checkpoint: Saving to {}'.format(save_path))
                 torch.save(best_model_wts, save_path)
 
         time_elapsed = time.time() - start_time
-        log.info('Training complete in {:.0f}m {:.0f}s'.format(
+        logger.info('Training complete in {:.0f}m {:.0f}s'.format(
             time_elapsed // 60, time_elapsed % 60))
 
-        log.info('Best validation Accuracy: {:4f}.'.format(best_acc))
+        logger.info('Best validation Accuracy: {:4f}.'.format(best_acc))
 
     def test(self, datasets, device, load_path):
         self.model.load_state_dict(torch.load(load_path))
