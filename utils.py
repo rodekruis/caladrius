@@ -52,7 +52,7 @@ def load_obj(path):
 
 
 def configuration():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # General arguments
     parser.add_argument('--checkpointPath', type=str, default=os.path.join('.', 'runs'),
