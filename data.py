@@ -1,15 +1,8 @@
 import os
-
+from PIL import Image
 from tqdm import tqdm
 
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
-
-from PIL import Image
-
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class CaladriusDataset(Dataset):
@@ -51,14 +44,11 @@ class Datasets(object):
         self.dataPath = args.dataPath
         self.batchSize = args.batchSize
         self.transforms = transforms
+        self.numberOfWorkers = args.numberOfWorkers
 
     def load(self, set_name):
         assert set_name in {'train', 'validation', 'test'}
-        t = transforms.Compose([
-            transforms.Resize((64, 64)),
-            transforms.ToTensor(),
-        ])
-        dataset = CaladriusDataset(os.path.join(self.dataPath, set_name), transforms=t)#self.transforms[set_name])
-        dataLoader = DataLoader(dataset, batch_size=self.batchSize, shuffle=(set_name == 'train'))
+        dataset = CaladriusDataset(os.path.join(self.dataPath, set_name), transforms=self.transforms[set_name])
+        dataLoader = DataLoader(dataset, batch_size=self.batchSize, shuffle=(set_name == 'train'), num_workers=self.numberOfWorkers)
 
         return dataset, dataLoader
