@@ -20,6 +20,7 @@ class QuasiSiameseNetwork(object):
     def __init__(self, args):
         input_size = (args.inputSize, args.inputSize)
 
+        self.run_name = args.runName
         self.input_size = input_size
         self.lr = args.learningRate
 
@@ -60,7 +61,7 @@ class QuasiSiameseNetwork(object):
         running_n = 0.0
 
         if not (phase == 'train'):
-            prediction_file = open(os.path.join(loader.dataset.directory, 'epoch_{:03d}_predictions.txt'.format(epoch)), 'w+')
+            prediction_file = open(os.path.join(loader.dataset.directory, '{}_epoch_{:03d}_predictions.txt'.format(self.run_name, epoch)), 'w+')
             prediction_file.write('filename label prediction\n')
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
