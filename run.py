@@ -18,10 +18,10 @@ if __name__ == '__main__':
 
     qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
-    save_path = os.path.join(args.checkpointPath, "best_model_wts.pkl")
+    save_path = os.path.join(args.checkpointPath, 'best_model_wts.pkl')
     if not args.test:
         qsn.train(args.numberOfEpochs, datasets, args.device, save_path)
-    logger.info("Testing the model")
+    logger.info('Evaluation on test dataset')
     qsn.test(datasets, args.device, save_path)
 
     logger.info('END')
