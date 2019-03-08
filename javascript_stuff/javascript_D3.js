@@ -118,7 +118,10 @@ function initialized(){
 
     d3.select("body").select(".TableContainer").append("table")
       .attr("class", "infoBox")
+      .style("border", "1px solid black")
+      .style("margin", "auto")
       .append('thead')
+
 
     d3.select("body").select(".TableContainer").select("table")
       .append('tbody').append('tr').attr("class", "count");
@@ -276,6 +279,8 @@ function redraw(){
       .data(["", "Class 1", "Class 2", "Class 3"])
       .enter()
       .append('th')
+        .style("padding", "15px")
+        .style("text-align", "center")
         .text(function (d) { return d; });
     // create a row for each object in the data
 
@@ -288,14 +293,18 @@ d3.select("body").select(".TableContainer").select(".infoBox").select('tbody')
     .data(["Count: ", categoryCounter(cache.data, 0), categoryCounter(cache.data, 1), categoryCounter(cache.data, 2)])
     .enter()
       .append('td')
+      .style("text-align", "center")
+      .style("border", "1px solid black")
       .text(function (d) { return d; });
 
 d3.select("body").select(".TableContainer").select(".infoBox").select('tbody')
     .select('.average')
     .selectAll('td')
-    .data(["Average: ", categoryAverager(cache.data, 0), categoryAverager(cache.data, 1), categoryAverager(cache.data, 2)])
+    .data(["Average ", categoryAverager(cache.data, 0), categoryAverager(cache.data, 1), categoryAverager(cache.data, 2)])
     .enter()
       .append('td')
+      .style("text-align", "center")
+      .style("border", "1px solid black")
       .text(function (d) { return d; });
 
 // RESCALE OF SVG DONE //
