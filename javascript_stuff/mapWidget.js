@@ -8,9 +8,8 @@ function autorun()
                               "type": "FeatureCollection",
                               "features": []
                             }
-
   // https://leaflet-extras.github.io/leaflet-providers/preview/
-  var mymap = L.map('mapid', {renderer: L.svg()}).setView([18.0347188, -63.0681114], 13);
+  var mymap = L.map('mapid', {renderer: L.svg()}).setView([18.02607520212528, -63.051253259181976], 17);
 
   // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   //  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -25,42 +24,24 @@ function autorun()
 
   L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-   maxZoom: 18,
+   maxZoom:20,
    id: 'mapbox.streets',
    accessToken: 'pk.eyJ1Ijoib3Jhbmd1aCIsImEiOiJjanNxNWthYjgxMHo0NDRyMjc5MnM1c2VwIn0.oydc_gZ6NRz7H_ny4yp0Fw'
    }).addTo(mymap);
 
 
-   // d3.csv(".\\data\\ams_safety_index_districts.csv")
-   //   .then(function(data) {
-   //     console.log(data)
-   //
-   //     for (i in data.slice(0,-1)) {
-   //
-   //       wkt.read(data[i]["polygon_of_area"]);
-   //
-   //       featuresCollection["features"][i] = {
-   //                                             "type": "Feature",
-   //                                             "geometry": wkt.toJson(),
-   //                                             "properties": {
-   //                                               "name": data[i]["area"]
-   //                                             }
-   //                                           }
-   //      }
+   d3.json("testGeo.json")
+     .then(function(data) {
+        L.geoJson(data  ,{
+          style: { color: "#999", weight: 1, fillColor: "#78c679", fillOpacity: .6 },
+          onEachFeature: function(feature, layer){
 
-   //    console.log()
-   //
-   //    L.geoJson("/testGeoJson"  ,{
-   //      style: { color: "#999", weight: 1, fillColor: "#78c679", fillOpacity: .6 },
-   //      onEachFeature: function(feature, layer){
-   //
-   //         // layer.bindPopup(feature["properties"]["name"])
-   //         // d3.selectAll("path.leaflet-interactive").attr("fill", "red")
-   //         console.log(layer)
-   //         console.log(layer["feature"])
-   //      }
-   //    }).addTo(mymap);
-   // })
+             // layer.bindPopup(feature["properties"]["name"])
+             // console.log(layer)
+             // console.log(layer["feature"])
+          }
+        }).addTo(mymap);
+      })
 
 
 }

@@ -120,9 +120,11 @@ function initialized(){
       .attr("class", "infoBox")
       .append('thead')
 
+    d3.select("body").select(".TableContainer").select("table")
+      .append('tbody').append('tr').attr("class", "count");
 
     d3.select("body").select(".TableContainer").select("table")
-      .append('tbody').append('tr')
+      .select('tbody').append('tr').attr("class", "average");
 
     // just implement this >.> https://bl.ocks.org/d3indepth/fabe4d1adbf658c0b73c74d3ea36d465
   var xband = d3.scaleBand()
@@ -271,7 +273,7 @@ function redraw(){
   d3.select("body").select(".TableContainer").select(".infoBox")
       .select('thead')
       .selectAll('th')
-      .data(["Class 1", "Class 2", "Class 3"])
+      .data(["", "Class 1", "Class 2", "Class 3"])
       .enter()
       .append('th')
         .text(function (d) { return d; });
@@ -281,9 +283,17 @@ d3.select("body").select(".TableContainer").select("table")
   .select('tbody').selectAll('td').remove()
 
 d3.select("body").select(".TableContainer").select(".infoBox").select('tbody')
-    .select('tr')
+    .select('.count')
     .selectAll('td')
-    .data([categoryCounter(cache.data, 0), categoryCounter(cache.data, 1), categoryCounter(cache.data, 2)])
+    .data(["Count: ", categoryCounter(cache.data, 0), categoryCounter(cache.data, 1), categoryCounter(cache.data, 2)])
+    .enter()
+      .append('td')
+      .text(function (d) { return d; });
+
+d3.select("body").select(".TableContainer").select(".infoBox").select('tbody')
+    .select('.average')
+    .selectAll('td')
+    .data(["Average: ", categoryAverager(cache.data, 0), categoryAverager(cache.data, 1), categoryAverager(cache.data, 2)])
     .enter()
       .append('td')
       .text(function (d) { return d; });
@@ -480,7 +490,8 @@ function load_csv_data(){
   // d3.csv(csv_path)
   d3.dsv(" ", csv_path).then(function(data) {
     data.forEach(function(d) {
-    // console.log(d)
+
+
     d.label = +d.label;
     d.prediction = +d.prediction;
     d.category = categorizer(d.prediction)
@@ -488,6 +499,7 @@ function load_csv_data(){
      // console.log(d);
   });
     // console.log(data)
+    data.pop()
     cache.data = data
     initialized()
   });
@@ -504,6 +516,19 @@ function categorizer(prediction){
   } else { return  1}
 
 }
+
 function categoryCounter(data, index) {
   return data.filter(datapoint => datapoint.category == index).length;
+}
+
+function categoryAverager(data, index) {
+  const reducer = (accumulator, currentValue) => accumulator + currentValue;
+
+  length = data.filter(datapoint => datapoint.category == index).length
+  if (length){
+    summation =  data.filter(datapoint => datapoint.category == index).map(x => Number(x.prediction)).reduce(reducer) ;
+    avg = summation/length
+    return avg.toString().slice(0,5)
+  } else { return 0}
+
 }
