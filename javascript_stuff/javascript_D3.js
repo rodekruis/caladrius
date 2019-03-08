@@ -43,27 +43,21 @@ function initialized(){
 
 // initialize all the elements for later.
 
-  d3.select("body").append("svg")
-    .attr("class", "svgFullscreen")
-    .attr("width", window.innerWidth - 30)
-    .attr("height", window.innerHeight - 30)
-  // .append("g")
-  //   .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
-  d3.select("body").select(".svgFullscreen").append("svg")
+  d3.select("body").select(".scatterPlotContainer").append("svg")
     .attr("class", "svgContainer")
     .attr("width", Math.round(width + margins.left + margins.right))
     .attr("height", Math.round(height + margins.top + margins.bottom))
   .append("g")
     .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
-  d3.select("body").select(".svgFullscreen").append("svg")
+  d3.select("body").select(".ImageOneContainer").append("svg")
     .attr("class", "imageContainer1")
     .attr("x", d3.select("body").select(".svgContainer").attr("width"))
     .attr("width", d3.select("body").select(".svgContainer").attr("width")/2)
     .attr("height", d3.select("body").select(".svgContainer").attr("height")/2)
     .append("g")
-      .attr("transform", "translate(" + margins.left + "," + margins.top + ")")
+      .attr("transform", "translate(" + margins.left/2 + "," + margins.top/2 + ")")
          .append("defs")
          .append("pattern")
          .attr("id", "previewImageID1")
@@ -84,14 +78,16 @@ function initialized(){
          return "url(#" + "previewImageID1" + ")"})
      .attr("width", d3.select("body").select(".svgContainer").attr("width") - (margins.left + margins.right))
      .attr("height", d3.select("body").select(".svgContainer").attr("height") - (margins.top + margins.bottom))
+     .attr("stroke", "black")
+     .attr("stroke-width", 2)
 
-   d3.select("body").select(".svgFullscreen").append("svg")
+   d3.select("body").select(".ImageTwoContainer").append("svg")
      .attr("class", "imageContainer2")
      .attr("x", d3.select("body").select(".svgContainer").attr("width") * 1.5)
      .attr("width", d3.select("body").select(".svgContainer").attr("width")/2)
      .attr("height", d3.select("body").select(".svgContainer").attr("height")/2)
      .append("g")
-       .attr("transform", "translate(" + margins.left + "," + margins.top + ")")
+       .attr("transform", "translate(" + margins.left/2 + "," + margins.top/2 + ")")
           .append("defs")
           .append("pattern")
           .attr("id", "previewImageID2")
@@ -112,9 +108,23 @@ function initialized(){
           return "url(#" + "previewImageID2" + ")"})
       .attr("width", d3.select("body").select(".svgContainer").attr("width") - (margins.left + margins.right))
       .attr("height", d3.select("body").select(".svgContainer").attr("height") - (margins.top + margins.bottom))
+      .attr("stroke", "black")
+      .attr("stroke-width", 2)
+
+    d3.select("body").select(".MapContainer").append("div")
+      .attr("id", "mapid")
+      .style("height", "300px");
+
+
+    d3.select("body").select(".TableContainer").append("table")
+      .attr("class", "infoBox")
+      .append('thead')
+
+
+    d3.select("body").select(".TableContainer").select("table")
+      .append('tbody').append('tr')
+
     // just implement this >.> https://bl.ocks.org/d3indepth/fabe4d1adbf658c0b73c74d3ea36d465
-
-
   var xband = d3.scaleBand()
       .domain([0, 1])
       .range([0, width])
@@ -124,11 +134,6 @@ function initialized(){
       .range([height, 0])
 
   var svgContainer = d3.select("body").select(".svgContainer").select("g")
-
-  svgContainer.append("text")
-      .text("Siamese network model")
-      .attr("x", 100)
-      .attr("class", "title_thing")
 
   svgContainer.append("g")
       .attr("class", "x_axis")
@@ -165,7 +170,34 @@ function initialized(){
       .append("circle")
       .attr("class", "dot")
 
+  svgContainer.append("text")
+      .text("Siamese network model")
+      .attr("transform",
+            "translate(" + (width/2) + " ," +
+                           (-margins.top/2) + ")")
+      .style("text-anchor", "middle")
+      .attr("id", "title_thing")
+
+  svgContainer.append("text")
+      .attr("id", "xAxisLabel")
+      .attr("transform",
+            "translate(" + (width/2) + " ," +
+                           (height + margins.top) + ")")
+      .style("text-anchor", "middle")
+      .text("Predicted");
+
+
+  svgContainer.append("text")
+      .attr("id", "yAxisLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margins.left)
+      .attr("x",0 - (height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Actual");
+
   redraw()
+  autorun()
 }
 // from https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
 window.onkeydown = checkKey;
@@ -181,7 +213,6 @@ function redraw(){
   // margins.left = ((window.innerWidth - 30) - margins.left - margins.right) - width
   // console.log(cache.data)
 
-
   var xValue = function(d) { return d.prediction;}, // data -> value
       xScale = d3.scaleLinear().range([0, width]).domain([0,1]), // value -> display
       xMap = function(d) { return xScale(xValue(d));},
@@ -191,10 +222,7 @@ function redraw(){
       yScale = d3.scaleLinear().range([height, 0]).domain([0,1]), // value -> display
       yMap = function(d) { return yScale(yValue(d));}
 
-  d3.select("body").select(".svgFullscreen")
-    .attr("class", "svgFullscreen")
-    .attr("width", window.innerWidth - 30)
-    .attr("height", window.innerHeight - 30)
+// RESCALE EVERYTHING //
 
   var svgContainer = d3.select("body").select(".svgContainer")
     .attr("class", "svgContainer")
@@ -202,6 +230,24 @@ function redraw(){
     .attr("height", Math.round(height + margins.top + margins.bottom))
   .select("g")
     .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
+
+    svgContainer.select("#xAxisLabel")
+        .attr("transform",
+              "translate(" + (width/2) + " ," +
+                             (height + margins.top) + ")")
+
+    svgContainer.select("#yAxisLabel")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margins.left)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+
+    svgContainer.select("#title_thing")
+        .text("Siamese network model")
+        .attr("transform",
+              "translate(" + (width/2) + " ," +
+                             (-margins.top/2) + ")")
+        .style("text-anchor", "middle")
 
   d3.select("body").select(".imageContainer1")
     .attr("x", d3.select("body").select(".svgContainer").attr("width"))
@@ -219,6 +265,31 @@ function redraw(){
       .attr("width", (d3.select("body").select(".svgContainer").attr("width") - (margins.left + margins.right))/2)
       .attr("height", (d3.select("body").select(".svgContainer").attr("width") - (margins.bottom + margins.top))/2)
 
+  // d3.select("body").select("#mapWidgetContainer")
+
+
+  d3.select("body").select(".TableContainer").select(".infoBox")
+      .select('thead')
+      .selectAll('th')
+      .data(["Class 1", "Class 2", "Class 3"])
+      .enter()
+      .append('th')
+        .text(function (d) { return d; });
+    // create a row for each object in the data
+
+d3.select("body").select(".TableContainer").select("table")
+  .select('tbody').selectAll('td').remove()
+
+d3.select("body").select(".TableContainer").select(".infoBox").select('tbody')
+    .select('tr')
+    .selectAll('td')
+    .data([categoryCounter(cache.data, 0), categoryCounter(cache.data, 1), categoryCounter(cache.data, 2)])
+    .enter()
+      .append('td')
+      .text(function (d) { return d; });
+
+// RESCALE OF SVG DONE //
+
   svgContainer.select(".x_axis")
       .attr("transform", "translate(0," + (height) + ")")
       .call(d3.axisBottom(xScale))
@@ -228,43 +299,50 @@ function redraw(){
       .call(d3.axisLeft(yScale).ticks(10, "s"))
 
   svgContainer.selectAll(".dot")
-      .attr("class", "dot")
       .attr("r", 7)
       .attr("cx", xMap)
       .attr("cy", yMap)
       .attr("fill", function(d){
         if (inverseXScale(d3.select(this).attr("cx")) < xlines[0].x1){
+          d.category = 0
           return "orange"
         } else if (inverseXScale(d3.select(this).attr("cx")) > xlines[1].x1) {
+          d.category = 2
           return "steelBlue"
         }
         else {
+          d.category = 1
           return "purple"
         }
       })
       .on("mouseover", function(d) {
-					// var xPosition = Number(d3.select(this).attr("cx")) + xScale.bandwidth / 2;
-					// var yPosition = Number(d3.select(this).attr("cy")) / 2 + height / 2;
+					// var xPosition = Number(d3.select(this).attr("cx"))
+					// var yPosition = Number(d3.select(this).attr("cy"))
           var xPosition = width
           var yPosition = 100
           var string = "<img src= " + "example.png" + "/>"
+          var predictionNumber = d.prediction
+          var labelNumber = d.label
 
 					d3.select("#tooltip")
+            .style("z-index", 100)
 						.style("left", xPosition + "px")
 						.style("top", yPosition + "px")
 						.select("#value")
-						.text(d.filename + ' ' + d.prediction + ' ' + d.label)
+						.text("Filename: " + d.filename + " " + "Prediction: " + d.prediction.toString().slice(0,9) + " " + "Label: " + d.label.toString().slice(0,7))
 					d3.select("#tooltip").classed("hidden", false);
 			   })
 			   .on("mouseout", function() {
 					d3.select("#tooltip").classed("hidden", true);
         })
       .on("click", function(d) {
+        d3.select(".selectedDot").attr("class", "dot")
+        d3.select(this).attr("class", "dot selectedDot")
         d3.select("body").select(".imageContainer1").select("g").select("#previewImageID1").select("image")
-          .attr("xlink:href", "/home/meow/skool/caladrius/javascript_stuff/test/after/" + d.filename)
+          .attr("xlink:href", "./test/after/" + d.filename)
 
         d3.select("body").select(".imageContainer2").select("g").select("#previewImageID2").select("image")
-          .attr("xlink:href", "/home/meow/skool/caladrius/javascript_stuff/test/before/" + d.filename)
+          .attr("xlink:href", "./test/before/" + d.filename)
       })
 
 
@@ -282,7 +360,7 @@ function redraw(){
       return yScale(d.y2)
     })
     .style("stroke", function(d, n){
-      console.log(d3.select(this).attr("class").match("line_0"))
+      // console.log(d3.select(this).attr("class").match("line_0"))
       if (d3.select(this).attr("class").match("line_0")){
         return "orange"
       } else {
@@ -315,7 +393,7 @@ function redraw(){
         return yScale(d.y2)
       })
       .style("stroke", function(d, n){
-        console.log(d3.select(this).attr("class").match("line_0"))
+        // console.log(d3.select(this).attr("class").match("line_0"))
         if (d3.select(this).attr("class").match("line_0")){
           return "orange"
         } else {
@@ -333,6 +411,7 @@ function redraw(){
       //   "mouseout", function(d) {
       //     d3.select(this).style("cursor", "default");
       //   });
+
 
 
 
@@ -404,10 +483,27 @@ function load_csv_data(){
     // console.log(d)
     d.label = +d.label;
     d.prediction = +d.prediction;
+    d.category = categorizer(d.prediction)
+
      // console.log(d);
   });
     // console.log(data)
     cache.data = data
     initialized()
   });
+}
+
+function categorizer(prediction){
+  var lowerBound = 0.3
+  var upperBound = 0.7
+
+  if (prediction < lowerBound) {
+    return  0
+  } else if (prediction > upperBound) {
+    return 2
+  } else { return  1}
+
+}
+function categoryCounter(data, index) {
+  return data.filter(datapoint => datapoint.category == index).length;
 }

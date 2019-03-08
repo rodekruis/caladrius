@@ -41,6 +41,10 @@
     stroke-width: 5px;
 }
 
+.selectedDot {
+  fill: red;
+}
+
 #tooltip {
   position: absolute;
   width: 200px;

@@ -2,18 +2,51 @@
 <html utf8>
   <head>
       <meta charset="utf-8">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
       <link href="styler.css" rel="stylesheet"/>
-      <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
       <!-- <script src="d3/d3.v3.js"></script> -->
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+        integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+        crossorigin=""/>
+      <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+        integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+        crossorigin=""></script>
+
+
       <script src="d3/d3.js"></script>
       <script src="javascript_D3.js"></script>
+
   </head>
   <body>
     <div id="tooltip" class="hidden">
-  <p><strong>Percentage Value</strong></p>
-  <p><span id="value">100</span>%</p>
+      <p><strong>Data Stats</strong></p>
+      <p><span id="value"></span></p>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row justify-content-start">
+        <div class="col-md-6 scatterPlotContainer"></div>
+        <div class="col-md-6">
+          <div class="row justify-content-center">
+            <div class="col-md-6 ImageOneContainer"></div>
+            <div class="col-md-6 ImageTwoContainer"></div>
+          </div>
+
+          <div class="row justify-content-center">
+            <div class="col-md-6 TableContainer"></div>
+            <div class="col-md-6 MapContainer"></div>
+          </div>
+        </div>
+
+        </div>
+      </div>
     <!-- This is where your bar chart will go -->
     <!-- omg there's no bar chart! spooky!!11!!11one!111 -->
   </body>
-
+  <script src="mapWidget.js"></script>
 </html>
