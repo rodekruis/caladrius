@@ -1,6 +1,5 @@
 import time
 import copy
-import logging
 from collections import OrderedDict
 
 import torch
@@ -8,13 +7,14 @@ import torchvision
 from torch import nn
 import torchvision.transforms as transforms
 
-# TODO: DataParallel
-
-log = logging.getLogger(__name__)
+from utils import create_logger
 
 
-def get_pretrained_iv3(output_size, num_to_freeze=7):
-    model_conv = torchvision.models.inception_v3(pretrained='imagenet')
+logger = create_logger(__name__)
+
+
+def get_pretrained_iv3(output_size):
+    model_conv = torchvision.models.inception_v3(pretrained=True)
 
     for i, param in model_conv.named_parameters():
         param.requires_grad = False
@@ -24,7 +24,7 @@ def get_pretrained_iv3(output_size, num_to_freeze=7):
 
     ct = []
     for name, child in model_conv.named_children():
-        if "Conv2d_4a_3x3" in ct:
+        if 'Conv2d_4a_3x3' in ct:
             for params in child.parameters():
                 params.requires_grad = True
         ct.append(name)
@@ -32,7 +32,7 @@ def get_pretrained_iv3(output_size, num_to_freeze=7):
     # To view which layers are freeze and which layers are not freezed:
     for name, child in model_conv.named_children():
         for name_2, params in child.named_parameters():
-            log.debug("{}, {}".format(name_2, params.requires_grad))
+            logger.debug("{}, {}".format(name_2, params.requires_grad))
 
     return model_conv
 
@@ -58,20 +58,18 @@ def get_pretrained_iv3_transforms(set_name):
         transforms.Normalize(mean, std)])
 
     return {
-        "train": train_transform,
-        "val": test_transform,
-        "test": test_transform
+        'train': train_transform,
+        'validation': test_transform,
+        'test': test_transform
     }[set_name]
 
 
 class SiameseNetwork(nn.Module):
-    def __init__(self, n_classes, output_size=512, n_freeze=7,
+    def __init__(self, output_size=512,
                  similarity_layers_sizes=[512, 512], dropout=0.5):
         super().__init__()
-        self.left_network = get_pretrained_iv3(
-            output_size, num_to_freeze=n_freeze)
-        self.right_network = get_pretrained_iv3(
-            output_size, num_to_freeze=n_freeze)
+        self.left_network = get_pretrained_iv3(output_size)
+        self.right_network = get_pretrained_iv3(output_size)
 
         similarity_layers = OrderedDict()
         similarity_layers["layer_0"] = nn.Linear(
@@ -91,9 +89,9 @@ class SiameseNetwork(nn.Module):
                 similarity_layers["dropout_{}".format(idx)] = nn.Dropout(
                     dropout, inplace=True)
 
-        self.output = nn.Linear(hidden, n_classes)
-
         self.similarity = nn.Sequential(similarity_layers)
+
+        self.output = nn.Linear(hidden, 1)
 
     def forward(self, image_1, image_2):
         left_features = self.left_network(image_1)

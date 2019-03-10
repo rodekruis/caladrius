@@ -1,97 +1,70 @@
-# Artificial Incompetence - Red Cross #1 - damage assessment of buildings after a disaster
+# Caladrius - Assessing Building Damage caused by Natural Disasters using Satellite Images
+## Created by: Artificial Incompetence for the Red Cross #1 Challenge in the 2018 Hackathon for Peace, Justice and Security
 
-## Approach
+## Network Architecture
 
-We are using (quasi-) Siamese-networks (in the pretrained case the weights are not shared between the twins). There are two seperate Siamese-network instances in this project:
-
-1. A transfer learned model using Inception_v3 (pretrained on ImageNet)
-2. A fully trained Siamese network, that is trained only on the challenge's images from scratch
-
+The network architecture is a pseudo-siamese network with two ImageNet pre-trained Inception_v3 models.
 
 
 ## Setup
 
 #### Requirements:
 - Python 3.6.5
-- virtualenv (optional, but recommended)
 - Install the required libraries:
 
 ```
 pip install -r requirements.txt
 ```
 
-## How to run
-#### Important: the checkpoint paths should be different for the different model types!
 
-### Examples:
+## Execute
 
-#### 1. Inception pretrained network transfer learning
-##### *Training* (transfer learning):
+##### Training:
 
 ```
-python run.py --networkType pre-trained --checkpointPath fully-trained-checkpoint
+python run.py --runName caladrius_2019
 ```
 
-##### *Testing* (use the same command with the addition of --test):
+##### Testing:
 
 ```
-python run.py --networkType pre-trained --checkpointPath pretrained-checkpoint --test
-```
-
-#### 2. Fully trained network
-##### *Training*:
-```
-python run.py --networkType full --checkpointPath fully-trained-checkpoint
-```
-
-##### *Testing* (use the same command with the addition of --test):
-```
-python run.py --networkType full --checkpointPath fully-trained-checkpoint --test
+python run.py --runName caladrius_2019 --test
 ```
 
 
-## Detailed how to run
+## Configuration
 There are several parameters, that can be set, the full list is the following:
 
 ```
 usage: run.py [-h] [--checkpointPath CHECKPOINTPATH] [--dataPath DATAPATH]
-              [--datasetName {train,test_1,test_2}] [--logStep LOGSTEP]
+              [--runName RUNNAME] [--logStep LOGSTEP]
               [--numberOfWorkers NUMBEROFWORKERS] [--disableCuda]
               [--cudaDevice CUDADEVICE] [--torchSeed TORCHSEED]
               [--inputSize INPUTSIZE] [--numberOfEpochs NUMBEROFEPOCHS]
-              [--batchSize BATCHSIZE] [--learningRate LEARNINGRATE]
-              [--outputType {soft-targets,softmax}]
-              [--networkType {pre-trained,full}] [--numFreeze NUMFREEZE]
-              [--test]
+              [--batchSize BATCHSIZE] [--learningRate LEARNINGRATE] [--test]
 
 optional arguments:
--h, --help            show this help message and exit
+  -h, --help            show this help message and exit
   --checkpointPath CHECKPOINTPATH
-                        output path
-  --dataPath DATAPATH   data path
-  --datasetName {train,test_1,test_2}
-                        name of dataset to use
-  --logStep LOGSTEP     batch step size for logging information
+                        output path (default: ./runs)
+  --dataPath DATAPATH   data path (default: ./data/Sint-Maarten-2018)
+  --runName RUNNAME     name to identify execution (default: <timestamp>)
+  --logStep LOGSTEP     batch step size for logging information (default: 100)
   --numberOfWorkers NUMBEROFWORKERS
-                        number of threads used by data loader
-  --disableCuda         disable the use of CUDA
+                        number of threads used by data loader (default: 8)
+  --disableCuda         disable the use of CUDA (default: False)
   --cudaDevice CUDADEVICE
-                        specify which GPU to use
+                        specify which GPU to use (default: 0)
   --torchSeed TORCHSEED
-                        set a torch seed
+                        set a torch seed (default: 42)
   --inputSize INPUTSIZE
-                        extent of input layer in the network
+                        extent of input layer in the network (default: 32)
   --numberOfEpochs NUMBEROFEPOCHS
-                        number of epochs for training
+                        number of epochs for training (default: 100)
   --batchSize BATCHSIZE
-                        batch size for training
+                        batch size for training (default: 32)
   --learningRate LEARNINGRATE
-                        learning rate for training
-  --outputType {soft-targets,softmax}
-                        influences the output of the model
-  --networkType {pre-trained,full}
-                        type of network to train
-  --numFreeze NUMFREEZE
-                        (- number of layers to not freeze)
+                        learning rate for training (default: 0.001)
   --test                test the model on the test set instead of training
+                        (default: False)
 ```

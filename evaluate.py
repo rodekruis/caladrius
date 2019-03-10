@@ -1,13 +1,13 @@
 import time
 import json
-import logging
 import numpy as np
 import torch
 from sklearn.metrics import f1_score, recall_score, confusion_matrix, classification_report
 
-from data import DAMAGE_TYPES
+from utils import create_logger
 
-log = logging.getLogger(__name__)
+
+logger = create_logger(__name__)
 
 
 class RollingEval(object):
@@ -29,7 +29,7 @@ class RollingEval(object):
         pass
 
     def every_measure(self):
-        return classification_report(self.y_true, self.y_pred, target_names=DAMAGE_TYPES)
+        return classification_report(self.y_true, self.y_pred)
 
 
 class Evaluator(object):
@@ -41,18 +41,18 @@ class Evaluator(object):
 
     def evaluate_set(self, set_name):
         assert set_name in self.datasets.keys()
-        log.info("Starting evaluation of model")
+        logger.info("Starting evaluation of model")
         y_true, y_pred = self.gather_outputs(
             self.model, self.datasets[set_name])
         f1_score = f1_score(y_true, y_pred, average="micro")
 
-        log.info("F1-Score ({}) : {}".format(set_name, f1_score))
+        logger.info("F1-Score ({}) : {}".format(set_name, f1_score))
         return f1_score
 
     def gather_outputs(self, model, dataset):
         y_true = []
         y_pred = []
-        log.info(
+        logger.info(
             "Gathering inputs. Total number of datapoints: {}".format(len(dataset)))
         with torch.no_grad():
             for idx, (image1, image2, y_true_batch) in enumerate(dataset):
