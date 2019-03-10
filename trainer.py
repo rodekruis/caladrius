@@ -1,3 +1,4 @@
+import os
 import copy
 import time
 import torch
@@ -19,6 +20,7 @@ class QuasiSiameseNetwork(object):
     def __init__(self, args):
         input_size = (args.inputSize, args.inputSize)
 
+        self.run_name = args.runName
         self.input_size = input_size
         self.lr = args.learningRate
 
@@ -50,18 +52,19 @@ class QuasiSiameseNetwork(object):
 
         self.model = self.model.to(device)
 
-        logger.info('Phase: {}, Epoch: {}'.format(phase, epoch))
-
+        self.model.eval()
         if phase == 'train':
             self.model.train()  # Set model to training mode
-        else:
-            self.model.eval()
 
         running_loss = 0.0
         running_corrects = 0
         running_n = 0.0
 
-        for idx, (image1, image2, labels) in enumerate(loader):
+        if not (phase == 'train'):
+            prediction_file = open(os.path.join(loader.dataset.directory, '{}_epoch_{:03d}_predictions.txt'.format(self.run_name, epoch)), 'w+')
+            prediction_file.write('filename label prediction\n')
+
+        for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(device)
             image2 = image2.to(device)
             labels = labels.float().to(device)
@@ -74,6 +77,9 @@ class QuasiSiameseNetwork(object):
                 outputs = self.model(image1, image2).squeeze()
                 loss = self.criterion(outputs, labels)
 
+                if not (phase == 'train'):
+                    prediction_file.writelines([ '{} {} {}\n'.format(*line) for line in zip(filename, labels.tolist(), outputs.clamp(0, 1).tolist())])
+
                 if phase == 'train':
                     loss.backward()
                     self.optimizer.step()
@@ -83,13 +89,17 @@ class QuasiSiameseNetwork(object):
             running_n += image1.size(0)
 
             if idx % 1 == 0:
-                logger.debug('\tBatch {}: Loss: {:.4f} Accuracy: {:.4f}'.format(
-                    idx, running_loss / running_n, running_corrects.double() / running_n))
+                logger.debug('Epoch: {:03d} Phase: {:10s} Batch {:04d}/{:04d}: Loss: {:.4f} Accuracy: {:.4f}'.format(
+                    epoch, phase, idx, len(loader), running_loss / running_n, running_corrects.double() / running_n))
 
         epoch_loss = running_loss / running_n
         epoch_accuracy = running_corrects.double() / running_n
 
-        logger.info('{}: Loss: {:.4f} Accuracy: {:.4f}'.format(phase, epoch_loss, epoch_accuracy))
+        if not (phase == 'train'):
+            prediction_file.write('Epoch {:03d} Accuracy: {:.4f}\n'.format(epoch, epoch_accuracy))
+            prediction_file.close()
+
+        logger.info('Epoch {:03d} Phase: {:10s} Loss: {:.4f} Accuracy: {:.4f}'.format(epoch, phase, epoch_loss, epoch_accuracy))
 
         return epoch_loss, epoch_accuracy
 
@@ -116,7 +126,7 @@ class QuasiSiameseNetwork(object):
                 best_accuracy = validation_accuracy
                 best_model_wts = copy.deepcopy(self.model.state_dict())
 
-                logger.info('Checkpoint: Saving to {}'.format(save_path))
+                logger.info('Epoch {:03d} Checkpoint: Saving to {}'.format(epoch, save_path))
                 torch.save(best_model_wts, save_path)
 
         time_elapsed = time.time() - start_time

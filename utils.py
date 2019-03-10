@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import argparse
 import pickle
 import logging
@@ -51,16 +52,15 @@ def load_obj(path):
 
 
 def configuration():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # General arguments
-    parser.add_argument('--checkpointPath', type=str, default=os.path.join('.', 'temp'),
+    parser.add_argument('--checkpointPath', type=str, default=os.path.join('.', 'runs'),
                         help='output path')
     parser.add_argument('--dataPath', type=str, default=os.path.join('.', 'data', 'Sint-Maarten-2018'),
                         help='data path')
-    parser.add_argument('--datasetName', type=str, default='train',
-                        choices=['train', 'test_1', 'test_2'],
-                        help='name of dataset to use')
+    parser.add_argument('--runName', type=str, default='{:.0f}'.format(time.time()),
+                        help='name to identify execution')
     parser.add_argument('--logStep', type=int, default=100,
                         help='batch step size for logging information')
     parser.add_argument('--numberOfWorkers', type=int, default=8,
@@ -94,10 +94,11 @@ def configuration():
     else:
         arg_vars['torchSeed'] = torch.initial_seed()
 
-    checkpointFolderName = '{}-{}-{}'.format(
-        arg_vars['datasetName'],
+    checkpointFolderName = '{}-input_size_{}-learning_rate_{}-batch_size_{}'.format(
+        arg_vars['runName'],
         arg_vars['inputSize'],
-        arg_vars['learningRate']
+        arg_vars['learningRate'],
+        arg_vars['batchSize']
     )
 
     arg_vars['checkpointPath'] = makeDirectory(os.path.join(
