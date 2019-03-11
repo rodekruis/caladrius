@@ -496,22 +496,22 @@ function dragended(d) {
 function load_csv_data(){
 
   // d3.csv(csv_path)
-  d3.json("./AllBuildingOutline.geojson").then(function(data) {
+  geodata = "./AllBuildingOutline.geojson"
+  
+  d3.json(geodata).then(function(data) {
+    // console.log(data)
     cache.geoData = data
 
   d3.dsv(" ", csv_path).then(function(data) {
     data.forEach(function(d, i) {
-
-    // console.log(i)
     d.label = +d.label;
     d.prediction = +d.prediction;
     d.category = categorizer(d.prediction)
-    d.feature = cache.geoData.features[Number(d.filename.replace(".png", ""))]
+    d.feature = cache.geoData.features[Number(d.filename.replace(".png", "")) - 1]
   });
     // console.log(data)
     data.pop()
     cache.data = data
-    console.log(cache.data)
     initialized()
   });
   })
