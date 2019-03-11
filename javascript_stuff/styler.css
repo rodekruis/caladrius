@@ -54,6 +54,8 @@
   border-width: 1px;
 }
 
+.top-buffer { margin-top:20px; }
+
 #tooltip {
   position: absolute;
   width: 200px;

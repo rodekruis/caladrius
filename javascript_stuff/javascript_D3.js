@@ -70,7 +70,7 @@ function initialized(){
            .attr("width", 100)
            .attr("height", 100)
            .attr("preserveAspectRatio", "true")
-           .attr("xlink:href", "example.png")
+           .attr("xlink:href", "Flag_of_the_Red_Cross.png")
 
      d3.select("body").select(".imageContainer1").select("g")
       .append("rect")
@@ -100,7 +100,7 @@ function initialized(){
             .attr("width", 100)
             .attr("height", 100)
             .attr("preserveAspectRatio", "true")
-            .attr("xlink:href", "example.png")
+            .attr("xlink:href", "Flag_of_the_Red_Cross.png")
 
       d3.select("body").select(".imageContainer2").select("g")
        .append("rect")
@@ -123,12 +123,42 @@ function initialized(){
       .style("margin", "auto")
       .append('thead')
 
-
     d3.select("body").select(".TableContainer").select("table")
       .append('tbody').append('tr').attr("class", "count");
 
     d3.select("body").select(".TableContainer").select("table")
       .select('tbody').append('tr').attr("class", "average");
+
+// tooltip infobox
+
+    d3.select("body").select(".InfoContainer").append("table")
+      .attr("class", "infoTooltipBox")
+      .style("border", "1px solid black")
+      .style("margin", "auto")
+      .append('thead')
+      .selectAll('th')
+      .data(["Image Name", "Prediction", "Label"])
+      .enter()
+      .append('th')
+        .style("padding", "15px")
+        .style("text-align", "center")
+        .text(function (d) { return d; });
+
+    d3.select("body").select(".InfoContainer").select("table")
+      .append('tbody').append('tr').attr("class", "info")
+      .selectAll('td')
+      .data([0 , 0 , 0])
+      .enter()
+        .append('td')
+        .style("text-align", "center")
+        .style("border", "1px solid black")
+        .text(function (d) { return d; });
+      //   create a row for each object in the data
+
+    // d3.select("body").select(".InfoContainer").select("table")
+    //   .select('tbody').selectAll('td').remove()
+
+
 
     // just implement this >.> https://bl.ocks.org/d3indepth/fabe4d1adbf658c0b73c74d3ea36d465
   var xband = d3.scaleBand()
@@ -179,25 +209,26 @@ function initialized(){
       .attr("id", function(d) { return "dot" + d.feature.properties.OBJECTID})
       .attr("opacity", 0.7)
       .on("mouseover", function(d) {
+          d3.select(this).style("cursor", "pointer")
           // var xPosition = Number(d3.select(this).attr("cx"))
           // var yPosition = Number(d3.select(this).attr("cy"))
-          var xPosition = width
-          var yPosition = 100
-          var string = "<img src= " + "example.png" + "/>"
-          var predictionNumber = d.prediction
-          var labelNumber = d.label
-          d3.select("#tooltip")
-            .style("z-index", 100)
-            .style("left", xPosition + "px")
-            .style("top", yPosition + "px")
-            .select("#value")
-            .text("Filename: " + d.filename + " "
-                + "Prediction: " + d.prediction.toString().slice(0,9) + " "
-                + "Label: " + d.label.toString().slice(0,9))
-          d3.select("#tooltip").classed("hidden", false);
-         })
-         .on("mouseout", function() {
-          d3.select("#tooltip").classed("hidden", true);
+         //  var xPosition = width
+         //  var yPosition = 100
+         //  var string = "<img src= " + "example.png" + "/>"
+         //  var predictionNumber = d.prediction
+         //  var labelNumber = d.label
+         //  d3.select("#tooltip")
+         //    .style("z-index", 100)
+         //    .style("left", xPosition + "px")
+         //    .style("top", yPosition + "px")
+         //    .select("#value")
+         //    .text("Filename: " + d.filename + " "
+         //        + "Prediction: " + d.prediction.toString().slice(0,9) + " "
+         //        + "Label: " + d.label.toString().slice(0,9))
+         //  d3.select("#tooltip").classed("hidden", false);
+         // })
+         // .on("mouseout", function() {
+         //  d3.select("#tooltip").classed("hidden", true);
         })
       .on("click", function(d) {
         console.log(d.feature.geometry.coordinates[0][0][0])
@@ -210,11 +241,25 @@ function initialized(){
         // console.log("#polygon" + d.feature.properties.OBJECTID)
 
         d3.select("body").select(".imageContainer1").select("g").select("#previewImageID1").select("image")
-          .attr("xlink:href", "./test/after/" + d.filename)
+          .attr("xlink:href", "./test/after/" + d.filename);
 
         d3.select("body").select(".imageContainer2").select("g").select("#previewImageID2").select("image")
-          .attr("xlink:href", "./test/before/" + d.filename)
-      })
+          .attr("xlink:href", "./test/before/" + d.filename);
+
+        d3.select("body").select(".infoTooltipBox")
+          .select('tbody').select('tr')
+          .selectAll('td').remove();
+
+        d3.select("body").select(".infoTooltipBox")
+          .select('tbody').select('tr')
+          .selectAll('td')
+          .data([d.filename, d.prediction.toString().slice(0,4), d.label.toString().slice(0,4)])
+          .enter()
+            .append('td')
+            .style("text-align", "center")
+            .style("border", "1px solid black")
+            .text(function (d) { return d; });
+        })
 
   svgContainer.append("text")
       .text("Siamese network model")
@@ -497,7 +542,7 @@ function load_csv_data(){
 
   // d3.csv(csv_path)
   geodata = "./AllBuildingOutline.geojson"
-  
+
   d3.json(geodata).then(function(data) {
     // console.log(data)
     cache.geoData = data

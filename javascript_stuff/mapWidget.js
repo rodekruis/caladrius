@@ -64,11 +64,45 @@ function mapMaker(cacheData, mymap)
 
         d3.select("body").select(".imageContainer2").select("g").select("#previewImageID2").select("image")
           .attr("xlink:href", "./test/before/" + d.filename)
+
+        d3.select("body").select(".infoTooltipBox")
+          .select('tbody').select('tr')
+          .selectAll('td').remove();
+
+        d3.select("body").select(".infoTooltipBox")
+          .select('tbody').select('tr')
+          .selectAll('td')
+          .data([d.filename, d.prediction.toString().slice(0,4), d.label.toString().slice(0,4)])
+          .enter()
+            .append('td')
+            .style("text-align", "center")
+            .style("border", "1px solid black")
+            .text(function (d) { return d; });
+
           updateMap(mymap)
       })
       .on("mouseover", function(d) {
         d3.select(this).style("cursor", "pointer")
-      })
+          // var xPosition = Number(d3.select(this).attr("cx"))
+          // var yPosition = Number(d3.select(this).attr("cy"))
+         //  var xPosition = width
+         //  var yPosition = 100
+         //  var string = "<img src= " + "example.png" + "/>"
+         //  var predictionNumber = d.prediction
+         //  var labelNumber = d.label
+         //  d3.select("#tooltip")
+         //    .style("z-index", 100)
+         //    .style("left", xPosition + "px")
+         //    .style("top", yPosition + "px")
+         //    .select("#value")
+         //    .text("Filename: " + d.filename + " "
+         //        + "Prediction: " + d.prediction.toString().slice(0,9) + " "
+         //        + "Label: " + d.label.toString().slice(0,9))
+         //  d3.select("#tooltip").classed("hidden", false);
+         // })
+         // .on("mouseout", function() {
+         //  d3.select("#tooltip").classed("hidden", true);
+        })
       .attr("points", function(d){
         var coords = d.feature.geometry.coordinates[0][0].map(i => mymap.latLngToLayerPoint([i[1], i[0]]))
         // console.log(coords.map(i => i.x + "," + i.y).join(" "))
