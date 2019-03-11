@@ -4,6 +4,7 @@ var width = (window.innerWidth - 30) - (margins.left + margins.right);
 var height = (window.innerHeight - 30) -(margins.top + margins.bottom);
     width = d3.min([width, height])
     height = width
+var mymap
 
 var xlines = [
   {
@@ -114,7 +115,7 @@ function initialized(){
     d3.select("body").select(".MapContainer").append("div")
       .attr("id", "mapid")
       .style("height", "300px");
-
+    mymap = L.map('mapid', {renderer: L.svg({interactive:true})}).setView([18.02607520212528, -63.051253259181976], 14);
 
     d3.select("body").select(".TableContainer").append("table")
       .attr("class", "infoBox")
@@ -173,7 +174,47 @@ function initialized(){
       .data(cache.data)
       .enter()
       .append("circle")
+      .attr("r", 7)
       .attr("class", "dot")
+      .attr("id", function(d) { return "dot" + d.feature.properties.OBJECTID})
+      .attr("opacity", 0.7)
+      .on("mouseover", function(d) {
+          // var xPosition = Number(d3.select(this).attr("cx"))
+          // var yPosition = Number(d3.select(this).attr("cy"))
+          var xPosition = width
+          var yPosition = 100
+          var string = "<img src= " + "example.png" + "/>"
+          var predictionNumber = d.prediction
+          var labelNumber = d.label
+          d3.select("#tooltip")
+            .style("z-index", 100)
+            .style("left", xPosition + "px")
+            .style("top", yPosition + "px")
+            .select("#value")
+            .text("Filename: " + d.filename + " "
+                + "Prediction: " + d.prediction.toString().slice(0,9) + " "
+                + "Label: " + d.label.toString().slice(0,9))
+          d3.select("#tooltip").classed("hidden", false);
+         })
+         .on("mouseout", function() {
+          d3.select("#tooltip").classed("hidden", true);
+        })
+      .on("click", function(d) {
+        console.log(d.feature.geometry.coordinates[0][0][0])
+        mymap.flyTo([d.feature.geometry.coordinates[0][0][0][1], d.feature.geometry.coordinates[0][0][0][0]], 18);
+        d3.selectAll(".selectedDot").attr("class", "dot")
+        d3.selectAll(".selectedPolygon").attr("class", "myPolygons")
+        d3.select(this).attr("class", "dot selectedDot")
+
+        d3.select("#polygon" + d.feature.properties.OBJECTID).attr("class", "myPolygons selectedPolygon")
+        // console.log("#polygon" + d.feature.properties.OBJECTID)
+
+        d3.select("body").select(".imageContainer1").select("g").select("#previewImageID1").select("image")
+          .attr("xlink:href", "./test/after/" + d.filename)
+
+        d3.select("body").select(".imageContainer2").select("g").select("#previewImageID2").select("image")
+          .attr("xlink:href", "./test/before/" + d.filename)
+      })
 
   svgContainer.append("text")
       .text("Siamese network model")
@@ -202,14 +243,14 @@ function initialized(){
       .text("Actual");
 
   redraw()
-  autorun()
+  mapMaker(cache.data, mymap)
 }
 // from https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
 window.onkeydown = checkKey;
 window.addEventListener("resize", redraw);
 
-
 function redraw(){
+  // console.log(mymap)
   width = (window.innerWidth - 30) - margins.left - margins.right
   height = (window.innerHeight - 30) - margins.top - margins.bottom;
 
@@ -318,7 +359,6 @@ d3.select("body").select(".TableContainer").select(".infoBox").select('tbody')
       .call(d3.axisLeft(yScale).ticks(10, "s"))
 
   svgContainer.selectAll(".dot")
-      .attr("r", 7)
       .attr("cx", xMap)
       .attr("cy", yMap)
       .attr("fill", function(d){
@@ -334,35 +374,7 @@ d3.select("body").select(".TableContainer").select(".infoBox").select('tbody')
           return "purple"
         }
       })
-      .on("mouseover", function(d) {
-					// var xPosition = Number(d3.select(this).attr("cx"))
-					// var yPosition = Number(d3.select(this).attr("cy"))
-          var xPosition = width
-          var yPosition = 100
-          var string = "<img src= " + "example.png" + "/>"
-          var predictionNumber = d.prediction
-          var labelNumber = d.label
 
-					d3.select("#tooltip")
-            .style("z-index", 100)
-						.style("left", xPosition + "px")
-						.style("top", yPosition + "px")
-						.select("#value")
-						.text("Filename: " + d.filename + " " + "Prediction: " + d.prediction.toString().slice(0,9) + " " + "Label: " + d.label.toString().slice(0,7))
-					d3.select("#tooltip").classed("hidden", false);
-			   })
-			   .on("mouseout", function() {
-					d3.select("#tooltip").classed("hidden", true);
-        })
-      .on("click", function(d) {
-        d3.select(".selectedDot").attr("class", "dot")
-        d3.select(this).attr("class", "dot selectedDot")
-        d3.select("body").select(".imageContainer1").select("g").select("#previewImageID1").select("image")
-          .attr("xlink:href", "./test/after/" + d.filename)
-
-        d3.select("body").select(".imageContainer2").select("g").select("#previewImageID2").select("image")
-          .attr("xlink:href", "./test/before/" + d.filename)
-      })
 
 
   svgContainer.selectAll(".xLinedrag")
@@ -420,21 +432,8 @@ d3.select("body").select(".TableContainer").select(".infoBox").select('tbody')
         }
       })
       .style("stroke-width", 5)
-      // .call(d3.drag()
-      // .on("start", dragstarted)
-      // .on("drag", dragged)
-      // .on("end", dragended))
-      // .on("mouseover", function(d) {
-      //     d3.select(this).style("cursor", "pointer");
-      //   },
-      //   "mouseout", function(d) {
-      //     d3.select(this).style("cursor", "default");
-      //   });
 
-
-
-
-
+      updateMap(mymap)
 }
 
 
@@ -497,21 +496,25 @@ function dragended(d) {
 function load_csv_data(){
 
   // d3.csv(csv_path)
+  d3.json("./AllBuildingOutline.geojson").then(function(data) {
+    cache.geoData = data
+
   d3.dsv(" ", csv_path).then(function(data) {
-    data.forEach(function(d) {
+    data.forEach(function(d, i) {
 
-
+    // console.log(i)
     d.label = +d.label;
     d.prediction = +d.prediction;
     d.category = categorizer(d.prediction)
-
-     // console.log(d);
+    d.feature = cache.geoData.features[Number(d.filename.replace(".png", ""))]
   });
     // console.log(data)
     data.pop()
     cache.data = data
+    console.log(cache.data)
     initialized()
   });
+  })
 }
 
 function categorizer(prediction){

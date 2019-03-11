@@ -45,6 +45,10 @@
   fill: red;
 }
 
+.selectedPolygon {
+  fill: red;
+}
+
 .quadContainer{
   border-style: solid;
   border-width: 1px;

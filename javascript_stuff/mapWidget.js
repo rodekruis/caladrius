@@ -1,19 +1,17 @@
-function autorun()
+function mapMaker(cacheData, mymap)
 {
-  var district_polygons = []
-  // var wkt = new Wkt.Wkt();
+  // var mymap = L.map('mapid').setView([18.02607520212528, -63.051253259181976], 14);
+  mymap.on("moveend", function () {
+    updateMap(mymap)
+  // console.log(mymap.getCenter().toString());
+  });
 
-  // http://geojson.org/
-  var featuresCollection = {
-                              "type": "FeatureCollection",
-                              "features": []
-                            }
+  // mymap.on("zoomlevelschange", console.log("apa"))
   // https://leaflet-extras.github.io/leaflet-providers/preview/
-  var mymap = L.map('mapid', {renderer: L.svg()}).setView([18.02607520212528, -63.051253259181976], 17);
 
   // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   //  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  //  maxZoom: 18,
+  //  maxZoom: 22,
   //  }).addTo(mymap);
 
   // L.tileLayer('https://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png?apikey=3d4a15e316d142be82541a5ac8bbd59e', {
@@ -30,21 +28,76 @@ function autorun()
    }).addTo(mymap);
 
 
-   d3.json("testGeo.json")
-     .then(function(data) {
-        L.geoJson(data  ,{
-          style: { color: "#999", weight: 1, fillColor: "#78c679", fillOpacity: .6 },
-          onEachFeature: function(feature, layer){
+  L.svg({interactive:true}).addTo(mymap);
 
-             // layer.bindPopup(feature["properties"]["name"])
-             // console.log(layer)
-             // console.log(layer["feature"])
+    d3.select("#mapid")
+      .select("svg").attr("pointer-events", "auto")
+      .select("g")
+      .selectAll(".myPolygons")
+      .data(cacheData)
+      .enter()
+      .append("polygon")
+      .attr("class", "myPolygons")
+      .attr("id", function(d) { return "polygon" + d.feature.properties.OBJECTID})
+
+    d3.select("#mapid")
+      .select("svg").select("g")
+      .selectAll(".myPolygons")
+      .attr("opacity", "0.5")
+      .style("fill", function(d){
+            if (d.category === 0){
+            return "orange"
+          } else if (d.category === 2) {
+            return "steelBlue"
           }
-        }).addTo(mymap);
+            else {
+              return "purple"
+          }})
+      .on("click", function(d) {
+        d3.selectAll(".selectedDot").attr("class", "dot")
+        d3.selectAll(".selectedPolygon").attr("class", "myPolygons")
+        d3.select(this).attr("class", "myPolygons selectedPolygon")
+
+        d3.select("#dot" + d.feature.properties.OBJECTID).attr("class", "myPolygons selectedPolygon")
+        d3.select("body").select(".imageContainer1").select("g").select("#previewImageID1").select("image")
+          .attr("xlink:href", "./test/after/" + d.filename)
+
+        d3.select("body").select(".imageContainer2").select("g").select("#previewImageID2").select("image")
+          .attr("xlink:href", "./test/before/" + d.filename)
+          updateMap(mymap)
       })
+      .on("mouseover", function(d) {
+        d3.select(this).style("cursor", "pointer")
+      })
+      .attr("points", function(d){
+        var coords = d.feature.geometry.coordinates[0][0].map(i => mymap.latLngToLayerPoint([i[1], i[0]]))
+        // console.log(coords.map(i => i.x + "," + i.y).join(" "))
+        return coords.map(i => i.x + "," + i.y).join(" ")})
 
 
 }
 // if (window.addEventListener) window.addEventListener("load", autorun, false);
 // else if (window.attachEvent) window.attachEvent("onload", autorun);
 // else window.onload = autorun;
+
+function updateMap(mymap) {
+  d3.select("#mapid")
+    .select("svg").select("g")
+    .selectAll(".myPolygons")
+    .style("fill", function(d){
+          if (d3.select(this).attr("class").includes("selectedPolygon")) {
+            return "red"
+          }
+          else
+           if (d.category === 0){
+          return "orange"
+        } else if (d.category === 2) {
+          return "steelBlue"
+        } else {
+          return "purple"
+        }})
+    .attr("points", function(d){
+      var coords = d.feature.geometry.coordinates[0][0].map(i => mymap.latLngToLayerPoint([i[1], i[0]]))
+      return coords.map(i => i.x + "," + i.y).join(" ")
+    })
+}
