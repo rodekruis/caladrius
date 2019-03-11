@@ -1,15 +1,8 @@
 import os
-
+from PIL import Image
 from tqdm import tqdm
 
-import torch
 from torch.utils.data import Dataset, DataLoader
-
-from PIL import Image
-
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class CaladriusDataset(Dataset):
@@ -28,20 +21,20 @@ class CaladriusDataset(Dataset):
         return len(self.datapoints)
 
     def __getitem__(self, idx):
-        before_image, after_image, damage = self.loadDatapoint(idx)
+        filename, before_image, after_image, damage = self.loadDatapoint(idx)
 
         if self.transforms:
             before_image = self.transforms(before_image)
             after_image = self.transforms(after_image)
 
-        return (before_image, after_image, damage)
+        return (filename, before_image, after_image, damage)
 
     def loadDatapoint(self, idx):
         line = self.datapoints[idx]
         filename, damage = line.split(' ')
         before_image = Image.open(os.path.join(self.directory, 'before', filename))
         after_image = Image.open(os.path.join(self.directory, 'after', filename))
-        return before_image, after_image, torch.tensor(float(damage), dtype=torch.float)
+        return filename, before_image, after_image, float(damage)
 
 
 class Datasets(object):
@@ -51,10 +44,11 @@ class Datasets(object):
         self.dataPath = args.dataPath
         self.batchSize = args.batchSize
         self.transforms = transforms
+        self.numberOfWorkers = args.numberOfWorkers
 
     def load(self, set_name):
         assert set_name in {'train', 'validation', 'test'}
         dataset = CaladriusDataset(os.path.join(self.dataPath, set_name), transforms=self.transforms[set_name])
-        dataLoader = DataLoader(dataset, batch_size=self.batchSize, shuffle=(set_name == 'train'))
+        dataLoader = DataLoader(dataset, batch_size=self.batchSize, shuffle=(set_name == 'train'), num_workers=self.numberOfWorkers)
 
         return dataset, dataLoader

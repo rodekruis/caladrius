@@ -1,6 +1,5 @@
 import time
 import copy
-import logging
 from collections import OrderedDict
 
 import torch
@@ -8,9 +7,10 @@ import torchvision
 from torch import nn
 import torchvision.transforms as transforms
 
-# TODO: DataParallel
+from utils import create_logger
 
-log = logging.getLogger(__name__)
+
+logger = create_logger(__name__)
 
 
 def get_pretrained_iv3(output_size):
@@ -32,7 +32,7 @@ def get_pretrained_iv3(output_size):
     # To view which layers are freeze and which layers are not freezed:
     for name, child in model_conv.named_children():
         for name_2, params in child.named_parameters():
-            log.debug("{}, {}".format(name_2, params.requires_grad))
+            logger.debug("{}, {}".format(name_2, params.requires_grad))
 
     return model_conv
 

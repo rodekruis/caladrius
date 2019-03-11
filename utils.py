@@ -1,8 +1,18 @@
 import os
+import sys
+import time
 import argparse
 import pickle
+import logging
 
 import torch
+
+# logging
+
+logging.getLogger('Fiona').setLevel(logging.ERROR)
+logging.getLogger('fiona.collection').setLevel(logging.ERROR)
+logging.getLogger('rasterio').setLevel(logging.ERROR)
+logging.getLogger('PIL.PngImagePlugin').setLevel(logging.ERROR)
 
 
 class dotdict(dict):
@@ -42,19 +52,18 @@ def load_obj(path):
 
 
 def configuration():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # General arguments
-    parser.add_argument('--checkpointPath', type=str, default=os.path.join('.', 'temp'),
+    parser.add_argument('--checkpointPath', type=str, default=os.path.join('.', 'runs'),
                         help='output path')
     parser.add_argument('--dataPath', type=str, default=os.path.join('.', 'data', 'Sint-Maarten-2018'),
                         help='data path')
-    parser.add_argument('--datasetName', type=str, default='train',
-                        choices=['train', 'test_1', 'test_2'],
-                        help='name of dataset to use')
+    parser.add_argument('--runName', type=str, default='{:.0f}'.format(time.time()),
+                        help='name to identify execution')
     parser.add_argument('--logStep', type=int, default=100,
                         help='batch step size for logging information')
-    parser.add_argument('--numberOfWorkers', type=int, default=4,
+    parser.add_argument('--numberOfWorkers', type=int, default=8,
                         help='number of threads used by data loader')
 
     parser.add_argument('--disableCuda', action='store_true',
@@ -85,10 +94,11 @@ def configuration():
     else:
         arg_vars['torchSeed'] = torch.initial_seed()
 
-    checkpointFolderName = '{}-{}-{}'.format(
-        arg_vars['datasetName'],
+    checkpointFolderName = '{}-input_size_{}-learning_rate_{}-batch_size_{}'.format(
+        arg_vars['runName'],
         arg_vars['inputSize'],
-        arg_vars['learningRate']
+        arg_vars['learningRate'],
+        arg_vars['batchSize']
     )
 
     arg_vars['checkpointPath'] = makeDirectory(os.path.join(
@@ -102,3 +112,38 @@ def configuration():
         arg_vars['device'] = torch.device('cpu')
 
     return args
+
+
+def attach_exception_hook(logger):
+    def exception_logger(exceptionType, exceptionValue, exceptionTraceback):
+        logger.error('Uncaught Exception', exc_info=(exceptionType, exceptionValue, exceptionTraceback))
+    return exception_logger
+
+
+def create_logger(module_name):
+    args = configuration()
+
+    debug_filehandler = logging.FileHandler(os.path.join(args.checkpointPath, 'run_debug.log'))
+    info_filehandler = logging.FileHandler(os.path.join(args.checkpointPath, 'run_info.log'))
+
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+    debug_filehandler.setFormatter(formatter)
+    info_filehandler.setFormatter(formatter)
+
+    debug_filehandler.setLevel(logging.DEBUG)
+    info_filehandler.setLevel(logging.INFO)
+
+    streamhandler = logging.StreamHandler(sys.stdout)
+    streamhandler.setFormatter(formatter)
+    streamhandler.setLevel(logging.DEBUG)
+
+    logger = logging.getLogger(module_name)
+
+    logger.addHandler(debug_filehandler)
+    logger.addHandler(info_filehandler)
+    logger.addHandler(streamhandler)
+
+    logger.setLevel(logging.DEBUG)
+
+    return logger
+
