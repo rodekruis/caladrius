@@ -168,7 +168,6 @@ function initialized(){
   var yScale = d3.scaleLinear()
       .domain([0, 1])
       .range([height, 0])
-
   var svgContainer = d3.select("body").select(".svgContainer").select("g")
 
   svgContainer.append("g")
@@ -210,6 +209,8 @@ function initialized(){
       .attr("opacity", 0.7)
       .on("mouseover", function(d) {
           d3.select(this).style("cursor", "pointer")
+          d3.select(this).attr("fill", "red")
+          d3.select(this).raise()
           // var xPosition = Number(d3.select(this).attr("cx"))
           // var yPosition = Number(d3.select(this).attr("cy"))
          //  var xPosition = width
@@ -230,9 +231,25 @@ function initialized(){
          // .on("mouseout", function() {
          //  d3.select("#tooltip").classed("hidden", true);
         })
+      .on("mouseout", function(d) {
+        d3.select(this).attr("fill", function(d){
+            var inverseXScale = d3.scaleLinear().domain([0, width]).range([0,1])
+                if (inverseXScale(d3.select(this).attr("cx")) < xlines[0].x1){
+                  d.category = 0
+                  return "orange"
+                } else if (inverseXScale(d3.select(this).attr("cx")) > xlines[1].x1) {
+                  d.category = 2
+                  return "steelBlue"
+                }
+                else {
+                  d.category = 1
+                  return "purple"
+                }
+              })
+      })
       .on("click", function(d) {
         console.log(d.feature.geometry.coordinates[0][0][0])
-        mymap.flyTo([d.feature.geometry.coordinates[0][0][0][1], d.feature.geometry.coordinates[0][0][0][0]], 18);
+        mymap.flyTo([d.feature.geometry.coordinates[0][0][0][1], d.feature.geometry.coordinates[0][0][0][0]], 17);
         d3.selectAll(".selectedDot").attr("class", "dot")
         d3.selectAll(".selectedPolygon").attr("class", "myPolygons")
         d3.select(this).attr("class", "dot selectedDot")
