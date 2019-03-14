@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html utf8>
+  <head>
+      <meta charset="utf-8">
+      <title>Caladrius Project Red Cross</title>
+      <link rel="icon" href="Flag_of_the_Red_Cross.png">
+      <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"> -->
+      <link rel="stylesheet" href="bootstrap-4.3.1-dist/css/bootstrap.min.css">
+      <script src="jquery.min.js"></script>
+      <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script> -->
+      <script src="popper.min.js"></script>
+      <script src="bootstrap-4.3.1-dist/js/bootstrap.min"></script>
+      <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> -->
+
+
+      <link href="styler.css" rel="stylesheet"/>
+      <!-- <script src="d3/d3.v3.js"></script> -->
+      <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+        integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+        crossorigin=""/> -->
+        <link href="leaflet/leaflet.css" rel="stylesheet"/>
+      <!-- <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+        integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+        crossorigin=""></script> -->
+        <script src="leaflet/leaflet.js"></script>
+
+
+      <script src="d3/d3.js"></script>
+      <script src="javascript_D3.js"></script>
+
+  </head>
+  <body>
+    <div id="tooltip" class="hidden">
+      <p><strong>Data Stats</strong></p>
+      <p><span id="value"></span></p>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-6 col-sm-6 col-xs-6 text-center scatterPlotContainer"></div>
+        <div class="col-md-6 col-lg-6 col-sm-6 col-xs-6">
+          <div class="row justify-content-center">
+            <div class="col-md-6 ImageOneContainer text-center quadContainer"></div>
+            <div class="col-md-6 ImageTwoContainer text-center quadContainer"></div>
+          </div>
+
+          <div class="row justify-content-center">
+            <div class="col-md-6 TableInfoContainer quadContainer">
+              <div class="row justify-content-center top-buffer">
+                <div class="col-md-12 TableContainer "></div>
+              </div>
+              <div class="row justify-content-center top-buffer">
+                <div class="col-md-12 InfoContainer "></div>
+              </div>
+            </div>
+            <div class="col-md-6 MapContainer quadContainer">
+              <!-- <div id="mapid" style="height:300px"></div> -->
+            </div>
+
+          </div>
+        </div>
+
+        </div>
+      </div>
+    <!-- This is where your bar chart will go -->
+    <!-- omg there's no bar chart! spooky!!11!!11one!111 -->
+  </body>
+  <script src="mapWidget.js"></script>
+</html>
