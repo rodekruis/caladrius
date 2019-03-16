@@ -76,7 +76,6 @@ function mapMaker(cacheData, mymap)
           .enter()
             .append('td')
             .style("text-align", "center")
-            .style("border", "1px solid black")
             .text(function (d) { return d; });
 
           updateMap(mymap)
