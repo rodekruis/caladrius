@@ -83,25 +83,6 @@ function mapMaker(cacheData, mymap)
       })
       .on("mouseover", function(d) {
         d3.select(this).style("cursor", "pointer")
-          // var xPosition = Number(d3.select(this).attr("cx"))
-          // var yPosition = Number(d3.select(this).attr("cy"))
-         //  var xPosition = width
-         //  var yPosition = 100
-         //  var string = "<img src= " + "example.png" + "/>"
-         //  var predictionNumber = d.prediction
-         //  var labelNumber = d.label
-         //  d3.select("#tooltip")
-         //    .style("z-index", 100)
-         //    .style("left", xPosition + "px")
-         //    .style("top", yPosition + "px")
-         //    .select("#value")
-         //    .text("Filename: " + d.filename + " "
-         //        + "Prediction: " + d.prediction.toString().slice(0,9) + " "
-         //        + "Label: " + d.label.toString().slice(0,9))
-         //  d3.select("#tooltip").classed("hidden", false);
-         // })
-         // .on("mouseout", function() {
-         //  d3.select("#tooltip").classed("hidden", true);
         })
       .attr("points", function(d){
         var coords = d.feature.geometry.coordinates[0][0].map(i => mymap.latLngToLayerPoint([i[1], i[0]]))

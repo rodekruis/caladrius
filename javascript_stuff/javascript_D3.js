@@ -1,9 +1,14 @@
 var margins = {"right": 50, "left":50, "bottom": 50, "top": 50};
+var innerMargins = {"right": 10, "left":10, "bottom": 10, "top": 10};
+
 var cache = {}
 var width = (window.innerWidth - 30) - (margins.left + margins.right);
 var height = (window.innerHeight - 30) -(margins.top + margins.bottom);
     width = d3.min([width, height])
     height = width
+
+
+
 var mymap
 
 var xlines = [
@@ -54,11 +59,10 @@ function initialized(){
 
   d3.select("body").select(".ImageOneContainer").append("svg")
     .attr("class", "imageContainer1")
-    .attr("x", d3.select("body").select(".svgContainer").attr("width"))
-    .attr("width", d3.select("body").select(".svgContainer").attr("width")/2)
-    .attr("height", d3.select("body").select(".svgContainer").attr("height")/2)
+    .attr("width", d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect().width)
+    .attr("height", d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect().width)
     .append("g")
-      .attr("transform", "translate(" + margins.left/2 + "," + margins.top/2 + ")")
+      .attr("transform", "translate(" + innerMargins.left + "," + innerMargins.top + ")")
          .append("defs")
          .append("pattern")
          .attr("id", "previewImageID1")
@@ -77,18 +81,17 @@ function initialized(){
       .attr("class", "previewImage")
        .attr("fill", function(d){
          return "url(#" + "previewImageID1" + ")"})
-     .attr("width", d3.select("body").select(".svgContainer").attr("width") - (margins.left + margins.right))
-     .attr("height", d3.select("body").select(".svgContainer").attr("height") - (margins.top + margins.bottom))
+     .attr("width", d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect().width - (innerMargins.left + innerMargins.bottom))
+     .attr("height", d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect().width - (innerMargins.top + innerMargins.bottom))
      .attr("stroke", "black")
      .attr("stroke-width", 2)
 
    d3.select("body").select(".ImageTwoContainer").append("svg")
      .attr("class", "imageContainer2")
-     .attr("x", d3.select("body").select(".svgContainer").attr("width") * 1.5)
-     .attr("width", d3.select("body").select(".svgContainer").attr("width")/2)
-     .attr("height", d3.select("body").select(".svgContainer").attr("height")/2)
+     .attr("width", d3.select("body").select(".ImageTwoContainer").node().getBoundingClientRect().width)
+     .attr("height", d3.select("body").select(".ImageTwoContainer").node().getBoundingClientRect().width)
      .append("g")
-       .attr("transform", "translate(" + margins.left/2 + "," + margins.top/2 + ")")
+       .attr("transform", "translate(" + innerMargins.left + "," + innerMargins.top + ")")
           .append("defs")
           .append("pattern")
           .attr("id", "previewImageID2")
@@ -107,8 +110,8 @@ function initialized(){
        .attr("class", "previewImage")
         .attr("fill", function(d){
           return "url(#" + "previewImageID2" + ")"})
-      .attr("width", d3.select("body").select(".svgContainer").attr("width") - (margins.left + margins.right))
-      .attr("height", d3.select("body").select(".svgContainer").attr("height") - (margins.top + margins.bottom))
+        .attr("width", d3.select("body").select(".ImageTwoContainer").node().getBoundingClientRect().width - (innerMargins.left + innerMargins.bottom))
+        .attr("height", d3.select("body").select(".ImageTwoContainer").node().getBoundingClientRect().width - (innerMargins.top + innerMargins.bottom))
       .attr("stroke", "black")
       .attr("stroke-width", 2)
 
@@ -211,25 +214,6 @@ function initialized(){
           d3.select(this).style("cursor", "pointer")
           d3.select(this).attr("fill", "red")
           d3.select(this).raise()
-          // var xPosition = Number(d3.select(this).attr("cx"))
-          // var yPosition = Number(d3.select(this).attr("cy"))
-         //  var xPosition = width
-         //  var yPosition = 100
-         //  var string = "<img src= " + "example.png" + "/>"
-         //  var predictionNumber = d.prediction
-         //  var labelNumber = d.label
-         //  d3.select("#tooltip")
-         //    .style("z-index", 100)
-         //    .style("left", xPosition + "px")
-         //    .style("top", yPosition + "px")
-         //    .select("#value")
-         //    .text("Filename: " + d.filename + " "
-         //        + "Prediction: " + d.prediction.toString().slice(0,9) + " "
-         //        + "Label: " + d.label.toString().slice(0,9))
-         //  d3.select("#tooltip").classed("hidden", false);
-         // })
-         // .on("mouseout", function() {
-         //  d3.select("#tooltip").classed("hidden", true);
         })
       .on("mouseout", function(d) {
         d3.select(this).attr("fill", function(d){
@@ -270,7 +254,7 @@ function initialized(){
         d3.select("body").select(".infoTooltipBox")
           .select('tbody').select('tr')
           .selectAll('td')
-          .data([d.filename, d.prediction.toString().slice(0,4), d.label.toString().slice(0,4)])
+          .data([d.feature.properties._damage, d.prediction.toString().slice(0,4), d.label.toString().slice(0,4)])
           .enter()
             .append('td')
             .style("text-align", "center")
@@ -331,6 +315,9 @@ function redraw(){
       yMap = function(d) { return yScale(yValue(d));}
 
 // RESCALE EVERYTHING //
+console.log("hello", d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect().width)
+console.log(d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect())
+console.log(d3.select("body").select(".ImageOneContainer").node())
 
   var svgContainer = d3.select("body").select(".svgContainer")
     .attr("class", "svgContainer")
@@ -358,20 +345,18 @@ function redraw(){
         .style("text-anchor", "middle")
 
   d3.select("body").select(".imageContainer1")
-    .attr("x", d3.select("body").select(".svgContainer").attr("width"))
-    .attr("width", d3.select("body").select(".svgContainer").attr("width")/2)
-    .attr("height", d3.select("body").select(".svgContainer").attr("height")/2)
+    .attr("width", d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect().width)
+    .attr("height", d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect().width)
     .select("g").select("rect")
-      .attr("width", (d3.select("body").select(".svgContainer").attr("width") - (margins.left + margins.right))/2)
-      .attr("height", (d3.select("body").select(".svgContainer").attr("width") - (margins.bottom + margins.top))/2)
+      .attr("width", d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect().width - innerMargins.left*2)
+      .attr("height", d3.select("body").select(".ImageOneContainer").node().getBoundingClientRect().width - innerMargins.left*2)
 
   d3.select("body").select(".imageContainer2")
-    .attr("x", d3.select("body").select(".svgContainer").attr("width") * 1.5)
-    .attr("width", d3.select("body").select(".svgContainer").attr("width")/2)
-    .attr("height", d3.select("body").select(".svgContainer").attr("height")/2)
+    .attr("width", d3.select("body").select(".ImageTwoContainer").node().getBoundingClientRect().width)
+    .attr("height", d3.select("body").select(".ImageTwoContainer").node().getBoundingClientRect().width)
     .select("g").select("rect")
-      .attr("width", (d3.select("body").select(".svgContainer").attr("width") - (margins.left + margins.right))/2)
-      .attr("height", (d3.select("body").select(".svgContainer").attr("width") - (margins.bottom + margins.top))/2)
+      .attr("width", d3.select("body").select(".ImageTwoContainer").node().getBoundingClientRect().width - innerMargins.left*2)
+      .attr("height", d3.select("body").select(".ImageTwoContainer").node().getBoundingClientRect().width - innerMargins.left*2)
 
   // d3.select("body").select("#mapWidgetContainer")
 
@@ -558,24 +543,36 @@ function dragended(d) {
 function load_csv_data(){
 
   // d3.csv(csv_path)
-  geodata = "./AllBuildingOutline.geojson"
+  geoData = "./AllBuildingOutline.geojson"
+  trainingData = "./TrainingDataset.geojson"
 
-  d3.json(geodata).then(function(data) {
-    // console.log(data)
-    cache.geoData = data
-
+  d3.json(geoData).then(function(gdata) {
+    // console.log(gdata)
+    // cache.geoData = gdata
+  d3.json(trainingData).then(function(tdata) {
+    // console.log(tdata)
   d3.dsv(" ", csv_path).then(function(data) {
     data.forEach(function(d, i) {
+      // console.log(d)
     d.label = +d.label;
     d.prediction = +d.prediction;
     d.category = categorizer(d.prediction)
-    d.feature = cache.geoData.features[Number(d.filename.replace(".png", "")) - 1]
+    // console.log(d)
+    d.feature = gdata.features[Number(d.filename.replace(".png", "")) - 1]
+
+    // d.feature = getFromGeo(Number(d.filename.replace(".png", "")), cache.geoData)
+    if (d.feature) {
+    d.feature.properties._damage = getFromGeo(Number(d.filename.replace(".png", "")), tdata)
+    // console.log(d, getFromGeo(Number(d.filename.replace(".png", "")), tdata))
+    }
   });
     // console.log(data)
     data.pop()
     cache.data = data
+    // console.log(data)
     initialized()
   });
+  })
   })
 }
 
@@ -605,4 +602,20 @@ function categoryAverager(data, index) {
     return avg.toString().slice(0,5)
   } else { return 0}
 
+}
+
+function getFromGeo(number, geo) {
+  // console.log("asdasd", geo, number)
+
+  for (i in geo.features) {
+    // console.log(i, geo.features[i].properties.OBJECTID)
+
+    // return null
+    if (geo.features[i].properties.OBJECTID === number) {
+      // console.log(geo.features[i].properties._damage)
+      return geo.features[i].properties._damage
+    }
+  }
+  console.log("ERROR", number, geo)
+  return "ERROR"
 }
