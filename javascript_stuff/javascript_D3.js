@@ -359,6 +359,7 @@ console.log(d3.select("body").select(".ImageOneContainer").node())
 
   // d3.select("body").select("#mapWidgetContainer")
 
+  var colorScheme = ["black", "orange", "purple", "steelBlue"]
 
   d3.select("body").select(".TableContainer").select(".infoBox")
       .select('thead')
@@ -367,7 +368,8 @@ console.log(d3.select("body").select(".ImageOneContainer").node())
       .enter()
       .append("th")
         .style("text-align", "center")
-        .text(function (d) { return d; });
+        .text(function (d) { return d; })
+        .style('color', function(d, i){ return colorScheme[i]});
     // create a row for each object in the data
 
 d3.select("body").select(".TableContainer").select("table")
