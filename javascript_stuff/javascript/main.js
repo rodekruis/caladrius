@@ -74,7 +74,7 @@ function initialized(){
            .attr("width", 100)
            .attr("height", 100)
            .attr("preserveAspectRatio", "true")
-           .attr("xlink:href", "Flag_of_the_Red_Cross.png")
+           .attr("xlink:href", "images/510-logo.png")
 
      d3.select("body").select(".imageContainer1").select("g")
       .append("rect")
@@ -103,7 +103,7 @@ function initialized(){
             .attr("width", 100)
             .attr("height", 100)
             .attr("preserveAspectRatio", "true")
-            .attr("xlink:href", "Flag_of_the_Red_Cross.png")
+            .attr("xlink:href", "images/510-logo.png")
 
       d3.select("body").select(".imageContainer2").select("g")
        .append("rect")
