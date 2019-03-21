@@ -1,0 +1,16 @@
+{
+  "name": "caladrius",
+  "version": "1.0.0",
+  "description": "Automated Damage Assessment",
+  "main": "run.py",
+  "repository": "https://github.com/rodekruis/caladrius.git",
+  "author": "Gulfaraz Yasin <gulfarazyasin@gmail.com>",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "d3": "^5.9.1",
+    "jquery": "^3.3.1",
+    "leaflet": "^1.4.0",
+    "proj4": "^2.5.0"
+  }
+}

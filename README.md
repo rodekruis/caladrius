@@ -14,10 +14,26 @@ The network architecture is a pseudo-siamese network with two ImageNet pre-train
 
 ```
 pip install -r requirements.txt
+yarn install
 ```
 
+## Dataset
 
-## Execute
+The dataset can be downloaded from [here](http://gulfaraz.com/share/rc.tgz "RC Challenge 1 Raw Dataset").
+
+Extract the contents to the `data` folder.
+
+To create the dataset execute `python sint-maarten-2017.py`.
+
+This will create the dataset as per the [specifications](DATASET.md).
+
+## Interface
+
+Execute `python -m http.server` in the root directory to create a local server.
+
+The interface can be accessed using `http://localhost:8000/interface/`
+
+## Model
 
 ##### Training:
 
@@ -47,7 +63,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --checkpointPath CHECKPOINTPATH
                         output path (default: ./runs)
-  --dataPath DATAPATH   data path (default: ./data/Sint-Maarten-2018)
+  --dataPath DATAPATH   data path (default: ./data/Sint-Maarten-2017)
   --runName RUNNAME     name to identify execution (default: <timestamp>)
   --logStep LOGSTEP     batch step size for logging information (default: 100)
   --numberOfWorkers NUMBEROFWORKERS

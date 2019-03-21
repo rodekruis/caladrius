@@ -57,7 +57,7 @@ def configuration():
     # General arguments
     parser.add_argument('--checkpointPath', type=str, default=os.path.join('.', 'runs'),
                         help='output path')
-    parser.add_argument('--dataPath', type=str, default=os.path.join('.', 'data', 'Sint-Maarten-2018'),
+    parser.add_argument('--dataPath', type=str, default=os.path.join('.', 'data', 'Sint-Maarten-2017'),
                         help='data path')
     parser.add_argument('--runName', type=str, default='{:.0f}'.format(time.time()),
                         help='name to identify execution')
