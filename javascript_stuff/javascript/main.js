@@ -39,11 +39,16 @@ var ylines = [
     'y2': 0.7
   }]
 
-// var csv_path = "https://oranguh.github.io/information_visualization_2019/meteo.csv"
-var csv_path = "siamese_data.csv"
-var csv_path = "epoch_001_predictions.txt"
-// var initialized = false
-load_csv_data()
+var dataset_path = '../data/Sint-Maarten-2018';
+
+var split = 'test';
+var split_path = dataset_path + '/' + split;
+
+var run_name = '1552303580';
+var csv_filename = run_name + '_epoch_001_predictions.txt';
+var csv_path = split_path + '/' + csv_filename;
+
+load_csv_data(csv_path)
 
 function initialized(){
 
@@ -242,10 +247,10 @@ function initialized(){
         // console.log("#polygon" + d.feature.properties.OBJECTID)
 
         d3.select("body").select(".imageContainer1").select("g").select("#previewImageID1").select("image")
-          .attr("xlink:href", "./test/after/" + d.filename);
+          .attr("xlink:href", split_path + '/before/' + d.filename);
 
         d3.select("body").select(".imageContainer2").select("g").select("#previewImageID2").select("image")
-          .attr("xlink:href", "./test/before/" + d.filename);
+          .attr("xlink:href", split_path + '/after/' + d.filename);
 
         d3.select("body").select(".infoTooltipBox")
           .select('tbody').select('tr')
@@ -538,40 +543,28 @@ function dragended(d) {
   d3.select(this).classed("active", false);
 }
 
-function load_csv_data(){
+function load_csv_data(csv_path){
+    geoData = './AllBuildingOutline.geojson'
+    trainingData = './TrainingDataset.geojson'
 
-  // d3.csv(csv_path)
-  geoData = "./AllBuildingOutline.geojson"
-  trainingData = "./TrainingDataset.geojson"
-
-  d3.json(geoData).then(function(gdata) {
-    // console.log(gdata)
-    // cache.geoData = gdata
-  d3.json(trainingData).then(function(tdata) {
-    // console.log(tdata)
-  d3.dsv(" ", csv_path).then(function(data) {
-    data.forEach(function(d, i) {
-      // console.log(d)
-    d.label = +d.label;
-    d.prediction = +d.prediction;
-    d.category = categorizer(d.prediction)
-    // console.log(d)
-    d.feature = gdata.features[Number(d.filename.replace(".png", "")) - 1]
-
-    // d.feature = getFromGeo(Number(d.filename.replace(".png", "")), cache.geoData)
-    if (d.feature) {
-    d.feature.properties._damage = getFromGeo(Number(d.filename.replace(".png", "")), tdata)
-    // console.log(d, getFromGeo(Number(d.filename.replace(".png", "")), tdata))
-    }
-  });
-    // console.log(data)
-    data.pop()
-    cache.data = data
-    // console.log(data)
-    initialized()
-  });
-  })
-  })
+    d3.json(geoData).then(function(gdata) {
+        d3.json(trainingData).then(function(tdata) {
+            d3.dsv(' ', csv_path).then(function(data) {
+                data.forEach(function(d, i) {
+                    d.label = +d.label;
+                    d.prediction = +d.prediction;
+                    d.category = categorizer(d.prediction);
+                    d.feature = gdata.features[Number(d.filename.replace(".png", "")) - 1];
+                    if (d.feature) {
+                        d.feature.properties._damage = getFromGeo(Number(d.filename.replace(".png", "")), tdata);
+                    }
+                });
+                data.pop();
+                cache.data = data;
+                initialized();
+            });
+        });
+    });
 }
 
 function categorizer(prediction){
