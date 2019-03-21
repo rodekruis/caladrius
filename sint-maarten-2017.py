@@ -1,7 +1,7 @@
 import os
 import sys
 
-from shutil import move
+from shutil import move, copyfile
 
 import rasterio
 import geopandas
@@ -46,8 +46,14 @@ ALL_BUILDINGS_GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, 'AllBuildingOutline.ge
 GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, 'TrainingDataset.geojson')
 
 # output
-TARGET_DATA_FOLDER = os.path.join('data', 'Sint-Maarten-2018')
+TARGET_DATA_FOLDER = os.path.join('data', 'Sint-Maarten-2017')
 os.makedirs(TARGET_DATA_FOLDER, exist_ok=True)
+
+# copy geojson files for visualization
+buildings_file = os.path.join(TARGET_DATA_FOLDER, 'buildings.geojson')
+labels_file = os.path.join(TARGET_DATA_FOLDER, 'labels.geojson')
+copyfile(ALL_BUILDINGS_GEOJSON_FILE, buildings_file)
+copyfile(GEOJSON_FILE, labels_file)
 
 # cache
 TEMP_DATA_FOLDER = os.path.join(TARGET_DATA_FOLDER, 'temp')

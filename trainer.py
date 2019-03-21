@@ -61,7 +61,9 @@ class QuasiSiameseNetwork(object):
         running_n = 0.0
 
         if not (phase == 'train'):
-            prediction_file = open(os.path.join(loader.dataset.directory, '{}_epoch_{:03d}_predictions.txt'.format(self.run_name, epoch)), 'w+')
+            prediction_file_name = '{}_epoch_{:03d}_predictions.txt'.format(self.run_name, epoch)
+            prediction_file_path = os.path.join(loader.dataset.directory, prediction_file_name)
+            prediction_file = open(prediction_file_path, 'w+')
             prediction_file.write('filename label prediction\n')
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
@@ -136,6 +138,6 @@ class QuasiSiameseNetwork(object):
         logger.info('Best validation Accuracy: {:4f}.'.format(best_accuracy))
 
     def test(self, datasets, device, load_path):
-        self.model.load_state_dict(torch.load(load_path))
+        self.model.load_state_dict(torch.load(load_path, map_location=device))
         test_set, test_loader = datasets.load('test')
         self.run_epoch(1, test_loader, device, phase='test')

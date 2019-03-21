@@ -39,7 +39,7 @@ var ylines = [
     'y2': 0.7
   }]
 
-var dataset_path = '../data/Sint-Maarten-2018';
+var dataset_path = '../data/Sint-Maarten-2017';
 
 var split = 'test';
 var split_path = dataset_path + '/' + split;
@@ -544,8 +544,8 @@ function dragended(d) {
 }
 
 function load_csv_data(csv_path){
-    geoData = './AllBuildingOutline.geojson'
-    trainingData = './TrainingDataset.geojson'
+    geoData = dataset_path + '/' + 'buildings.geojson'
+    trainingData = dataset_path + '/' + 'labels.geojson'
 
     d3.json(geoData).then(function(gdata) {
         d3.json(trainingData).then(function(tdata) {

@@ -3,7 +3,7 @@
 The project data needs to be structured as specified in this document.
 
 All the data should be placed within the `data` folder.
-Each dataset should be placed in a subfolder with a unique name - the default is 'Sint-Maarten-2018'.
+Each dataset should be placed in a subfolder with a unique name - the default is 'Sint-Maarten-2017'.
 Each dataset should have three subfolders within,
     - 'train' containing the images from which the model will learn to identify damage (typically 80% of all labelled data)
     - 'validation' containing the images which will be used to tune the model (typically 10% of all labelled data)
