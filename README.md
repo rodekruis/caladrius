@@ -27,7 +27,13 @@ To create the dataset execute `python sint-maarten-2017.py`.
 
 This will create the dataset as per the [specifications](DATASET.md).
 
-## Execute
+## Interface
+
+Execute `python -m http.server` in the root directory to create a local server.
+
+The interface can be accessed using `http://localhost:8000/interface/`
+
+## Model
 
 ##### Training:
 
