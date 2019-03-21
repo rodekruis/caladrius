@@ -14,6 +14,7 @@ The network architecture is a pseudo-siamese network with two ImageNet pre-train
 
 ```
 pip install -r requirements.txt
+yarn install
 ```
 
 
