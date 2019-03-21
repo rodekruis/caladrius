@@ -50,10 +50,8 @@ TARGET_DATA_FOLDER = os.path.join('data', 'Sint-Maarten-2017')
 os.makedirs(TARGET_DATA_FOLDER, exist_ok=True)
 
 # copy geojson files for visualization
-buildings_file = os.path.join(TARGET_DATA_FOLDER, 'buildings.geojson')
-labels_file = os.path.join(TARGET_DATA_FOLDER, 'labels.geojson')
-copyfile(ALL_BUILDINGS_GEOJSON_FILE, buildings_file)
-copyfile(GEOJSON_FILE, labels_file)
+coordinates_file = os.path.join(TARGET_DATA_FOLDER, 'coordinates.geojson')
+copyfile(GEOJSON_FILE, coordinates_file)
 
 # cache
 TEMP_DATA_FOLDER = os.path.join(TARGET_DATA_FOLDER, 'temp')
