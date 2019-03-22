@@ -13,7 +13,7 @@ COPY . /workspace
 # Install any needed packages
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash &&\
     apt-get update &&\
-	apt-get install -y --no-install-recommends vim less nodejs &&\
+    apt-get install -y --no-install-recommends vim less nodejs &&\
     rm -rf /var/lib/apt/lists/* &&\
 	curl -o- -L https://yarnpkg.com/install.sh | bash &&\
 	pip install --no-cache-dir --upgrade pip &&\
