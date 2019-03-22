@@ -2,3 +2,15 @@ data/**/*
 data/
 node_modules/*/*
 node_modules/
+**/*.pyc
+**/*.eggs/
+**/*.egg-info/
+**/__pycache__/
+.cache/
+.idea/
+.git/
+.pytest_cache/
+tox.ini
+build/
+dist/
+venv/
