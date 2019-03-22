@@ -84,3 +84,20 @@ optional arguments:
   --test                test the model on the test set instead of training
                         (default: False)
 ```
+
+## Development
+
+When making changes, increment `VERSION` according to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
+and update `CHANGES.md`
+
+
+## Docker image
+
+To build and tag the Docker image with `VERSION`, use:
+```bash
+make build_production
+```
+For development and tagging with the latest commit version:
+```bash
+make build_fast
+```
