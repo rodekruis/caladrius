@@ -15,10 +15,10 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends vim less nodejs &&\
     rm -rf /var/lib/apt/lists/* &&\
-	curl -o- -L https://yarnpkg.com/install.sh | bash &&\
-	pip install --no-cache-dir --upgrade pip &&\
-	pip install --no-cache-dir --trusted-host pypi.python.org -r requirements.txt &&\
-	$HOME/.yarn/bin/yarn install
+    curl -o- -L https://yarnpkg.com/install.sh | bash &&\
+    pip install --no-cache-dir --upgrade pip &&\
+    pip install --no-cache-dir --trusted-host pypi.python.org -r requirements.txt &&\
+    $HOME/.yarn/bin/yarn install
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
