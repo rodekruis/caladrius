@@ -8,6 +8,8 @@ from trainer import QuasiSiameseNetwork
 
 if __name__ == '__main__':
     args = configuration()
+    
+    print("Feest!")
 
     logger = create_logger(__name__)
     sys.excepthook = attach_exception_hook(logger)
