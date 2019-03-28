@@ -1,12 +1,24 @@
-# Caladrius - Assessing Building Damage caused by Natural Disasters using Satellite Images
+# [Caladrius](https://en.wikipedia.org/wiki/Caladrius) - Assessing Building Damage caused by Natural Disasters using Satellite Images
 ## Created by: Artificial Incompetence for the Red Cross #1 Challenge in the 2018 Hackathon for Peace, Justice and Security
 
 ## Network Architecture
 
 The network architecture is a pseudo-siamese network with two ImageNet pre-trained Inception_v3 models.
 
+## Using Docker
 
-## Setup
+Install [Docker](https://www.docker.com/get-started).
+
+Download the [Caladrius Docker Image](https://hub.docker.com/r/gulfaraz/caladrius) using `docker pull gulfaraz/caladrius`.
+
+Create a [data](#dataset) folder in your local machine.
+
+Create a docker container using `docker run --name caladrius -dit -v <path/to/data>:/workspace/data gulfaraz/caladrius`.
+
+Access the container using `docker exec -it caladrius bash`.
+
+
+## Manual Setup
 
 #### Requirements:
 - Python 3.6.5
@@ -21,7 +33,7 @@ yarn install
 
 The dataset can be downloaded from [here](http://gulfaraz.com/share/rc.tgz "RC Challenge 1 Raw Dataset").
 
-Extract the contents to the `data` folder.
+Extract the contents to the `data` folder. (Default Path: `./data`)
 
 To create the dataset execute `python sint-maarten-2017.py`.
 
