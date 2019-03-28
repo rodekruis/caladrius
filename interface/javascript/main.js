@@ -653,6 +653,18 @@ function mapMaker(cacheData, mymap, split_path) {
         'accessToken': 'pk.eyJ1Ijoib3Jhbmd1aCIsImEiOiJjanNxNWthYjgxMHo0NDRyMjc5MnM1c2VwIn0.oydc_gZ6NRz7H_ny4yp0Fw'
     }).addTo(mymap);
 
+    L.control.layers({}, {
+        'temp': openWeatherMapo(mymap, "temp_new"),
+        'wind': openWeatherMapo(mymap, "clouds_new"),
+        'rains': openWeatherMapo(mymap, "precipitation_new"),
+        'clouds': openWeatherMapo(mymap, "clouds_new"),
+        'heat map labels': heatMapMaker(mymap, cacheData, "label"),
+        'heat map prediction': heatMapMaker(mymap, cacheData, "prediction"),
+        'heat map category': heatMapMaker(mymap, cacheData, "category")
+    }).addTo(mymap)
+
+    mymap.addControl(new L.Control.FullScreen());
+
     L.svg({ 'interactive': true }).addTo(mymap);
 
     d3.select('#mapid')
@@ -749,4 +761,44 @@ function updateMap(mymap) {
                 var coords = d.feature.geometry.coordinates[0][0].map(i => mymap.latLngToLayerPoint([i[1], i[0]]));
                 return coords.map(i => i.x + ',' + i.y).join(' ');
             });
+}
+
+function openWeatherMapo(mymap, layer) {
+  return L.tileLayer('https://tile.openweathermap.org/map/{layer}/{z}/{x}/{y}.png?appid={api_key}', {
+   layer: layer,
+   maxZoom:17,
+   api_key: '2733c9a9c041a4ba7ce1963ae1a97dd4'
+   })
+}
+
+function heatMapMaker(mymap, cacheData, mode) {
+  // console.log(cacheData[0])
+
+  if (mode === "label") {
+    var heatCoordinates = cacheData.map(x => [x.feature.geometry.coordinates[0][0][0][1],x.feature.geometry.coordinates[0][0][0][0], x.label])
+  } else if (mode === "prediction") {
+    var heatCoordinates = cacheData.map(x => [x.feature.geometry.coordinates[0][0][0][1],x.feature.geometry.coordinates[0][0][0][0], x.prediction])
+  } else if (mode === "category") {
+    var heatCoordinates = cacheData.map(x => [x.feature.geometry.coordinates[0][0][0][1],x.feature.geometry.coordinates[0][0][0][0], categoryToValue(x.feature.properties._damage)])
+  }
+  // https://github.com/Leaflet/Leaflet.heat
+  return L.heatLayer(heatCoordinates, {radius: 30, blur: 15 });
+
+}
+
+function categoryToValue(category) {
+
+  var value
+  if (category === "none") {
+    value = 0
+  } else if (category === "partial") {
+    value = 0.2
+  } else if (category === "heavy") {
+    value = 0.5
+  } else if (category === "destroyed") {
+    value = 0.8
+  } else {
+    value = 0
+  }
+  return value
 }
