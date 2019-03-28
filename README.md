@@ -22,6 +22,7 @@ Access the container using `docker exec -it caladrius bash`.
 
 #### Requirements:
 - Python 3.6.5
+- [Yarn](https://yarnpkg.com/)
 - Install the required libraries:
 
 ```
@@ -43,7 +44,7 @@ This will create the dataset as per the [specifications](DATASET.md).
 
 Execute `python -m http.server` in the root directory to create a local server.
 
-The interface can be accessed using `http://localhost:8000/interface/`
+The interface can be accessed using `http://localhost:8000/interface/`.
 
 ## Model
 
@@ -58,6 +59,8 @@ python run.py --runName caladrius_2019
 ```
 python run.py --runName caladrius_2019 --test
 ```
+
+[Click here to download the trained model.](https://drive.google.com/open?id=1jMhEpA_czv2d-84Ym4Nm8LP0TJnhzvnq)
 
 
 ## Configuration
