@@ -84,6 +84,8 @@ def configuration():
 
     parser.add_argument('--test', action='store_true', default=False,
                         help='test the model on the test set instead of training')
+    parser.add_argument('--maxDataPoints', default=None, type=int,
+                        help='limit the total number of data points used, for debugging on GPU-less laptops')
 
     args = parser.parse_args()
 
