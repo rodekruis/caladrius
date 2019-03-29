@@ -96,6 +96,9 @@ def configuration():
     else:
         arg_vars['torchSeed'] = torch.initial_seed()
 
+    if args.maxDataPoints is not None:
+        arg_vars['runName'] = '{}-max_data_points_{}'.format(arg_vars['runName'], arg_vars['maxDataPoints'])
+
     checkpointFolderName = '{}-input_size_{}-learning_rate_{}-batch_size_{}'.format(
         arg_vars['runName'],
         arg_vars['inputSize'],
