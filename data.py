@@ -9,12 +9,13 @@ class CaladriusDataset(Dataset):
 
     def __init__(self,
                  directory,
-                 split='train',
-                 inputSize=(32, 32),
-                 transforms=None):
+                 transforms=None,
+                 max_data_points=None):
         self.directory = directory
         with open(os.path.join(directory, 'labels.txt')) as labels_file:
             self.datapoints = [x.strip() for x in tqdm(labels_file.readlines())]
+        if max_data_points is not None:
+            self.datapoints = self.datapoints[:max_data_points]
         self.transforms = transforms
 
     def __len__(self):
@@ -45,10 +46,12 @@ class Datasets(object):
         self.batchSize = args.batchSize
         self.transforms = transforms
         self.numberOfWorkers = args.numberOfWorkers
+        self.maxDataPoints = args.maxDataPoints
 
     def load(self, set_name):
         assert set_name in {'train', 'validation', 'test'}
-        dataset = CaladriusDataset(os.path.join(self.dataPath, set_name), transforms=self.transforms[set_name])
+        dataset = CaladriusDataset(os.path.join(self.dataPath, set_name), transforms=self.transforms[set_name],
+                                   max_data_points=self.maxDataPoints)
         dataLoader = DataLoader(dataset, batch_size=self.batchSize, shuffle=(set_name == 'train'), num_workers=self.numberOfWorkers)
 
         return dataset, dataLoader

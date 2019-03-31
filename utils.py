@@ -84,6 +84,8 @@ def configuration():
 
     parser.add_argument('--test', action='store_true', default=False,
                         help='test the model on the test set instead of training')
+    parser.add_argument('--maxDataPoints', default=None, type=int,
+                        help='limit the total number of data points used, for debugging on GPU-less laptops')
 
     args = parser.parse_args()
 
@@ -93,6 +95,9 @@ def configuration():
         torch.manual_seed(arg_vars['torchSeed'])
     else:
         arg_vars['torchSeed'] = torch.initial_seed()
+
+    if args.maxDataPoints is not None:
+        arg_vars['runName'] = '{}-max_data_points_{}'.format(arg_vars['runName'], arg_vars['maxDataPoints'])
 
     checkpointFolderName = '{}-input_size_{}-learning_rate_{}-batch_size_{}'.format(
         arg_vars['runName'],
