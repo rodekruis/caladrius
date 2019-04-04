@@ -8,7 +8,7 @@ from torch.nn.modules import loss as nnloss
 import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from caladrius.network import get_pretrained_iv3_transforms, SiameseNetwork
+from caladrius.model.network import get_pretrained_iv3_transforms, SiameseNetwork
 from caladrius.utils import create_logger
 
 

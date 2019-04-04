@@ -1,9 +1,9 @@
 import os
 import sys
 
-from caladrius.data import Datasets
+from caladrius.model.data import Datasets
 from caladrius.utils import configuration, create_logger, attach_exception_hook
-from caladrius.trainer import QuasiSiameseNetwork
+from caladrius.model.trainer import QuasiSiameseNetwork
 
 
 def main():
