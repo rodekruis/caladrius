@@ -7,14 +7,14 @@ setup(
     name='caladrius',
     version=version,
     url="https://github.com/rodekruis/caladrius",
-    packages=["caladrius"],
+    packages=['caladrius', 'caladrius.model'],
     setup_requires=[],
     tests_require=[],
     install_requires=[],
     entry_points={
         'console_scripts': [
-            'caladrius_run_nn=caladrius.run:main',
-            'caladrius_setup_data=caladrius.sint_maarten_2017:main',
+            'caladrius=caladrius.run:main',
+            'caladrius_data=caladrius.sint_maarten_2017:main',
         ]
     }
 )
