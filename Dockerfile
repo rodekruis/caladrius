@@ -18,7 +18,8 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash &&\
     curl -o- -L https://yarnpkg.com/install.sh | bash &&\
     pip install --no-cache-dir --upgrade pip &&\
     pip install --no-cache-dir --trusted-host pypi.python.org -r requirements.txt &&\
-    $HOME/.yarn/bin/yarn install
+    $HOME/.yarn/bin/yarn install &&\
+    pip install .
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
