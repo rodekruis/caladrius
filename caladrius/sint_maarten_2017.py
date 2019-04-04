@@ -264,8 +264,7 @@ def splitDatapoints(filepath):
     return split_mappings
 
 
-if __name__ == '__main__':
-
+def main():
     logging.basicConfig(
         handlers=[
             logging.FileHandler(os.path.join('.', 'run.log')),
@@ -284,3 +283,7 @@ if __name__ == '__main__':
 
     cached_mappings = createDatapoints(features_json, df)
     split_mappings = splitDatapoints(LABELS_FILE)
+
+
+if __name__ == '__main__':
+    main()
