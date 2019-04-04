@@ -26,7 +26,7 @@ var ylines = [
 
 
 // data paths
-var dataset_path = '../data/Sint-Maarten-2017';
+var dataset_path = '../../data/Sint-Maarten-2017';
 
 var split = 'test';
 var split_path = dataset_path + '/' + split;
