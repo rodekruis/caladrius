@@ -1,3 +1,7 @@
+0.2.1 (2019-04-09)
+------------------
+- Added administrative region information to the geojson file used for the visualization
+
 0.2.0 (2019-04-09)
 ------------------
 - Made Caladrius an installable Python package

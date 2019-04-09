@@ -49,15 +49,14 @@ GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, 'TrainingDataset.geojson')
 TARGET_DATA_FOLDER = os.path.join('data', 'Sint-Maarten-2017')
 os.makedirs(TARGET_DATA_FOLDER, exist_ok=True)
 
-# copy geojson files for visualization
-coordinates_file = os.path.join(TARGET_DATA_FOLDER, 'coordinates.geojson')
-copyfile(GEOJSON_FILE, coordinates_file)
-
 # cache
 TEMP_DATA_FOLDER = os.path.join(TARGET_DATA_FOLDER, 'temp')
 os.makedirs(TEMP_DATA_FOLDER, exist_ok=True)
 
 LABELS_FILE = os.path.join(TEMP_DATA_FOLDER, 'labels.txt')
+
+# Administrative boundaries file
+ADMIN_REGIONS_FILE = os.path.join(GEOJSON_FOLDER, 'admin_regions', 'sxm_admbnda_adm1.shp')
 
 
 def damage_quantifier(category):
@@ -162,9 +161,9 @@ def getAfterImage(geometry, name):
     return None
 
 
-def createDatapoints(features, df):
+def createDatapoints(df):
 
-    logger.info('Feature Size {}'.format(len(features)))
+    logger.info('Feature Size {}'.format(len(df)))
 
     BEFORE_FILE = os.path.join(BEFORE_FOLDER, 'IGN_Feb2017_20CM.tif')
 
@@ -173,30 +172,24 @@ def createDatapoints(features, df):
 
             count = 0
 
-            for index, feature in enumerate(tqdm(features)):
+            for index, row in tqdm(df.iterrows(), total=df.shape[0]):
 
                 # filter based on damage
-                damage = feature['properties']['_damage']
-
+                damage = row['_damage']
                 if damage not in DAMAGE_TYPES:
                     continue
 
-                geometry = feature['geometry']
-
-                # filter unstable data
-                if geometry is None:
-                    continue
-
-                bounds = df['geometry'][index][0].bounds
+                bounds = row['geometry'].bounds
                 geoms = makesquare(*bounds)
 
                 # identify data point
-                objectID = feature['properties']['OBJECTID']
+                objectID = row['OBJECTID']
 
                 try:
                     before_file = getCroppedImage(source_before_image, geoms, 'before', '{}.png'.format(objectID))
                     after_file = getAfterImage(geoms, '{}.png'.format(objectID))
-                    if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) and os.path.isfile(after_file):
+                    if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) \
+                            and os.path.isfile(after_file):
                         labels_file.write('{0}.png {1:.4f}\n'.format(objectID, damage_quantifier(damage)))
                         count += 1
                 except ValueError as ve:
@@ -264,6 +257,32 @@ def splitDatapoints(filepath):
     return split_mappings
 
 
+def create_geojson_for_visualization(df):
+
+    logger.info("Adding boundary information to geojson for visualization")
+
+    # Use centroids for the intersection, to avoid duplicates
+    df['shapes'] = df['geometry']
+    df['centroids'] = df['geometry'].centroid
+    df['geometry'] = df['centroids']
+
+    # Read in the admin regions
+    admin_regions = geopandas.read_file(ADMIN_REGIONS_FILE).to_crs(df.crs)
+
+    # Get the centroid intersection with the admin regions
+    df = geopandas.sjoin(df, admin_regions, how='left')
+
+    # Put back the building geometry
+    df['geometry'] = df['shapes']
+    df = df.drop(['shapes', 'centroids'], axis=1)
+
+    # Write out coordinates file
+    coordinates_file = os.path.join(TARGET_DATA_FOLDER, 'coordinates.geojson')
+    if os.path.exists(coordinates_file):
+        os.remove(coordinates_file)  # fiona doesn't like to overwrite files
+    df.to_file(coordinates_file, driver='GeoJSON')
+
+
 def main():
     logging.basicConfig(
         handlers=[
@@ -274,15 +293,17 @@ def main():
         format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
 
-    all_buildings_df = geopandas.read_file(ALL_BUILDINGS_GEOJSON_FILE)
-    all_buildings_json = json.loads(all_buildings_df.to_json())
-
     df = geopandas.read_file(GEOJSON_FILE)
+    # Remove any empty building shapes
+    df = df.loc[~df['geometry'].is_empty]
+
     dataset_json = json.loads(df.to_json())
     features_json = dataset_json['features']
 
-    cached_mappings = createDatapoints(features_json, df)
+    cached_mappings = createDatapoints(df)
     split_mappings = splitDatapoints(LABELS_FILE)
+
+    create_geojson_for_visualization(df)
 
 
 if __name__ == '__main__':
