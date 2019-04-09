@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from sklearn.metrics import f1_score, recall_score, confusion_matrix, classification_report
 
-from utils import create_logger
+from caladrius.utils import create_logger
 
 
 logger = create_logger(__name__)

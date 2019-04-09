@@ -27,6 +27,7 @@ Access the container using `docker exec -it caladrius bash`.
 
 ```
 pip install -r requirements.txt
+pip install .
 yarn install
 ```
 
@@ -36,7 +37,7 @@ The dataset can be downloaded from [here](http://gulfaraz.com/share/rc.tgz "RC C
 
 Extract the contents to the `data` folder. (Default Path: `./data`)
 
-To create the dataset execute `python sint-maarten-2017.py`.
+To create the dataset execute `caladrius_data`.
 
 This will create the dataset as per the [specifications](DATASET.md).
 
@@ -44,20 +45,20 @@ This will create the dataset as per the [specifications](DATASET.md).
 
 Execute `python -m http.server` in the root directory to create a local server.
 
-The interface can be accessed using `http://localhost:8000/interface/`.
+The interface can be accessed using `http://localhost:8000/caladrius/interface/`.
 
 ## Model
 
 ##### Training:
 
 ```
-python run.py --runName caladrius_2019
+caladrius --runName caladrius_2019
 ```
 
 ##### Testing:
 
 ```
-python run.py --runName caladrius_2019 --test
+caladrius --runName caladrius_2019 --test
 ```
 
 [Click here to download the trained model.](https://drive.google.com/open?id=1jMhEpA_czv2d-84Ym4Nm8LP0TJnhzvnq)
@@ -67,13 +68,14 @@ python run.py --runName caladrius_2019 --test
 There are several parameters, that can be set, the full list is the following:
 
 ```
-usage: run.py [-h] [--checkpointPath CHECKPOINTPATH] [--dataPath DATAPATH]
-              [--runName RUNNAME] [--logStep LOGSTEP]
-              [--numberOfWorkers NUMBEROFWORKERS] [--disableCuda]
-              [--cudaDevice CUDADEVICE] [--torchSeed TORCHSEED]
-              [--inputSize INPUTSIZE] [--numberOfEpochs NUMBEROFEPOCHS]
-              [--batchSize BATCHSIZE] [--learningRate LEARNINGRATE] [--test]
-
+usage: caladrius [-h] [--checkpointPath CHECKPOINTPATH] [--dataPath DATAPATH]
+                 [--runName RUNNAME] [--logStep LOGSTEP]
+                 [--numberOfWorkers NUMBEROFWORKERS] [--disableCuda]
+                 [--cudaDevice CUDADEVICE] [--torchSeed TORCHSEED]
+                 [--inputSize INPUTSIZE] [--numberOfEpochs NUMBEROFEPOCHS]
+                 [--batchSize BATCHSIZE] [--learningRate LEARNINGRATE]
+                 [--test] [--maxDataPoints MAXDATAPOINTS]
+                 
 optional arguments:
   -h, --help            show this help message and exit
   --checkpointPath CHECKPOINTPATH

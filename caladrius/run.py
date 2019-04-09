@@ -1,12 +1,12 @@
 import os
 import sys
 
-from data import Datasets
-from utils import configuration, create_logger, attach_exception_hook
-from trainer import QuasiSiameseNetwork
+from caladrius.model.data import Datasets
+from caladrius.utils import configuration, create_logger, attach_exception_hook
+from caladrius.model.trainer import QuasiSiameseNetwork
 
 
-if __name__ == '__main__':
+def main():
     args = configuration()
 
     logger = create_logger(__name__)
@@ -25,3 +25,7 @@ if __name__ == '__main__':
     qsn.test(datasets, args.device, save_path)
 
     logger.info('END')
+
+
+if __name__ == '__main__':
+    main()
