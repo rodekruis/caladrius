@@ -268,24 +268,25 @@ def create_geojson_for_visualization(df):
     logger.info("Adding boundary information to geojson for visualization")
 
     # Use centroids for the intersection, to avoid duplicates
-    df_building_centroids = df.copy()
-    df_building_centroids['geometry'] = df['geometry'].centroid
+    df['shapes'] = df['geometry']
+    df['centroids'] = df['geometry'].centroid
+    df['geometry'] = df['centroids']
 
     # Read in the admin regions
     admin_regions = geopandas.read_file(ADMIN_REGIONS_FILE).to_crs(df.crs)
 
     # Get the centroid intersection with the admin regions
-    df_building_centroids = geopandas.sjoin(df_building_centroids, admin_regions, how='left')
+    df = geopandas.sjoin(df, admin_regions, how='left')
 
     # Put back the building geometry
-    df_building_shapes = df_building_centroids
-    df_building_shapes['geometry'] = df['geometry']
+    df['geometry'] = df['shapes']
+    df = df.drop(['shapes', 'centroids'], axis=1)
 
     # Write out coordinates file
     coordinates_file = os.path.join(TARGET_DATA_FOLDER, 'coordinates.geojson')
     if os.path.exists(coordinates_file):
         os.remove(coordinates_file)  # fiona doesn't like to overwrite files
-    df_building_shapes.to_file(coordinates_file, driver='GeoJSON')
+    df.to_file(coordinates_file, driver='GeoJSON')
 
 
 def main():
