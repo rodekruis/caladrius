@@ -775,11 +775,29 @@ function heatMapMaker(mymap, cacheData, mode) {
   // console.log(cacheData[0])
 
   if (mode === "label") {
-    var heatCoordinates = cacheData.map(x => [x.feature.geometry.coordinates[0][0][0][1],x.feature.geometry.coordinates[0][0][0][0], x.label])
+    var heatCoordinates = cacheData.map(
+        x => [
+            x.feature.geometry.coordinates[0][0][0][1],
+            x.feature.geometry.coordinates[0][0][0][0],
+            x.label
+        ]
+    )
   } else if (mode === "prediction") {
-    var heatCoordinates = cacheData.map(x => [x.feature.geometry.coordinates[0][0][0][1],x.feature.geometry.coordinates[0][0][0][0], x.prediction])
+    var heatCoordinates = cacheData.map(
+        x => [
+            x.feature.geometry.coordinates[0][0][0][1],
+            x.feature.geometry.coordinates[0][0][0][0],
+            x.prediction
+        ]
+    )
   } else if (mode === "category") {
-    var heatCoordinates = cacheData.map(x => [x.feature.geometry.coordinates[0][0][0][1],x.feature.geometry.coordinates[0][0][0][0], categoryToValue(x.feature.properties._damage)])
+    var heatCoordinates = cacheData.map(
+        x => [
+            x.feature.geometry.coordinates[0][0][0][1],
+            x.feature.geometry.coordinates[0][0][0][0],
+            categoryToValue(x.feature.properties._damage)
+        ]
+    )
   }
   // https://github.com/Leaflet/Leaflet.heat
   return L.heatLayer(heatCoordinates, {radius: 30, blur: 15 });
