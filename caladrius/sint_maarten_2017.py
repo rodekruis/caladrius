@@ -1,11 +1,13 @@
 import os
 import sys
+import argparse
 
-from shutil import move, copyfile
+from shutil import move
 
 import rasterio
+import pandas as pd
 import geopandas
-import json
+from geopandas.tools import reverse_geocode
 
 import numpy as np
 # from PIL import Image
@@ -54,6 +56,7 @@ TEMP_DATA_FOLDER = os.path.join(TARGET_DATA_FOLDER, 'temp')
 os.makedirs(TEMP_DATA_FOLDER, exist_ok=True)
 
 LABELS_FILE = os.path.join(TEMP_DATA_FOLDER, 'labels.txt')
+ADDRESS_CACHE = os.path.join(TARGET_DATA_FOLDER, 'address_cache.esri')
 
 # Administrative boundaries file
 ADMIN_REGIONS_FILE = os.path.join(GEOJSON_FOLDER, 'admin_regions', 'sxm_admbnda_adm1.shp')
@@ -257,27 +260,61 @@ def splitDatapoints(filepath):
     return split_mappings
 
 
+def query_address_api(df, address_api='openmapquest', address_api_key=None):
+
+    logger.info("Querying address API")
+
+    # Create the address data frame and cache file if it doesn't exist already
+    if not os.path.exists(ADDRESS_CACHE):
+        logger.info("Converting {} geometries to EPSG 4326, this meay take awhile ".format(len(df)))
+        df_address = geopandas.GeoDataFrame(df.to_crs(epsg='4326').geometry, crs='epsg:4326')
+        df_address['address'] = None
+        logger.info("Creating new address cache file {}".format(ADDRESS_CACHE))
+        df_address.to_file(ADDRESS_CACHE, driver='ESRI Shapefile')
+    else:
+        logger.info("Reading in previous address cache file {}".format(ADDRESS_CACHE))
+        df_address = geopandas.read_file(ADDRESS_CACHE)
+
+    empty_address = df_address.loc[pd.isna(df_address['address'])]
+    logger.info("Querying for {} addresses".format(len(empty_address)))
+    for row in tqdm(empty_address.itertuples(), total=empty_address.shape[0]):
+        try:
+            address = reverse_geocode(row.geometry.centroid,
+                                      user_agent='caladrius',
+                                      provider=address_api,
+                                      api_key=address_api_key)
+            df_address.loc[row.index, 'address'] = address
+            df_address.to_file(ADDRESS_CACHE, driver='ESRI Shapefile')
+        except Exception as e:
+            logger.error('Geocoding failed for {latlon}: {e}'.format(latlon=row.geometry.centroid, e=e))
+            continue
+
+
 def create_geojson_for_visualization(df):
 
-    logger.info("Adding boundary information to geojson for visualization")
+    logger.info("Adding boundary information for report")
 
     # Use centroids for the intersection, to avoid duplicates
-    df['shapes'] = df['geometry']
-    df['centroids'] = df['geometry'].centroid
-    df['geometry'] = df['centroids']
+    df['centroid'] = df.centroid
+    df['shape'] = df['geometry']
 
     # Read in the admin regions
     admin_regions = geopandas.read_file(ADMIN_REGIONS_FILE).to_crs(df.crs)
 
     # Get the centroid intersection with the admin regions
+    df.set_geometry('centroid', inplace=True, drop=True)
     df = geopandas.sjoin(df, admin_regions, how='left')
+    df.set_geometry('shape', inplace=True, drop=True)
 
-    # Put back the building geometry
-    df['geometry'] = df['shapes']
-    df = df.drop(['shapes', 'centroids'], axis=1)
+    # Add the addresses
+    if os.path.exists(ADDRESS_CACHE):
+        logger.info("Adding address information for report")
+        df_address = geopandas.read_file(ADDRESS_CACHE)
+        df['address'] = df_address['address']
 
     # Write out coordinates file
     coordinates_file = os.path.join(TARGET_DATA_FOLDER, 'coordinates.geojson')
+    logger.info("Writing to {}".format(coordinates_file))
     if os.path.exists(coordinates_file):
         os.remove(coordinates_file)  # fiona doesn't like to overwrite files
     df.to_file(coordinates_file, driver='GeoJSON')
@@ -293,17 +330,43 @@ def main():
         format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
 
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--run-all', action='store_true', default=False,
+                        help='Run all of the steps: create and split image stamps, '
+                             'query for addresses, and create information file for the'
+                             'report. Overrides individual step flags.')
+    parser.add_argument('--create-image-stamps', action='store_true', default=False,
+                        help='For each building shape, creates a before and after'
+                             'image stamp for the learning model, and places them '
+                             'in the approriate directory (train, validation, or test)')
+    parser.add_argument('--query-address-api', action='store_true', default=False,
+                        help='For each building centroid, preforms a reverse '
+                             'geocode query and stores the address in a cache file')
+    parser.add_argument('--address-api', type=str, default='openmapquest',
+                        help='Which API to use for the address query')
+    parser.add_argument('--address-api-key', type=str, default=None,
+                        help='Some APIs (like OpenMapQuest) require an API key')
+    parser.add_argument('--create-report-info-file', action='store_true', default=False,
+                        help='Creates a geojson file that contains the locations and '
+                             'shapes of the buildings, their respective administrative'
+                             'regions and addresses (if --query-address-api has been run)')
+    args = parser.parse_args()
+
+    # Read in the main buildings shape file
     df = geopandas.read_file(GEOJSON_FILE)
     # Remove any empty building shapes
     df = df.loc[~df['geometry'].is_empty]
 
-    dataset_json = json.loads(df.to_json())
-    features_json = dataset_json['features']
+    if args.create_datapoints or args.run_all:
+        createDatapoints(df)
+        splitDatapoints(LABELS_FILE)
 
-    cached_mappings = createDatapoints(df)
-    split_mappings = splitDatapoints(LABELS_FILE)
+    if args.query_address_api or args.run_all:
+        query_address_api(df, address_api=args.address_api, address_api_key=args.address_api_key)
 
-    create_geojson_for_visualization(df)
+    if args.create_geojson or args.run_all:
+        create_geojson_for_visualization(df)
 
 
 if __name__ == '__main__':
