@@ -334,10 +334,10 @@ def main():
 
     parser.add_argument('--run-all', action='store_true', default=False,
                         help='Run all of the steps: create and split image stamps, '
-                             'query for addresses, and create information file for the'
+                             'query for addresses, and create information file for the '
                              'report. Overrides individual step flags.')
     parser.add_argument('--create-image-stamps', action='store_true', default=False,
-                        help='For each building shape, creates a before and after'
+                        help='For each building shape, creates a before and after '
                              'image stamp for the learning model, and places them '
                              'in the approriate directory (train, validation, or test)')
     parser.add_argument('--query-address-api', action='store_true', default=False,
@@ -349,7 +349,7 @@ def main():
                         help='Some APIs (like OpenMapQuest) require an API key')
     parser.add_argument('--create-report-info-file', action='store_true', default=False,
                         help='Creates a geojson file that contains the locations and '
-                             'shapes of the buildings, their respective administrative'
+                             'shapes of the buildings, their respective administrative '
                              'regions and addresses (if --query-address-api has been run)')
     args = parser.parse_args()
 
