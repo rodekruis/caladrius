@@ -283,10 +283,10 @@ def query_address_api(df, address_api='openmapquest', address_api_key=None):
                                       user_agent='caladrius',
                                       provider=address_api,
                                       api_key=address_api_key)
-            df_address.loc[row.index, 'address'] = address
+            df_address.loc[row.Index, 'address'] = address['address'][0]
             df_address.to_file(ADDRESS_CACHE, driver='ESRI Shapefile')
         except Exception as e:
-            logger.error('Geocoding failed for {latlon}: {e}'.format(latlon=row.geometry.centroid, e=e))
+            logger.exception('Geocoding failed for {latlon}'.format(latlon=row.geometry.centroid))
             continue
 
 
@@ -358,14 +358,14 @@ def main():
     # Remove any empty building shapes
     df = df.loc[~df['geometry'].is_empty]
 
-    if args.create_datapoints or args.run_all:
+    if args.create_image_stamps or args.run_all:
         createDatapoints(df)
         splitDatapoints(LABELS_FILE)
 
     if args.query_address_api or args.run_all:
         query_address_api(df, address_api=args.address_api, address_api_key=args.address_api_key)
 
-    if args.create_geojson or args.run_all:
+    if args.create_report_info_file or args.run_all:
         create_geojson_for_visualization(df)
 
 
