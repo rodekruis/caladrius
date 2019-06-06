@@ -1,3 +1,9 @@
+0.3.0 (2019-06-06)
+------------------
+- Refactored `caladrius_data` entrypoint so that user must specify which 
+  components of the data preparation should be run
+- Added an option to perform a reverse geocode query for building addresses 
+
 0.2.1 (2019-04-09)
 ------------------
 - Added administrative region information to the geojson file used for the visualization

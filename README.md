@@ -37,9 +37,44 @@ The dataset can be downloaded from [here](http://gulfaraz.com/share/rc.tgz "RC C
 
 Extract the contents to the `data` folder. (Default Path: `./data`)
 
-To create the dataset execute `caladrius_data`.
-
+To create the initial dataset, execute `caladrius_data --run-all`.
 This will create the dataset as per the [specifications](DATASET.md).
+
+There are several parameters that you can specify, described below:
+```
+usage: caladrius_data [-h] [--run-all] [--create-image-stamps]
+                      [--query-address-api] [--address-api ADDRESS_API]
+                      [--address-api-key ADDRESS_API_KEY]
+                      [--create-report-info-file]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --run-all             Run all of the steps: create and split image stamps,
+                        query for addresses, and create information file for
+                        the report. Overrides individual step flags. (default:
+                        False)
+  --create-image-stamps
+                        For each building shape, creates a before and after
+                        image stamp for the learning model, and places them in
+                        the approriate directory (train, validation, or test)
+                        (default: False)
+  --query-address-api   For each building centroid, preforms a reverse geocode
+                        query and stores the address in a cache file (default:
+                        False)
+  --address-api ADDRESS_API
+                        Which API to use for the address query (default:
+                        openmapquest)
+  --address-api-key ADDRESS_API_KEY
+                        Some APIs (like OpenMapQuest) require an API key
+                        (default: None)
+  --create-report-info-file
+                        Creates a geojson file that contains the locations and
+                        shapes of the buildings, their respective
+                        administrative regions and addresses (if --query-
+                        address-api has been run) (default: False)
+```
+
+
 
 ## Interface
 
