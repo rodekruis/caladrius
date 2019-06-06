@@ -51,13 +51,13 @@ optional arguments:
   -h, --help            show this help message and exit
   --run-all             Run all of the steps: create and split image stamps,
                         query for addresses, and create information file for
-                        thereport. Overrides individual step flags. (default:
+                        the report. Overrides individual step flags. (default:
                         False)
   --create-image-stamps
-                        For each building shape, creates a before and
-                        after image stamp for the learning model, and places
-                        them in the approriate directory (train, validation,
-                        or test) (default: False)
+                        For each building shape, creates a before and after
+                        image stamp for the learning model, and places them in
+                        the approriate directory (train, validation, or test)
+                        (default: False)
   --query-address-api   For each building centroid, preforms a reverse geocode
                         query and stores the address in a cache file (default:
                         False)
@@ -70,7 +70,7 @@ optional arguments:
   --create-report-info-file
                         Creates a geojson file that contains the locations and
                         shapes of the buildings, their respective
-                        administrativeregions and addresses (if --query-
+                        administrative regions and addresses (if --query-
                         address-api has been run) (default: False)
 ```
 
