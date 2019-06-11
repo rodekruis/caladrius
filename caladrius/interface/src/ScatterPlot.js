@@ -1,6 +1,6 @@
 import React from 'react';
 import load_csv_data from './data.js';
-import d3scatterplot from './d3scatterplot.js'
+import d3ScatterPlot from './d3ScatterPlot.js'
 
 class ScatterPlot extends React.Component {
   constructor(props) {
@@ -27,7 +27,7 @@ class ScatterPlot extends React.Component {
   }
 
  updateChart() {
-    d3scatterplot(this.state.data, this.svgEl, this.props.height, this.props.width)
+    d3ScatterPlot(this.state.data, this.svgEl, this.props.height, this.props.width)
  }
 
  render() {

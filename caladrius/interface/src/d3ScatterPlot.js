@@ -2,7 +2,7 @@ import * as d3 from "d3";
 
 const margins = { 'top': 50, 'right': 50, 'bottom': 50, 'left': 50 };
 
-function d3scatterplot(data, svg, svg_height, svg_width) {
+function d3ScatterPlot(data, svg, svg_height, svg_width) {
     let width = svg_width - margins.left - margins.right
     let height = svg_height - margins.top - margins.bottom
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, width])
@@ -41,4 +41,4 @@ function d3scatterplot(data, svg, svg_height, svg_width) {
 
 
 
-export default d3scatterplot;
+export default d3ScatterPlot;

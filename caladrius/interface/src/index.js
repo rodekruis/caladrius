@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ScatterPlot from './scatterplot.js';
+import ScatterPlot from './ScatterPlot.js';
 
 ReactDOM.render(
   <ScatterPlot width={800} height={600} />,
