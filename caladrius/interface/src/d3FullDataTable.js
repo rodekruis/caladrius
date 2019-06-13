@@ -56,12 +56,12 @@ function d3FullDataTable(data, table, props) {
 }
 
 function categoryCounter(data, index) {
-    return data.filter(datapoint => datapoint.category == index).length;
+    return data.filter(datapoint => datapoint.category === index).length;
 }
 
 function categoryAverager(data, index) {
     var filterCriteria = function(datapoint) {
-        return datapoint.category == index;
+        return datapoint.categor === index;
     };
 
     let length = data.filter(filterCriteria).length;
