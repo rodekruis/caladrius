@@ -2,9 +2,9 @@ import * as d3 from "d3";
 
 const margin = { 'top': 50, 'right': 50, 'bottom': 50, 'left': 50 };
 
-function d3ScatterPlot(data, svg, svg_height, svg_width) {
-    let width = svg_width - margin.left - margin.right
-    let height = svg_height - margin.top - margin.bottom
+function d3ScatterPlot(data, svg, props) {
+    let width = props.width - margin.left - margin.right
+    let height = props.height - margin.top - margin.bottom
     let xScale = d3.scaleLinear().domain([0, 1]).range([0, width])
     let yScale = d3.scaleLinear().domain([0, 1]).range([height, 0])
     let inverseXScale = d3.scaleLinear().domain([0, width]).range([0,1])
@@ -36,9 +36,9 @@ function d3ScatterPlot(data, svg, svg_height, svg_width) {
        circles.exit().remove()
 
        // Add the axes
-       var x_axis = d3.axisBottom()
+       d3.axisBottom()
           .scale(xScale)
-       var y_axis = d3.axisLeft()
+       d3.axisLeft()
           .scale(yScale)
        svg.append('g')
         .attr('transform', 'translate(0,' + (height) + ')')

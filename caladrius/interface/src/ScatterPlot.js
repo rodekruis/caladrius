@@ -27,7 +27,7 @@ class ScatterPlot extends React.Component {
   }
 
  updateChart() {
-    d3ScatterPlot(this.state.data, this.svgEl, this.props.height, this.props.width)
+    d3ScatterPlot(this.state.data, this.svgEl, this.props)
  }
 
  render() {
