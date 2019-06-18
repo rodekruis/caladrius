@@ -61,7 +61,7 @@ function categoryCounter(data, index) {
 
 function categoryAverager(data, index) {
     var filterCriteria = function(datapoint) {
-        return datapoint.categor === index;
+        return datapoint.category === index;
     };
 
     let length = data.filter(filterCriteria).length;
