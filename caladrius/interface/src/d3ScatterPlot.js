@@ -9,13 +9,12 @@ function d3ScatterPlot(data, svg, props) {
     let yScale = d3.scaleLinear().domain([0, 1]).range([height, 0])
     let inverseXScale = d3.scaleLinear().domain([0, width]).range([0,1])
 
+    // Create the area for plotting
+    svg = d3.select(svg)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
     data.then(data => {
-
-       // Create the area for plotting
-       svg = d3.select(svg)
-              .append("g")
-              .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-
        // Add the circles
        var circles = svg.selectAll('circle')
          .data(data)
@@ -33,7 +32,14 @@ function d3ScatterPlot(data, svg, props) {
                 return 'purple'
             }
           })
+          .on('mouseover', function(d) {
+          d3.select(this).attr({
+              fill: 'red',
+              r: 6,
+            });
+          })
        circles.exit().remove()
+      })
 
        // Add the axes
        d3.axisBottom()
@@ -72,10 +78,6 @@ function d3ScatterPlot(data, svg, props) {
       .attr('dy', '1em')
       .style('text-anchor', 'middle')
       .text('Actual');
-
-    })
 }
-
-
 
 export default d3ScatterPlot;
