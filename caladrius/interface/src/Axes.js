@@ -1,26 +1,38 @@
 import React from 'react';
 import * as d3 from 'd3';
 
-export class AxisBottom extends React.Component{
+class AxisComponent extends React.Component{
+
  constructor(props) {
     super(props);
     this.ref = React.createRef();
-    this.createBottomAxis = this.createBottomAxis.bind(this)
+    this.createComponent = this.createComponent.bind(this)
   }
 
-   componentDidMount() {
+ componentDidMount() {
     if (this.ref.current) {
-      this.createBottomAxis()
+      this.createComponent()
     }
   }
 
   componentDidUpdate() {
     if (this.ref.current) {
-      this.createBottomAxis()
+      this.createComponent()
     }
   }
 
-  createBottomAxis() {
+  creatComponent() {
+     return; 
+  }
+
+  render() {
+    return;
+  }
+
+}
+
+export class AxisBottom extends AxisComponent{
+  createComponent() {
       d3.select(this.ref.current).call(d3.axisBottom(this.props.xScale));
   }
 
@@ -29,28 +41,8 @@ export class AxisBottom extends React.Component{
   }
 }
 
-
-
-export class AxisLeft extends React.Component{
- constructor(props) {
-    super(props);
-    this.ref = React.createRef();
-    this.createLeftAxis = this.createLeftAxis.bind(this)
-  }
-
-   componentDidMount() {
-    if (this.ref.current) {
-      this.createLeftAxis()
-    }
-  }
-
-  componentDidUpdate() {
-    if (this.ref.current) {
-      this.createLeftAxis()
-    }
-  }
-
-  createLeftAxis() {
+export class AxisLeft extends AxisComponent{
+  createComponent() {
       d3.select(this.ref.current).call(d3.axisLeft(this.props.yScale));
   }
 
@@ -59,26 +51,8 @@ export class AxisLeft extends React.Component{
   }
 }
 
-export class AxisBottomLabel extends React.Component{
- constructor(props) {
-    super(props);
-    this.ref = React.createRef();
-    this.createBottomAxisLabel = this.createBottomAxisLabel.bind(this)
-  }
-
-   componentDidMount() {
-    if (this.ref.current) {
-      this.createBottomAxisLabel()
-    }
-  }
-
-  componentDidUpdate() {
-    if (this.ref.current) {
-      this.createBottomAxisLabel()
-    }
-  }
-
-  createBottomAxisLabel() {
+export class AxisBottomLabel extends AxisComponent{
+  createComponent() {
       d3.select(this.ref.current)
         .attr('id', 'xAxisLabel')
         .style('text-anchor', 'middle')
@@ -97,26 +71,8 @@ export class AxisBottomLabel extends React.Component{
   }
 }
 
-export class AxisLeftLabel extends React.Component{
- constructor(props) {
-    super(props);
-    this.ref = React.createRef();
-    this.createLeftAxisLabel = this.createLeftAxisLabel.bind(this)
-  }
-
-   componentDidMount() {
-    if (this.ref.current) {
-      this.createLeftAxisLabel()
-    }
-  }
-
-  componentDidUpdate() {
-    if (this.ref.current) {
-      this.createLeftAxisLabel()
-    }
-  }
-
-  createLeftAxisLabel() {
+export class AxisLeftLabel extends AxisComponent{
+  createComponent() {
       d3.select(this.ref.current)
         .attr('id', 'yAxisLabel')
         .style('text-anchor', 'middle')
@@ -138,26 +94,8 @@ export class AxisLeftLabel extends React.Component{
   }
 }
 
-export class Title extends React.Component{
- constructor(props) {
-    super(props);
-    this.ref = React.createRef();
-    this.createTitle = this.createTitle.bind(this)
-  }
-
-   componentDidMount() {
-    if (this.ref.current) {
-      this.createTitle()
-    }
-  }
-
-  componentDidUpdate() {
-    if (this.ref.current) {
-      this.createTitle()
-    }
-  }
-
-  createTitle() {
+export class Title extends AxisComponent{
+  createComponent() {
       d3.select(this.ref.current)
         .attr('id', 'title')
         .style('text-anchor', 'middle')
@@ -175,4 +113,3 @@ export class Title extends React.Component{
     )
   }
 }
-
