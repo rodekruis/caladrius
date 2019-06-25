@@ -1,6 +1,6 @@
 import React from 'react';
 import * as d3 from 'd3';
-import { AxisBottom, AxisLeft } from './Axes';
+import { AxisBottom, AxisBottomLabel, AxisLeft, AxisLeftLabel, Title } from './Axes';
 import { Circles } from './Circles';
 import { DamageBoundary } from './DamageBoundary';
 import { least, heavy } from './colours';
@@ -21,7 +21,8 @@ export class Scatterplot extends React.Component{
       height: height,
       xScale: xScale,
       yScale: yScale,
-      inverseXScale: inverseXScale
+      inverseXScale: inverseXScale,
+      margin: margin
     })
 
   return (
@@ -29,6 +30,9 @@ export class Scatterplot extends React.Component{
       <g transform={`translate(${margin.left},${margin.top})`}>
         <AxisBottom {...axis_props} />
         <AxisLeft {...axis_props} />
+        <AxisBottomLabel {...axis_props} />
+        <AxisLeftLabel {...axis_props} />
+        <Title {...axis_props} />
         <Circles
           data={this.props.data}
           axis={axis_props}
