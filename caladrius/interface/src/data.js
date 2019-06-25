@@ -4,31 +4,30 @@ import proj4 from "proj4";
 import geoData from './data/Sint-Maarten-2017/coordinates.geojson'
 import csv_path from './data/Sint-Maarten-2017/test/1552303580_epoch_001_predictions.txt'
 
-function load_csv_data(){
-   return Promise.all([
-     d3.json(geoData),
-     d3.dsv(' ', csv_path)
-   ]).then(function(allData) {
-        let gdata = allData[0];
-        let data = allData[1];
-        data.forEach(function(d) {
-              d.objectId = parseInt(d.filename.replace('.png', ''));
-              d.label = parseFloat(d.label);
-              d.prediction = parseFloat(d.prediction);
-              d.category = categorizer(d.prediction);
-
-              // feature mapping
-              d.feature = getFeature(gdata, d.objectId);
-              if (d.feature) {
-                  d.feature.properties._damage = getFromGeo(d.objectId, gdata);
-              };
-        });
-        data = data.filter(function (d) {
-          return d.feature != null;
-        });
-        data.pop(); // Last element is NaN for some reason
-        return data;
-   });
+export async function load_csv_data(){
+   const allData = await Promise.all([
+        d3.json(geoData),
+        d3.dsv(' ', csv_path)
+    ]);
+    let gdata = allData[0];
+    let data = allData[1];
+    data.forEach(function (d) {
+        d.objectId = parseInt(d.filename.replace('.png', ''));
+        d.label = parseFloat(d.label);
+        d.prediction = parseFloat(d.prediction);
+        d.category = categorizer(d.prediction);
+        // feature mapping
+        d.feature = getFeature(gdata, d.objectId);
+        if (d.feature) {
+            d.feature.properties._damage = getFromGeo(d.objectId, gdata);
+        }
+        ;
+    });
+    data = data.filter(function (d) {
+        return d.feature != null;
+    });
+    data.pop(); // Last element is NaN for some reason
+    return data;
 }
 
 function categorizer(prediction) {
@@ -79,5 +78,3 @@ function convertCoordinate(coordinates) {
     var targetProjection = '+proj=longlat +datum=WGS84 +no_defs';
     return proj4(sourceProjection, targetProjection, coordinates);
 }
-
-export default load_csv_data;

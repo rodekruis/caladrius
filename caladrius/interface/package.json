@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "d3-jetpack": "^2.0.20",
+    "d3": "^5.9.2",
+    "jquery": "^3.4.1",
+    "proj4": "^2.5.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1"
