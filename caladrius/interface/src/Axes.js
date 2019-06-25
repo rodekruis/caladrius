@@ -82,7 +82,6 @@ export class AxisLeftLabel extends AxisComponent{
   render() {
     let xpos = 0 - this.props.height / 2
     let ypos = 0 - this.props.margin.left / 1.5 
-    console.log(ypos)
     return (
       <text 
       transform={`rotate(-90)`} 
