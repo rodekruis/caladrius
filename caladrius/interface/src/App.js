@@ -2,6 +2,7 @@ import * as React from "react";
 import { load_csv_data } from './data.js'
 import { Scatterplot } from "./Scatterplot";
 import { MapImage } from "./MapImage";
+import { Table } from "./Tables";
 
 export class App extends React.Component {
     constructor(props) {
@@ -20,18 +21,15 @@ export class App extends React.Component {
   }
 
   handleClick(datum) {
-    this.setState({selected_datum_id: datum.objectId}, function () {
-      console.log(this.state.selected_datum_id) })
+    this.setState({selected_datum_id: datum.objectId})
   }
 
   handleDragA(x) {
-    this.setState({damage_boundary_a: x}, function () {
-      console.log(this.state.damage_boundary_a) })
+    this.setState({damage_boundary_a: x})
   }
 
   handleDragB(x) {
-    this.setState({damage_boundary_b: x}, function () {
-      console.log(this.state.damage_boundary_b) })
+    this.setState({damage_boundary_b: x})
   }
 
   render() {
@@ -66,6 +64,15 @@ export class App extends React.Component {
            data={this.state.data}
            image_label={'after'}
            selected_datum_id={this.state.selected_datum_id}
+          />
+        </div>
+        <div style={{width: "200px" }}>
+          <Table
+           width={300}
+           data={this.state.data}
+           selected_datum_id={this.state.selected_datum_id}
+           damage_boundary_a={this.state.damage_boundary_a}
+           damage_boundary_b={this.state.damage_boundary_b}
           />
         </div>
       </div>

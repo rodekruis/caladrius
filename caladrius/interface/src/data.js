@@ -4,8 +4,6 @@ import proj4 from "proj4";
 import geoData from './data/Sint-Maarten-2017/coordinates.geojson'
 import csv_path from './data/Sint-Maarten-2017/test/1552303580_epoch_001_predictions.txt'
 
-export const images_path = './data/Sint-Maarten-2017/test/'
-
 export async function load_csv_data(){
    const allData = await Promise.all([
         d3.json(geoData),
