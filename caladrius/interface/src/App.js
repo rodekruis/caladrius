@@ -2,7 +2,7 @@ import * as React from "react";
 import { load_csv_data } from './data.js'
 import { Scatterplot } from "./Scatterplot";
 import { MapImage } from "./MapImage";
-import { Table } from "./Tables";
+import { PointInfoTable, CountAvgTable } from "./Tables";
 
 export class App extends React.Component {
     constructor(props) {
@@ -66,11 +66,17 @@ export class App extends React.Component {
            selected_datum_id={this.state.selected_datum_id}
           />
         </div>
-        <div style={{width: "200px" }}>
-          <Table
-           width={300}
+       <div style={{width: "200px" }}>
+          <PointInfoTable
+           width={200}
            data={this.state.data}
            selected_datum_id={this.state.selected_datum_id}
+          />
+        </div>
+        <div style={{width: "200px" }}>
+          <CountAvgTable
+           width={200}
+           data={this.state.data}
            damage_boundary_a={this.state.damage_boundary_a}
            damage_boundary_b={this.state.damage_boundary_b}
           />
