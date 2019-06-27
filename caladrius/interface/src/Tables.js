@@ -66,7 +66,6 @@ export class PointInfoTable extends Table {
       d.objectId === this.props.selected_datum_id)[0];
     let tbody = d3.select(this.ref.current).select('tbody');
 
-    let that = this;
     let row = tbody.select('tr') 
       .selectAll('td')
       .data([datum.feature.properties._damage, 

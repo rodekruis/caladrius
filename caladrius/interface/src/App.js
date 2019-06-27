@@ -3,6 +3,7 @@ import { load_csv_data } from './data.js'
 import { Scatterplot } from "./Scatterplot";
 import { MapImage } from "./MapImage";
 import { PointInfoTable, CountAvgTable } from "./Tables";
+import { Map } from "./Map"
 
 export class App extends React.Component {
     constructor(props) {
@@ -21,6 +22,7 @@ export class App extends React.Component {
   }
 
   handleClick(datum) {
+    console.log(this.state.data)
     this.setState({selected_datum_id: datum.objectId})
   }
 
@@ -81,6 +83,14 @@ export class App extends React.Component {
            damage_boundary_b={this.state.damage_boundary_b}
           />
         </div>
+        <div style={{width: "200px", height: "200px"}}>
+          <Map
+           width={200}
+           height={200}
+           data={this.state.data}
+          />
+        </div>
+
       </div>
     )
   };

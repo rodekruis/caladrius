@@ -5,6 +5,7 @@
   "dependencies": {
     "d3": "^5.9.2",
     "jquery": "^3.4.1",
+    "leaflet": "^1.5.1",
     "proj4": "^2.5.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
