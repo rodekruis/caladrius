@@ -22,7 +22,6 @@ export class App extends React.Component {
   }
 
   handleClick(datum) {
-    console.log(this.state.data)
     this.setState({selected_datum_id: datum.objectId})
   }
 
@@ -83,11 +82,12 @@ export class App extends React.Component {
            damage_boundary_b={this.state.damage_boundary_b}
           />
         </div>
-        <div style={{width: "200px", height: "200px"}}>
+        <div style={{width: "400px", height: "400px"}}>
           <Map
-           width={200}
-           height={200}
            data={this.state.data}
+           width={400}
+           height={400}
+           key={this.state.data} // force another mount after data loaded
           />
         </div>
 
