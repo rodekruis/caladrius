@@ -1,50 +1,43 @@
-import React from 'react';
-import * as L from 'leaflet' ;
+import * as React from 'react';
 import 'leaflet/dist/leaflet.css';
+import * as L from 'leaflet';
+import { Map as LeafletMap, TileLayer, Polygon, LayerGroup} from 'react-leaflet';
+import { get_point_colour, selected } from './colours';
 import 'leaflet.heat';
 
-const map_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}'
-const access_token = 'pk.eyJ1Ijoib3Jhbmd1aCIsImEiOiJjanNxNWthYjgxMHo0NDRyMjc5MnM1c2VwIn0.oydc_gZ6NRz7H_ny4yp0Fw'
 
-export class Map extends React.Component{
+const map_url = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const attribution="&copy; <a href=&quot;http://osm.org/copyright&quot;>OpenStreetMap</a> contributors";
+const zoom = 18
 
-  componentDidMount() {
-    this.mapobj = L.map('map', {
-      center: [18.0425, -63.0548],
-      zoom: 11,
-      layers: [
-        L.tileLayer(
-          map_url, {
-            'maxZoom': 17,
-            'id': 'mapbox.streets',
-            'accessToken': access_token 
-          }
-        ),
-      ]
-    })
-     L.control.layers({}, {
-        'temp': openWeatherMapo("temp_new"),
-        'wind': openWeatherMapo("clouds_new"),
-        'rains': openWeatherMapo("precipitation_new"),
-        'clouds': openWeatherMapo("clouds_new"),
-        'heat map labels': heatMapMaker(this.mapobj, this.props.data, "label"),
-        'heat map prediction': heatMapMaker(this.mapobj, this.props.data, "prediction"),
-        'heat map category': heatMapMaker(this.mapobj, this.props.data, "category"),
-    }).addTo(this.mapobj)
-  }
+export class Map extends React.Component {
 
-  render() {
-    console.log(this.mapobj)
+  render () {
+ 
+    let polygonArray = this.props.data.map(datum => {
+      let colour = get_point_colour(datum.prediction, 
+        this.props.damage_boundary_a, this.props.damage_boundary_b,
+        datum.objectId, this.props.selected_datum_id);
+      return(  
+        <Polygon 
+        color={colour}
+        positions={datum['feature']['geometry']['coordinates'][0][0]} 
+        key={datum.objectId}
+        onClick={() => this.props.onClick(datum)}
+       />
+      );
+    });
+
     return (
-        <div 
-          id={'map'}
-         style={{'height': this.props.height, 'width': this.props.width}}
-         >
-       </div>
-    );
+      <LeafletMap center={this.props.map_center} zoom={zoom} style={{height: this.props.height}}>
+        <TileLayer url={map_url} attribution={attribution} />
+         <LayerGroup>
+         	{polygonArray}
+        </LayerGroup>
+     </LeafletMap>
+    )
   }
 }
-
 
 function openWeatherMapo(layer) {
   return L.tileLayer('https://tile.openweathermap.org/map/{layer}/{z}/{x}/{y}.png?appid={api_key}', {
