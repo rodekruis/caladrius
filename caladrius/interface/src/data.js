@@ -75,5 +75,6 @@ function getFromGeo(number, geo) {
 function convertCoordinate(coordinates) {
     var sourceProjection = '+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs';
     var targetProjection = '+proj=longlat +datum=WGS84 +no_defs';
-    return proj4(sourceProjection, targetProjection, coordinates);
+    let coords =  proj4(sourceProjection, targetProjection, coordinates);
+    return [coords[1], coords[0]]
 }
