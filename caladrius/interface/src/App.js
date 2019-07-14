@@ -12,7 +12,8 @@ export class App extends React.Component {
             data: [],
             selected_datum_id: -1,
             damage_boundary_a: 0.3,
-            damage_boundary_b: 0.7
+            damage_boundary_b: 0.7,
+            map_center: [18.0425, -63.0548]
         };
     };
   
@@ -22,7 +23,10 @@ export class App extends React.Component {
   }
 
   handleClick(datum) {
-    this.setState({selected_datum_id: datum.objectId})
+    this.setState({
+      selected_datum_id: datum['objectId'],
+      map_center: datum['feature']['geometry']['coordinates'][0][0][0]
+    })
   }
 
   handleDragA(x) {
@@ -84,13 +88,16 @@ export class App extends React.Component {
         </div>
         <div style={{width: "400px", height: "400px"}}>
           <Map
-           data={this.state.data}
            width={400}
            height={400}
-           key={this.state.data} // force another mount after data loaded
+           data={this.state.data}
+           onClick={datum => this.handleClick(datum)}
+           damage_boundary_a={this.state.damage_boundary_a}
+           damage_boundary_b={this.state.damage_boundary_b}
+           selected_datum_id={this.state.selected_datum_id}
+           map_center={this.state.map_center}
           />
         </div>
-
       </div>
     )
   };
