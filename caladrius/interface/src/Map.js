@@ -12,7 +12,7 @@ export class Map extends React.Component {
 
   constructor(props) {
     super(props);
-    this.get_polygon_array = this.get_polygon_array.bind(this);
+    this.get_building_shape_array = this.get_building_shape_array.bind(this);
   }
 
   render () {
@@ -20,7 +20,7 @@ export class Map extends React.Component {
       <LeafletMap center={this.props.map_center} zoom={zoom} style={{height: this.props.height}}>
         <TileLayer url={map_url} attribution={attribution} />
          <LayerGroup>
-         	{this.get_polygon_array()}
+         	{this.get_building_shape_array()}
         </LayerGroup>
        <LayersControl>        
           {heatMapMaker(this.props.data, 'label')}
@@ -31,8 +31,8 @@ export class Map extends React.Component {
     )
   }
 
-  get_polygon_array() {
-    let polygonArray = this.props.data.map(datum => {
+  get_building_shape_array() {
+    let building_shape_array = this.props.data.map(datum => {
       let colour = get_point_colour(datum.prediction, 
         this.props.damage_boundary_a, this.props.damage_boundary_b,
         datum.objectId, this.props.selected_datum_id);
@@ -45,7 +45,7 @@ export class Map extends React.Component {
        />
       );
     });
-    return polygonArray
+    return building_shape_array
 }
 
 }
