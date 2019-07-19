@@ -10,7 +10,7 @@ export class App extends React.Component {
         super(props);
         this.state = {
             data: [],
-            selected_datum_id: -1,
+            selected_datum: {},
             damage_boundary_a: 0.3,
             damage_boundary_b: 0.7,
             map_center: [18.0425, -63.0548]
@@ -24,8 +24,7 @@ export class App extends React.Component {
 
   handleClick(datum) {
     this.setState({
-      selected_datum_id: datum['objectId'],
-      map_center: datum['feature']['geometry']['coordinates'][0][0][0]
+      selected_datum: datum
     })
   }
 
@@ -48,7 +47,7 @@ export class App extends React.Component {
            onDragA={x => this.handleDragA(x)}
            onDragB={x => this.handleDragB(x)}
            data={this.state.data}
-           selected_datum_id={this.state.selected_datum_id}
+           selected_datum={this.state.selected_datum}
            damage_boundary_a={this.state.damage_boundary_a}
            damage_boundary_b={this.state.damage_boundary_b}
           />
@@ -57,25 +56,22 @@ export class App extends React.Component {
           <MapImage
            width={200}
            height={200}
-           data={this.state.data}
            image_label={'before'}
-           selected_datum_id={this.state.selected_datum_id}
+           selected_datum={this.state.selected_datum}
           />
         </div>
         <div style={{ height: "200px", width: "200px" }}>
           <MapImage
            width={200}
            height={200}
-           data={this.state.data}
            image_label={'after'}
-           selected_datum_id={this.state.selected_datum_id}
+           selected_datum={this.state.selected_datum}
           />
         </div>
        <div style={{width: "200px" }}>
           <PointInfoTable
            width={200}
-           data={this.state.data}
-           selected_datum_id={this.state.selected_datum_id}
+           selected_datum={this.state.selected_datum}
           />
         </div>
         <div style={{width: "200px" }}>
@@ -94,8 +90,7 @@ export class App extends React.Component {
            onClick={datum => this.handleClick(datum)}
            damage_boundary_a={this.state.damage_boundary_a}
            damage_boundary_b={this.state.damage_boundary_b}
-           selected_datum_id={this.state.selected_datum_id}
-           map_center={this.state.map_center}
+           selected_datum={this.state.selected_datum}
           />
         </div>
       </div>

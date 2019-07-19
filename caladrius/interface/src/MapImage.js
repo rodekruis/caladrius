@@ -9,10 +9,8 @@ export class MapImage extends React.Component{
     }
 
     selectImage() {
-        if (this.props.selected_datum_id > 0) {
-            let datum = this.props.data.filter(d => 
-               d.objectId === this.props.selected_datum_id)[0]
-            let image_key = this.props.image_label + '/' + datum.filename 
+        if (Object.keys(this.props.selected_datum).length > 0) {
+            let image_key = this.props.image_label + '/' + this.props.selected_datum.filename 
             return images[image_key] 
         }
         else {

@@ -11,7 +11,7 @@ export class Circles extends React.Component {
         axis={this.props.axis} 
         datum={datum} 
         onClick={() => this.props.onClick(datum)}
-        selected_datum_id={this.props.selected_datum_id}
+        selected_datum={this.props.selected_datum}
         damage_boundary_a={this.props.damage_boundary_a}
         damage_boundary_b={this.props.damage_boundary_b}
         />
@@ -45,7 +45,7 @@ class Circle extends React.Component {
       .attr('r', 5)
       .attr('fill', () => get_point_colour(this.props.datum.prediction, 
           this.props.damage_boundary_a, this.props.damage_boundary_b,
-          this.props.datum.objectId, this.props.selected_datum_id)
+          this.props.datum.objectId, this.props.selected_datum.objectId)
       )
       .on('mouseover', function(d) {
         d3.select(this).attr('fill', selected)
@@ -54,7 +54,7 @@ class Circle extends React.Component {
         d3.select(this).attr('fill', () => get_point_colour(
           that.props.datum.prediction, 
           that.props.damage_boundary_a, that.props.damage_boundary_b,
-          that.props.datum.objectId, that.props.selected_datum_id)
+          that.props.datum.objectId, that.props.selected_datum.objectId)
      )})
    }
 

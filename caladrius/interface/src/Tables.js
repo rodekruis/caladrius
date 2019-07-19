@@ -61,9 +61,8 @@ export class PointInfoTable extends Table {
 
  fillTableValues() {
 
-   if ((this.ref.current) && (this.props.selected_datum_id > 0)) {
-    let datum = this.props.data.filter(d => 
-      d.objectId === this.props.selected_datum_id)[0];
+   if ((this.ref.current) && (Object.keys(this.props.selected_datum).length > 0)) {
+    let datum = this.props.selected_datum
     let tbody = d3.select(this.ref.current).select('tbody');
 
     let row = tbody.select('tr') 

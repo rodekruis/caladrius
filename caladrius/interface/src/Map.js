@@ -7,6 +7,8 @@ import { get_point_colour } from './colours';
 const map_url = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 const attribution="&copy; <a href=&quot;http://osm.org/copyright&quot;>OpenStreetMap</a> contributors";
 const zoom = 18
+let center = [18.0425, -63.0548]
+ 
 
 export class Map extends React.Component {
 
@@ -16,8 +18,12 @@ export class Map extends React.Component {
   }
 
   render () {
+    if (Object.keys(this.props.selected_datum).length > 0) {
+      center = this.props.selected_datum['feature']['geometry']['coordinates'][0][0][0]
+    }
+
     return (
-      <LeafletMap center={this.props.map_center} zoom={zoom} style={{height: this.props.height}}>
+      <LeafletMap center={center} zoom={zoom} style={{height: this.props.height}}>
         <TileLayer url={map_url} attribution={attribution} />
          <LayerGroup>
          	{this.get_building_shape_array()}
@@ -35,7 +41,7 @@ export class Map extends React.Component {
     let building_shape_array = this.props.data.map(datum => {
       let colour = get_point_colour(datum.prediction, 
         this.props.damage_boundary_a, this.props.damage_boundary_b,
-        datum.objectId, this.props.selected_datum_id);
+        datum.objectId, this.props.selected_datum.objectId);
       return(  
         <Polygon 
         color={colour}
