@@ -1,3 +1,7 @@
+0.4.0 (2019-07-19)
+------------------
+- Refactored interface to use React components 
+
 0.3.0 (2019-06-06)
 ------------------
 - Refactored `caladrius_data` entrypoint so that user must specify which 
