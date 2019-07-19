@@ -5,7 +5,6 @@ export class MapImage extends React.Component{
 
     constructor(props) {
       super(props);
-      this.ref = React.createRef();
       this.selectImage = this.selectImage.bind(this)
     }
 
