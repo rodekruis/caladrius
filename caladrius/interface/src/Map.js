@@ -15,18 +15,21 @@ export class Map extends React.Component {
   constructor(props) {
     super(props);
     this.get_building_shape_array = this.get_building_shape_array.bind(this);
+    this.get_admin_regions = this.get_admin_regions.bind(this);
   }
 
   render () {
     if (Object.keys(this.props.selected_datum).length > 0) {
       center = this.props.selected_datum['feature']['geometry']['coordinates'][0][0][0]
     }
-
     return (
       <LeafletMap center={center} zoom={zoom} style={{height: this.props.height}}>
         <TileLayer url={map_url} attribution={attribution} />
-         <LayerGroup>
-         	{this.get_building_shape_array()}
+        <LayerGroup>
+        {this.get_admin_regions()}
+        </LayerGroup>
+        <LayerGroup>
+        {this.get_building_shape_array()}
         </LayerGroup>
        <LayersControl>        
           {heatMapMaker(this.props.data, 'label')}
@@ -49,11 +52,21 @@ export class Map extends React.Component {
         key={datum.objectId}
         onClick={() => this.props.onClick(datum)}
        />
-      );
-    });
+      );});
     return building_shape_array
-}
+  }
 
+  get_admin_regions() {
+    let admin_boundary_array = this.props.admin_regions.map((datum, i) => {
+      return(
+        <Polygon
+        color={'black'}
+        positions={datum}
+        key={i}
+      />
+      );});
+    return admin_boundary_array
+  }
 }
 
 

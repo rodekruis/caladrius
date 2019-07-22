@@ -1,5 +1,5 @@
 import * as React from "react";
-import { load_csv_data } from './data.js'
+import { load_csv_data, load_admin_regions } from './data.js'
 import { Scatterplot } from "./Scatterplot";
 import { MapImage } from "./MapImage";
 import { PointInfoTable, CountAvgTable } from "./Tables";
@@ -10,6 +10,7 @@ export class App extends React.Component {
         super(props);
         this.state = {
             data: [],
+            admin_regions: [],
             selected_datum: {},
             damage_boundary_a: 0.3,
             damage_boundary_b: 0.7,
@@ -20,6 +21,8 @@ export class App extends React.Component {
   componentDidMount() {
     const data = load_csv_data()
     data.then(d => this.setState({data: d}))
+    const admin_regions = load_admin_regions()
+    admin_regions.then(d => this.setState({admin_regions: d}))
   }
 
   handleClick(datum) {
@@ -91,6 +94,7 @@ export class App extends React.Component {
            damage_boundary_a={this.state.damage_boundary_a}
            damage_boundary_b={this.state.damage_boundary_b}
            selected_datum={this.state.selected_datum}
+           admin_regions={this.state.admin_regions}
           />
         </div>
       </div>

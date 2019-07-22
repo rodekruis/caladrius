@@ -3,6 +3,19 @@ import jQuery from "jquery";
 import proj4 from "proj4";
 import geoData from './data/Sint-Maarten-2017/coordinates.geojson'
 import csv_path from './data/Sint-Maarten-2017/test/1552303580_epoch_001_predictions.txt'
+import region_boundaries from './data/Sint-Maarten-2017/admin_regions.geojson'
+
+
+export async function load_admin_regions() {
+    let data =  d3.json(region_boundaries)
+                    .then(d => d['features'])
+                    .then(d => d.map(region =>
+                        region['geometry']['coordinates'][0].map(coords =>
+                           convertCoordinate(coords))
+                    ))
+    return data
+}
+
 
 export async function load_csv_data(){
    const allData = await Promise.all([
