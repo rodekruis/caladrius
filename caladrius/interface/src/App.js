@@ -70,16 +70,16 @@ export class App extends React.Component {
         </div>
        <div style={{width: "200px" }}>
           <PointInfoTable
-           width={200}
            selected_datum={this.state.selected_datum}
+           table_id={'infoToolTipBox'}
           />
         </div>
         <div style={{width: "200px" }}>
           <CountAvgTable
-           width={200}
            data={this.state.data}
            damage_boundary_a={this.state.damage_boundary_a}
            damage_boundary_b={this.state.damage_boundary_b}
+           table_id={'countAvgTable'}
           />
         </div>
         <div style={{width: "400px", height: "400px"}}>
