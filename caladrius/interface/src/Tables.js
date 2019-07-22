@@ -62,7 +62,6 @@ export class CountAvgTable extends Table{
   renderTableData() {
     let count_data = [0.0, 0.0, 0.0]
     let average_data = [0.0, 0.0, 0.0]
-    console.log(this.props.selectd_datum)
     if (this.props.data.length) {
       count_data = [categoryCounter(this.props.data, 0.0, this.props.damage_boundary_a),
         categoryCounter(this.props.data, this.props.damage_boundary_a, this.props.damage_boundary_b),
