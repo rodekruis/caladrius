@@ -319,6 +319,12 @@ def create_geojson_for_visualization(df):
         os.remove(coordinates_file)  # fiona doesn't like to overwrite files
     df.to_file(coordinates_file, driver='GeoJSON')
 
+    # Write out the admin regions file to geojson
+    admin_regions_file = os.path.join(TARGET_DATA_FOLDER, 'admin_regions.geojson')
+    if os.path.exists(admin_regions_file):
+        os.remove(admin_regions_file)
+    admin_regions.to_file(admin_regions_file, driver='GeoJSON')
+
 
 def main():
     logging.basicConfig(
