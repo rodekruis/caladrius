@@ -210,12 +210,15 @@ def createDatapoints(df):
                 # identify data point
                 objectID = row['OBJECTID']
 
-                before_file = getBeforeImage(source_before_image, geoms,'{}.png'.format(objectID))
-                after_file = getAfterImage(geoms, '{}.png'.format(objectID))
-                if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) \
-                        and os.path.isfile(after_file):
-                    labels_file.write('{0}.png {1:.4f}\n'.format(objectID, damage_quantifier(damage)))
-                    count += 1
+                try:
+                    before_file = getBeforeImage(source_before_image, geoms,'{}.png'.format(objectID))
+                    after_file = getAfterImage(geoms, '{}.png'.format(objectID))
+                    if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) \
+                            and os.path.isfile(after_file):
+                        labels_file.write('{0}.png {1:.4f}\n'.format(objectID, damage_quantifier(damage)))
+                        count += 1
+                except ValueError as ve:
+                    continue
 
     logger.info('Created {} Datapoints'.format(count))
 
