@@ -36,6 +36,9 @@ sys.excepthook = exceptionLogger
 # supported damage types
 DAMAGE_TYPES = ['destroyed', 'significant', 'partial', 'none']
 
+# Fraction of image pixels that must be non-zero
+NONZERO_PIXEL_THRESHOLD = 0.90
+
 # input
 ROOT_DIRECTORY = os.path.join('data', 'RC Challenge 1', '1')
 
@@ -132,36 +135,55 @@ def makesquare(minx, miny, maxx, maxy):
     return geoms
 
 
-def getCroppedImage(source, geometry, folder, name):
-    image, transform = rasterio.mask.mask(source, geometry, crop=True)
-    out_meta = source.meta.copy()
-    if np.sum(image) > 0:
-        # save the resulting raster
-        out_meta.update({
+def saveImage(image, transform, out_meta, folder, name):
+    out_meta.update({
             "driver": "PNG",
             "height": image.shape[1],
             "width": image.shape[2],
             "transform": transform
         })
-        directory = os.path.join(TEMP_DATA_FOLDER, folder)
-        os.makedirs(directory, exist_ok=True)
-        file_path = os.path.join(directory, name)
-        with rasterio.open(file_path, 'w', **out_meta) as dest:
-            dest.write(image)
-        return file_path
+    directory = os.path.join(TEMP_DATA_FOLDER, folder)
+    os.makedirs(directory, exist_ok=True)
+    file_path = os.path.join(directory, name)
+    with rasterio.open(file_path, 'w', **out_meta) as dest:
+        dest.write(image)
+    return file_path
+
+
+def getBeforeImage(source, geometry, name):
+    image, transform = rasterio.mask.mask(source, geometry, crop=True)
+    out_meta = source.meta.copy()
+    good_pixel_frac = np.count_nonzero(image) / image.size
+    if np.sum(image) > 0 and good_pixel_frac > NONZERO_PIXEL_THRESHOLD:
+        return saveImage(image, transform, out_meta, 'before', name)
     return None
 
 
 def getAfterImage(geometry, name):
     after_files = [os.path.join(AFTER_FOLDER, after_file)
-                   for after_file in os.listdir(AFTER_FOLDER)]
+                   for after_file in os.listdir(AFTER_FOLDER) if after_file.endswith('.tif')]
+    image_list = []
     for index, file in enumerate(after_files):
         try:
             with rasterio.open(file) as after_file:
-                return getCroppedImage(after_file, geometry, 'after', name)
-        except:
+                image, transform = rasterio.mask.mask(after_file, geometry, crop=True)
+                good_pixel_frac = np.count_nonzero(image) / image.size
+                if np.sum(image) > 0 and good_pixel_frac > NONZERO_PIXEL_THRESHOLD:
+                    image_list.append({'after_file': after_file,
+                                       'good_pixel_frac': good_pixel_frac,
+                                       'image': image,
+                                       'transform': transform})
+        except ValueError:
             pass
-    return None
+    if len(image_list) == 0:
+        return None
+    elif len(image_list) == 1:
+        after_image = image_list[0]
+    else:
+        after_image = image_list[np.argmax(np.array([image['good_pixel_frac']
+                                                     for image in image_list]))]
+    return saveImage(after_image['image'], after_image['transform'],
+                     after_image['after_file'].meta.copy(), 'after', name)
 
 
 def createDatapoints(df):
@@ -188,15 +210,12 @@ def createDatapoints(df):
                 # identify data point
                 objectID = row['OBJECTID']
 
-                try:
-                    before_file = getCroppedImage(source_before_image, geoms, 'before', '{}.png'.format(objectID))
-                    after_file = getAfterImage(geoms, '{}.png'.format(objectID))
-                    if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) \
-                            and os.path.isfile(after_file):
-                        labels_file.write('{0}.png {1:.4f}\n'.format(objectID, damage_quantifier(damage)))
-                        count += 1
-                except ValueError as ve:
-                    continue
+                before_file = getBeforeImage(source_before_image, geoms,'{}.png'.format(objectID))
+                after_file = getAfterImage(geoms, '{}.png'.format(objectID))
+                if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) \
+                        and os.path.isfile(after_file):
+                    labels_file.write('{0}.png {1:.4f}\n'.format(objectID, damage_quantifier(damage)))
+                    count += 1
 
     logger.info('Created {} Datapoints'.format(count))
 
