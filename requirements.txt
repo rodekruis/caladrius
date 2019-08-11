@@ -1,3 +1,4 @@
 tqdm==4.31.1
 rasterio==1.0.22
 geopandas==0.4.1
+rtree==0.8.3
