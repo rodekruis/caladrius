@@ -2,10 +2,11 @@ import * as React from 'react';
 import { Map as LeafletMap, TileLayer, Polygon, LayerGroup, LayersControl } from 'react-leaflet';
 import HeatmapLayer from 'react-leaflet-heatmap-layer'
 import 'leaflet/dist/leaflet.css';
+import './map.css';
 import { get_point_colour } from './colours';
 
 const map_url = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-const attribution="&copy; <a href=&quot;http://osm.org/copyright&quot;>OpenStreetMap</a> contributors";
+const attribution= "";
 const zoom = 18
 let center = [18.0425, -63.0548]
  
@@ -23,7 +24,7 @@ export class Map extends React.Component {
       center = this.props.selected_datum['feature']['geometry']['coordinates'][0][0][0]
     }
     return (
-      <LeafletMap center={center} zoom={zoom} style={{height: this.props.height}}>
+      <LeafletMap center={center} zoom={zoom}>
         <TileLayer url={map_url} attribution={attribution} />
         <LayerGroup>
         {this.get_admin_regions()}
