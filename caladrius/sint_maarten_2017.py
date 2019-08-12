@@ -288,7 +288,7 @@ def query_address_api(df, address_api='openmapquest', address_api_key=None):
 
     # Create the address data frame and cache file if it doesn't exist already
     if not os.path.exists(ADDRESS_CACHE):
-        logger.info("Converting {} geometries to EPSG 4326, this meay take awhile ".format(len(df)))
+        logger.info("Converting {} geometries to EPSG 4326, this may take awhile ".format(len(df)))
         df_address = geopandas.GeoDataFrame(df.to_crs(epsg='4326').geometry, crs='epsg:4326')
         df_address['address'] = None
         logger.info("Creating new address cache file {}".format(ADDRESS_CACHE))

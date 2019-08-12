@@ -36,6 +36,9 @@ yarn install
 The dataset can be downloaded from [here](http://gulfaraz.com/share/rc.tgz "RC Challenge 1 Raw Dataset").
 
 Extract the contents to the `data` folder. (Default Path: `./data`)
+```
+tar -xvzf rc.tgz
+```
 
 To create the initial dataset, execute `caladrius_data --run-all`.
 This will create the dataset as per the [specifications](DATASET.md).
