@@ -40,6 +40,11 @@ Extract the contents to the `data` folder. (Default Path: `./data`)
 tar -xvzf rc.tgz
 ```
 
+You will also need to download the administrative region data from
+[here](https://data.humdata.org/dataset/sint-maarten-administrative-level-0-1-boundaries),
+and then unzip the contents to
+`/data/RC Challenge 1/1/Building Info/admin_regions`.
+
 To create the initial dataset, execute `caladrius_data --run-all`.
 This will create the dataset as per the [specifications](DATASET.md).
 
@@ -81,9 +86,17 @@ optional arguments:
 
 ## Interface
 
-Execute `python -m http.server` in the root directory to create a local server.
+From the `caladrius/interface` directory:
 
-The interface can be accessed using `http://localhost:8000/caladrius/interface/`.
+1. Run `npm install` to install the required packages.
+
+2. Create a symbolic link to the `../../data/` directory from the 
+`src/` directory:
+```bash
+ln -s ../../data src/data
+```
+
+Then execute `npm start` and the interface should appear on `http://localhost:3000`.
 
 ## Model
 

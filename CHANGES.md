@@ -1,3 +1,7 @@
+0.4.0 (2019-07-19)
+------------------
+- Refactored interface to use React components 
+
 0.3.1 (2019-08-12)
 ------------------
 - When creating the individual building images using `caladrius_data`, 
