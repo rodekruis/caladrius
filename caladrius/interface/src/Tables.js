@@ -1,4 +1,5 @@
 import React from 'react';
+import './tables.css';
 
 
 class Table extends React.Component {
@@ -50,10 +51,10 @@ export class PointInfoTable extends Table {
 }
 
 
-export class CountAvgTable extends Table{
+export class CountAvgTable extends Table {
 
   renderTableHeader() {
-    const header = ['Damage:', 'Least', 'Partial', 'Heavy']
+    const header = ['Damage', 'Least', 'Partial', 'Heavy']
     return header.map(colname => {
        return <th key={colname}>{colname}</th>
     })
@@ -72,8 +73,8 @@ export class CountAvgTable extends Table{
     }
     return (
       <tbody>
-        {this.renderRow('Count: ', count_data)}
-        {this.renderRow('Average: ', average_data)}
+        {this.renderRow('Count', count_data)}
+        {this.renderRow('Average', average_data)}
       </tbody>
     )
   }
