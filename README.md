@@ -36,6 +36,9 @@ yarn install
 The dataset can be downloaded from [here](http://gulfaraz.com/share/rc.tgz "RC Challenge 1 Raw Dataset").
 
 Extract the contents to the `data` folder. (Default Path: `./data`)
+```
+tar -xvzf rc.tgz
+```
 
 You will also need to download the administrative region data from
 [here](https://data.humdata.org/dataset/sint-maarten-administrative-level-0-1-boundaries),

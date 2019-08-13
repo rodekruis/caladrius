@@ -2,6 +2,12 @@
 ------------------
 - Refactored interface to use React components 
 
+0.3.1 (2019-08-12)
+------------------
+- When creating the individual building images using `caladrius_data`, 
+  now checks for overlap between different drone images and selects the
+  best option, discarding any with <90% good pixels
+
 0.3.0 (2019-06-06)
 ------------------
 - Refactored `caladrius_data` entrypoint so that user must specify which 
