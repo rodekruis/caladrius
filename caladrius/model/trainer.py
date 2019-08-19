@@ -80,7 +80,7 @@ class QuasiSiameseNetwork(object):
                 loss = self.criterion(outputs, labels)
 
                 if not (phase == 'train'):
-                    prediction_file.writelines([ '{} {} {}\n'.format(*line) for line in zip(filename, labels.tolist(), outputs.clamp(0, 1).tolist())])
+                    prediction_file.writelines([ '{} {} {}\n'.format(*line) for line in zip(filename, labels.view(-1).tolist(), outputs.clamp(0, 1).view(-1).tolist())])
 
                 if phase == 'train':
                     loss.backward()
