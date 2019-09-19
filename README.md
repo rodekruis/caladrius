@@ -21,14 +21,16 @@ Access the container using `docker exec -it caladrius bash`.
 ## Manual Setup
 
 #### Requirements:
-- Python 3.6.5
-- [Yarn](https://yarnpkg.com/)
-- Install the required libraries:
+- [Python 3.6.5 or higher](https://www.python.org/downloads/)
+- [Anaconda or Miniconda 2019.07 or higher](https://www.anaconda.com/distribution/#download-section)
+- [NodeJS v10 or higher](https://nodejs.org/en/download/)
+- [Yarn v1.17.3 or higher](https://yarnpkg.com/)
+- Run the following commands:
 
 ```
-pip install -r requirements.txt
+conda env create -f caladriusenv.yml
+conda activate caladriusenv
 pip install .
-yarn install
 ```
 
 ## Dataset
@@ -40,12 +42,7 @@ Extract the contents to the `data` folder. (Default Path: `./data`)
 tar -xvzf rc.tgz
 ```
 
-You will also need to download the administrative region data from
-[here](https://data.humdata.org/dataset/sint-maarten-administrative-level-0-1-boundaries),
-and then unzip the contents to
-`/data/RC Challenge 1/1/Building Info/admin_regions`.
-
-To create the initial dataset, execute `caladrius_data --run-all`.
+To create the training dataset, execute `caladrius_data --run-all`.
 This will create the dataset as per the [specifications](DATASET.md).
 
 There are several parameters that you can specify, described below:
@@ -112,7 +109,7 @@ caladrius --runName caladrius_2019
 caladrius --runName caladrius_2019 --test
 ```
 
-[Click here to download the trained model.](https://drive.google.com/open?id=1jMhEpA_czv2d-84Ym4Nm8LP0TJnhzvnq)
+[Click here to download the trained model.](https://drive.google.com/open?id=1zdWhefcjWto8CxWAR75xO_yMBEiq1QLx)
 
 
 ## Configuration
