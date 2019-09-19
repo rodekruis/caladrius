@@ -126,7 +126,8 @@ usage: caladrius [-h] [--checkpointPath CHECKPOINTPATH] [--dataPath DATAPATH]
                  [--inputSize INPUTSIZE] [--numberOfEpochs NUMBEROFEPOCHS]
                  [--batchSize BATCHSIZE] [--learningRate LEARNINGRATE]
                  [--test] [--maxDataPoints MAXDATAPOINTS]
-                 
+                 [--accuracyThreshold ACCURACYTHRESHOLD]
+
 optional arguments:
   -h, --help            show this help message and exit
   --checkpointPath CHECKPOINTPATH
@@ -151,6 +152,12 @@ optional arguments:
                         learning rate for training (default: 0.001)
   --test                test the model on the test set instead of training
                         (default: False)
+  --maxDataPoints MAXDATAPOINTS
+                        limit the total number of data points used, for
+                        debugging on GPU-less laptops (default: None)
+  --accuracyThreshold ACCURACYTHRESHOLD
+                        window size to calculate regression accuracy (default:
+                        0.1)
 ```
 
 ## Development

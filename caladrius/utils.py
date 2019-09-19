@@ -86,6 +86,8 @@ def configuration():
                         help='test the model on the test set instead of training')
     parser.add_argument('--maxDataPoints', default=None, type=int,
                         help='limit the total number of data points used, for debugging on GPU-less laptops')
+    parser.add_argument('--accuracyThreshold', type=float, default=0.1,
+                        help='window size to calculate regression accuracy')
 
     args = parser.parse_args()
 

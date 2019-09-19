@@ -23,6 +23,7 @@ class QuasiSiameseNetwork(object):
         self.run_name = args.runName
         self.input_size = input_size
         self.lr = args.learningRate
+        self.accuracy_threshold = args.accuracyThreshold
 
         self.criterion = nnloss.MSELoss()
 
@@ -47,7 +48,7 @@ class QuasiSiameseNetwork(object):
                                               min_lr=1e-5,
                                               verbose=True)
 
-    def run_epoch(self, epoch, loader, device, phase='train', accuracy_threshold=0.1):
+    def run_epoch(self, epoch, loader, device, phase='train'):
         assert phase in ('train', 'validation', 'test')
 
         self.model = self.model.to(device)
@@ -87,7 +88,7 @@ class QuasiSiameseNetwork(object):
                     self.optimizer.step()
 
             running_loss += loss.item() * image1.size(0)
-            running_corrects += (outputs - labels.data).abs().le(accuracy_threshold).sum()
+            running_corrects += (outputs - labels.data).abs().le(self.accuracy_threshold).sum()
             running_n += image1.size(0)
 
             if idx % 1 == 0:
