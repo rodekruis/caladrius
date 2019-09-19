@@ -381,20 +381,38 @@ def main():
                              'regions and addresses (if --query-address-api has been run)')
     args = parser.parse_args()
 
+    logger.info('Reading source file: {}'.format(GEOJSON_FILE))
+
     # Read in the main buildings shape file
     df = geopandas.read_file(GEOJSON_FILE)
+
     # Remove any empty building shapes
+    number_of_all_datapoints = len(df)
+    logger.info('Source file contains {} datapoints. {}'.format(number_of_all_datapoints))
     df = df.loc[~df['geometry'].is_empty]
+    number_of_empty_datapoints = number_of_all_datapoints - len(df)
+    logger.info('Removed {} empty datapoints. {}'.format(number_of_empty_datapoints))
+
+    logger.info('Creating Sint-Maarten-2017 dataset using {} datapoints.'.format(len(df)))
 
     if args.create_image_stamps or args.run_all:
+        logger.info('Creating training dataset.')
         createDatapoints(df)
         splitDatapoints(LABELS_FILE)
+    else:
+        logger.info('Skipping creation of training dataset.')
 
     if args.query_address_api or args.run_all:
+        logger.info('Fetching map addresses.')
         query_address_api(df, address_api=args.address_api, address_api_key=args.address_api_key)
+    else:
+        logger.info('Skipping fetching of map addresses.')
 
     if args.create_report_info_file or args.run_all:
+        logger.info('Creating geojson for visualization.')
         create_geojson_for_visualization(df)
+    else:
+        logger.info('Skipping creation of geojson for visualization.')
 
 
 if __name__ == '__main__':
