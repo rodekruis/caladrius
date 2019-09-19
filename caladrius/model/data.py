@@ -33,8 +33,12 @@ class CaladriusDataset(Dataset):
     def loadDatapoint(self, idx):
         line = self.datapoints[idx]
         filename, damage = line.split(' ')
-        before_image = Image.open(os.path.join(self.directory, 'before', filename))
-        after_image = Image.open(os.path.join(self.directory, 'after', filename))
+        before_image = Image.open(os.path.join(self.directory,
+                                                'before',
+                                                filename))
+        after_image = Image.open(os.path.join(self.directory,
+                                                'after',
+                                                filename))
         return filename, before_image, after_image, float(damage)
 
 
@@ -50,8 +54,13 @@ class Datasets(object):
 
     def load(self, set_name):
         assert set_name in {'train', 'validation', 'test'}
-        dataset = CaladriusDataset(os.path.join(self.dataPath, set_name), transforms=self.transforms[set_name],
-                                   max_data_points=self.maxDataPoints)
-        dataLoader = DataLoader(dataset, batch_size=self.batchSize, shuffle=(set_name == 'train'), num_workers=self.numberOfWorkers)
+        dataset = CaladriusDataset(os.path.join(self.dataPath, set_name),
+                                    transforms=self.transforms[set_name],
+                                    max_data_points=self.maxDataPoints)
+        dataLoader = DataLoader(dataset,
+                                    batch_size=self.batchSize,
+                                    shuffle=(set_name == 'train'),
+                                    num_workers=self.numberOfWorkers,
+                                    drop_last=True)
 
         return dataset, dataLoader
