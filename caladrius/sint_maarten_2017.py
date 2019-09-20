@@ -388,10 +388,10 @@ def main():
 
     # Remove any empty building shapes
     number_of_all_datapoints = len(df)
-    logger.info('Source file contains {} datapoints. {}'.format(number_of_all_datapoints))
+    logger.info('Source file contains {} datapoints.'.format(number_of_all_datapoints))
     df = df.loc[~df['geometry'].is_empty]
     number_of_empty_datapoints = number_of_all_datapoints - len(df)
-    logger.info('Removed {} empty datapoints. {}'.format(number_of_empty_datapoints))
+    logger.info('Removed {} empty datapoints.'.format(number_of_empty_datapoints))
 
     logger.info('Creating Sint-Maarten-2017 dataset using {} datapoints.'.format(len(df)))
 

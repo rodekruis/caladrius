@@ -25,29 +25,27 @@ Access the container using `docker exec -it caladrius bash`.
 - [Anaconda or Miniconda 2019.07 or higher](https://www.anaconda.com/distribution/#download-section)
 - [NodeJS v10 or higher](https://nodejs.org/en/download/)
 - [Yarn v1.17.3 or higher](https://yarnpkg.com/)
-- Run the following commands:
+- Run the following script:
 
-```
-conda env create -f caladriusenv.yml
-conda activate caladriusenv
-pip install .
+```bash
+./caladrius_install.sh
 ```
 
-## Dataset
+## Dataset - Sint Maarten 2017 Hurricane Irma
 
-The dataset can be downloaded from [here](http://gulfaraz.com/share/rc.tgz "RC Challenge 1 Raw Dataset").
+The Sint Maarten 2017 dataset can be downloaded from [here](http://gulfaraz.com/share/rc.tgz "RC Challenge 1 Raw Dataset").
 
 Extract the contents to the `data` folder. (Default Path: `./data`)
 ```
 tar -xvzf rc.tgz
 ```
 
-To create the training dataset, execute `caladrius_data --run-all`.
+To create the training dataset, execute `python caladrius/sint_maarten_2017.py --run-all`.
 This will create the dataset as per the [specifications](DATASET.md).
 
 There are several parameters that you can specify, described below:
 ```
-usage: caladrius_data [-h] [--run-all] [--create-image-stamps]
+usage: sint_maarten_2017.py [-h] [--run-all] [--create-image-stamps]
                       [--query-address-api] [--address-api ADDRESS_API]
                       [--address-api-key ADDRESS_API_KEY]
                       [--create-report-info-file]
@@ -83,30 +81,20 @@ optional arguments:
 
 ## Interface
 
-From the `caladrius/interface` directory:
-
-1. Run `npm install` to install the required packages.
-
-2. Create a symbolic link to the `../../data/` directory from the 
-`src/` directory:
-```bash
-ln -s ../../data src/data
-```
-
-Then execute `npm start` and the interface should appear on `http://localhost:3000`.
+Execute `npm start` and the interface should be accessible at `http://localhost:3000`.
 
 ## Model
 
 ##### Training:
 
 ```
-caladrius --runName caladrius_2019
+python caladrius/run.py --runName caladrius_2019
 ```
 
 ##### Testing:
 
 ```
-caladrius --runName caladrius_2019 --test
+python caladrius/run.py --runName caladrius_2019 --test
 ```
 
 [Click here to download the trained model.](https://drive.google.com/open?id=1zdWhefcjWto8CxWAR75xO_yMBEiq1QLx)
@@ -116,7 +104,7 @@ caladrius --runName caladrius_2019 --test
 There are several parameters, that can be set, the full list is the following:
 
 ```
-usage: caladrius [-h] [--checkpointPath CHECKPOINTPATH] [--dataPath DATAPATH]
+usage: run.py [-h] [--checkpointPath CHECKPOINTPATH] [--dataPath DATAPATH]
                  [--runName RUNNAME] [--logStep LOGSTEP]
                  [--numberOfWorkers NUMBEROFWORKERS] [--disableCuda]
                  [--cudaDevice CUDADEVICE] [--torchSeed TORCHSEED]
