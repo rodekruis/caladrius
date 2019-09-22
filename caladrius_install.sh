@@ -1,6 +1,4 @@
 conda env create -f caladriusenv.yml
-conda activate caladriusenv
 cd caladrius/interface
-npm install
+yarn install
 ln -s ../../../data src/data
-
