@@ -3,7 +3,6 @@ runs
 
 # Yarn
 node_modules
-yarn.lock
 yarn-error.log
 
 # Byte-compiled / optimized / DLL files
