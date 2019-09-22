@@ -1,4 +1,4 @@
-image_name := "caladrius"
+image_name := "gulfaraz/caladrius"
 version_production := `cat VERSION`
 version_git := $$(git log -1 --format=%h)
 
