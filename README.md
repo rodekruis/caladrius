@@ -33,7 +33,7 @@ Access the container using `docker exec -it caladrius bash`.
 
 ## Dataset - Sint Maarten 2017 Hurricane Irma
 
-The Sint Maarten 2017 dataset can be downloaded from [here](http://gulfaraz.com/share/rc.tgz "RC Challenge 1 Raw Dataset").
+The Sint Maarten 2017 dataset can be downloaded from [here](https://rodekruis.sharepoint.com/sites/510-Team/Gedeelde%20%20documenten/%5BPRJ%5D%20Automated%20Damage%20Assessment/DATASET/Sint-Maarten-2017/rc.tgz "RC Challenge 1 Raw Dataset").
 
 Extract the contents to the `data` folder. (Default Path: `./data`)
 ```
