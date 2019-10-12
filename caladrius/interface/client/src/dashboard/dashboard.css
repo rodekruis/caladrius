@@ -3,7 +3,7 @@
     font-family: "Segoe UI","Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
 }
 
-.app-container {
+.dashboard-container {
     display: flex;
     flex-direction: row;
     align-items: stretch;

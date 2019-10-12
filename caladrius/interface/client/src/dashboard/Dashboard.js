@@ -1,15 +1,17 @@
 import * as React from "react";
-import { load_csv_data, load_admin_regions } from './data.js'
-import { Scatterplot } from "./Scatterplot";
-import { MapImage } from "./MapImage";
-import { PointInfoTable, CountAvgTable } from "./Tables";
-import { Map } from "./Map"
-import './app.css';
+import { load_csv_data, load_admin_regions } from '../data.js'
+import { Scatterplot } from "../scatter-plot/Scatterplot";
+import { MapImage } from "../datapoint-viewer/MapImage";
+import { RunSelector } from "./RunSelector";
+import { PointInfoTable, CountAvgTable } from "../scoreboard/Tables";
+import { Map } from "../map-widget/Map"
+import './dashboard.css';
 
-export class App extends React.Component {
+export class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            runName: '',
             data: [],
             admin_regions: [],
             selected_datum: {},
@@ -17,13 +19,19 @@ export class App extends React.Component {
             damage_boundary_b: 0.7,
             map_center: [18.0425, -63.0548]
         };
+        this.loadRunName = this.loadRunName.bind(this);
     };
 
     componentDidMount() {
-        const data = load_csv_data()
-        data.then(d => this.setState({ data: d }))
-        const admin_regions = load_admin_regions()
-        admin_regions.then(d => this.setState({ admin_regions: d }))
+        load_admin_regions(data => {
+            this.setState({ admin_regions: data });
+        });
+    }
+
+    loadRunName(runName) {
+        load_csv_data(runName, data => {
+            this.setState({ data: data });
+        });
     }
 
     handleClick(datum) {
@@ -42,7 +50,10 @@ export class App extends React.Component {
 
     render() {
         return (
-            <div className="app-container">
+            <div className="dashboard-container">
+                <div className="run-selector">
+                    <RunSelector loadRunName={this.loadRunName} />
+                </div>
                 <div className="graph-container">
                     <Scatterplot
                         width={700}

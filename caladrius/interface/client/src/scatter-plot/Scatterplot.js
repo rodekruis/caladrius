@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { AxisBottom, AxisBottomLabel, AxisLeft, AxisLeftLabel, Title } from './Axes';
 import { Circles } from './Circles';
 import { DamageBoundary } from './DamageBoundary';
-import { least, heavy } from './colours';
+import { least, heavy } from '../colours';
 
 
 const margin = { 'top': 50, 'right': 50, 'bottom': 50, 'left': 50 };

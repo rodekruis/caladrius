@@ -1,45 +1,47 @@
 import * as d3 from "d3"; 
 import jQuery from "jquery";
 import proj4 from "proj4";
-import geoData from './data/Sint-Maarten-2017/coordinates.geojson'
-import csv_path from './data/Sint-Maarten-2017/test/1552303580_epoch_001_predictions.txt'
-import region_boundaries from './data/Sint-Maarten-2017/admin_regions.geojson'
 
 
-export async function load_admin_regions() {
-    let data =  d3.json(region_boundaries)
-                    .then(d => d['features'])
-                    .then(d => d.map(region =>
-                        region['geometry']['coordinates'][0].map(coords =>
-                           convertCoordinate(coords))
-                    ))
-    return data
+export function load_admin_regions(callback) {
+    fetch('/api/dataset?name=Sint-Maarten-2017&filename=admin_regions.geojson')
+        .then(res => res.json())
+        .then(region_boundaries => {
+            callback(region_boundaries['features'].map(
+                region => region['geometry']['coordinates'][0].map(
+                    coords => convertCoordinate(coords))));
+        });
 }
 
+function renderPredictions(predictions, callback) {
+    fetch('/api/dataset?name=Sint-Maarten-2017&filename=coordinates.geojson')
+        .then(res => res.json())
+        .then(geoData => {
+            const ssv = d3.dsvFormat(' ');
+            predictions = ssv.parse(predictions);
+            predictions.pop();
+            predictions.forEach(function (d) {
+                d.objectId = parseInt(d.filename.replace('.png', ''));
+                d.label = parseFloat(d.label);
+                d.prediction = parseFloat(d.prediction);
+                d.category = categorizer(d.prediction);
+                // feature mapping
+                d.feature = getFeature(geoData, d.objectId);
+                if (d.feature) {
+                    d.feature.properties._damage = getFromGeo(d.objectId, geoData);
+                };
+            });
+            callback(predictions);
+        });
+}
 
-export async function load_csv_data(){
-   const allData = await Promise.all([
-        d3.json(geoData),
-        d3.dsv(' ', csv_path)
-    ]);
-    let gdata = allData[0];
-    let data = allData[1];
-    data.forEach(function (d) {
-        d.objectId = parseInt(d.filename.replace('.png', ''));
-        d.label = parseFloat(d.label);
-        d.prediction = parseFloat(d.prediction);
-        d.category = categorizer(d.prediction);
-        // feature mapping
-        d.feature = getFeature(gdata, d.objectId);
-        if (d.feature) {
-            d.feature.properties._damage = getFromGeo(d.objectId, gdata);
-        };
-    });
-    data = data.filter(function (d) {
-        return d.feature != null;
-    });
-    data.pop(); // Last element is NaN for some reason
-    return data;
+export function load_csv_data(runName, callback) {
+    const csv_path = '/api/dataset?name=Sint-Maarten-2017&filename=' + runName + '_epoch_001_predictions.txt&directory=test';
+    fetch(csv_path)
+        .then(res => res.text())
+        .then(predictions => {
+            renderPredictions(predictions, callback);
+        });
 }
 
 function categorizer(prediction) {
