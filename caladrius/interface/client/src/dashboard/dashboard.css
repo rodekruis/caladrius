@@ -5,6 +5,17 @@
 
 .dashboard-container {
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+    
+.run-selector {
+    order: 1;
+}
+
+.graph-image-map-container {
+    order: 2;
+    display: flex;
     flex-direction: row;
     align-items: stretch;
 }

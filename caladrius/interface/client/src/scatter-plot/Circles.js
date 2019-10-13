@@ -28,7 +28,6 @@ class Circle extends React.Component {
         super(props);
         this.ref = React.createRef();
         this.draw_plot = this.draw_plot.bind(this);
-        this.update_plot = this.update_plot.bind(this);
     }
 
     componentDidMount() {
@@ -36,7 +35,7 @@ class Circle extends React.Component {
     }
 
     componentDidUpdate() {
-        this.update_plot()
+        this.draw_plot()
     }
 
     draw_plot() {
@@ -64,17 +63,6 @@ class Circle extends React.Component {
                     that.props.selected_datum.objectId
                 ));
             });
-    }
-
-    update_plot() {
-        d3.select(this.ref.current)
-            .attr('fill', () => get_point_colour(
-                this.props.datum.prediction,
-                this.props.damage_boundary_a,
-                this.props.damage_boundary_b,
-                this.props.datum.objectId,
-                this.props.selected_datum.objectId
-            ));
     }
 
     render() {
