@@ -7,6 +7,7 @@ const DATASET_DIRECTORY = '../../data';
 
 
 class DatasetManager {
+
     get_dataset_file(dataset_name, filename) {
         const dataset_directory = path.join(DATASET_DIRECTORY, dataset_name);
         const file_path = path.join(dataset_directory, filename);
@@ -16,8 +17,8 @@ class DatasetManager {
                 resolve(data);
             });
         });
-
     }
+
 }
 
 module.exports = new DatasetManager();

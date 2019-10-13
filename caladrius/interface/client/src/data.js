@@ -35,8 +35,8 @@ function renderPredictions(predictions, callback) {
         });
 }
 
-export function load_csv_data(runName, callback) {
-    const csv_path = '/api/dataset?name=Sint-Maarten-2017&filename=' + runName + '_epoch_001_predictions.txt&directory=test';
+export function load_csv_data(model_name, prediction_filename, callback) {
+    const csv_path = '/api/model/predictions?directory=' + model_name + '&filename=' + prediction_filename;
     fetch(csv_path)
         .then(res => res.text())
         .then(predictions => {

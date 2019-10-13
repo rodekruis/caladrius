@@ -29,6 +29,10 @@ app.use(cookieParser());
 
 app.get('/api/dataset', server.get_dataset_file);
 
+app.get('/api/models', server.get_models);
+
+app.get('/api/model/predictions', server.get_predictions);
+
 // Handles any requests that don't match the ones above
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname + CLIENT_BUILD + '/index.html'));

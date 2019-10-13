@@ -2,7 +2,7 @@ import * as React from "react";
 import { load_csv_data, load_admin_regions } from '../data.js'
 import { Scatterplot } from "../scatter-plot/Scatterplot";
 import { MapImage } from "../datapoint-viewer/MapImage";
-import { RunSelector } from "./RunSelector";
+import { ModelSelector } from "./ModelSelector";
 import { PointInfoTable, CountAvgTable } from "../scoreboard/Tables";
 import { Map } from "../map-widget/Map"
 import './dashboard.css';
@@ -11,7 +11,7 @@ export class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            runName: '',
+            current_model: null,
             data: [],
             admin_regions: [],
             selected_datum: {},
@@ -19,7 +19,7 @@ export class Dashboard extends React.Component {
             damage_boundary_b: 0.7,
             map_center: [18.0425, -63.0548]
         };
-        this.loadRunName = this.loadRunName.bind(this);
+        this.load_model = this.load_model.bind(this);
     };
 
     componentDidMount() {
@@ -28,8 +28,8 @@ export class Dashboard extends React.Component {
         });
     }
 
-    loadRunName(runName) {
-        load_csv_data(runName, data => {
+    load_model(model_name, prediction_filename) {
+        load_csv_data(model_name, prediction_filename, data => {
             this.setState({ data: data });
         });
     }
@@ -51,8 +51,8 @@ export class Dashboard extends React.Component {
     render() {
         return (
             <div className="dashboard-container">
-                <div className="run-selector">
-                    <RunSelector loadRunName={this.loadRunName} />
+                <div className="model-selector">
+                    <ModelSelector load_model={this.load_model} />
                 </div>
                 <div className="graph-image-map-container">
                     <div className="graph-container">
