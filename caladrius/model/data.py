@@ -22,7 +22,7 @@ class CaladriusDataset(Dataset):
         return len(self.datapoints)
 
     def __getitem__(self, idx):
-        filename, before_image, after_image, damage = self.loadDatapoint(idx)
+        filename, before_image, after_image, damage = self.load_datapoint(idx)
 
         if self.transforms:
             before_image = self.transforms(before_image)
@@ -30,7 +30,7 @@ class CaladriusDataset(Dataset):
 
         return (filename, before_image, after_image, damage)
 
-    def loadDatapoint(self, idx):
+    def load_datapoint(self, idx):
         line = self.datapoints[idx]
         filename, damage = line.split(' ')
         before_image = Image.open(os.path.join(self.directory,
@@ -46,21 +46,21 @@ class Datasets(object):
 
     def __init__(self, args, transforms):
         self.args = args
-        self.dataPath = args.dataPath
-        self.batchSize = args.batchSize
+        self.data_path = args.data_path
+        self.batch_size = args.batch_size
         self.transforms = transforms
-        self.numberOfWorkers = args.numberOfWorkers
-        self.maxDataPoints = args.maxDataPoints
+        self.number_of_workers = args.number_of_workers
+        self.max_data_points = args.max_data_points
 
     def load(self, set_name):
         assert set_name in {'train', 'validation', 'test'}
-        dataset = CaladriusDataset(os.path.join(self.dataPath, set_name),
+        dataset = CaladriusDataset(os.path.join(self.data_path, set_name),
                                     transforms=self.transforms[set_name],
-                                    max_data_points=self.maxDataPoints)
-        dataLoader = DataLoader(dataset,
-                                    batch_size=self.batchSize,
+                                    max_data_points=self.max_data_points)
+        data_loader = DataLoader(dataset,
+                                    batch_size=self.batch_size,
                                     shuffle=(set_name == 'train'),
-                                    num_workers=self.numberOfWorkers,
+                                    num_workers=self.number_of_workers,
                                     drop_last=True)
 
-        return dataset, dataLoader
+        return dataset, data_loader

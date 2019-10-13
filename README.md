@@ -88,13 +88,13 @@ Execute `npm start` and the interface should be accessible at `http://localhost:
 ##### Training:
 
 ```
-python caladrius/run.py --runName caladrius_2019
+python caladrius/run.py --run-name caladrius_2019
 ```
 
 ##### Testing:
 
 ```
-python caladrius/run.py --runName caladrius_2019 --test
+python caladrius/run.py --run-name caladrius_2019 --test
 ```
 
 [Click here to download the trained model.](https://drive.google.com/open?id=1zdWhefcjWto8CxWAR75xO_yMBEiq1QLx)
@@ -104,43 +104,44 @@ python caladrius/run.py --runName caladrius_2019 --test
 There are several parameters, that can be set, the full list is the following:
 
 ```
-usage: run.py [-h] [--checkpointPath CHECKPOINTPATH] [--dataPath DATAPATH]
-                 [--runName RUNNAME] [--logStep LOGSTEP]
-                 [--numberOfWorkers NUMBEROFWORKERS] [--disableCuda]
-                 [--cudaDevice CUDADEVICE] [--torchSeed TORCHSEED]
-                 [--inputSize INPUTSIZE] [--numberOfEpochs NUMBEROFEPOCHS]
-                 [--batchSize BATCHSIZE] [--learningRate LEARNINGRATE]
-                 [--test] [--maxDataPoints MAXDATAPOINTS]
-                 [--accuracyThreshold ACCURACYTHRESHOLD]
+usage: run.py [-h] [--checkpoint-path CHECKPOINT_PATH] [--data-path DATA_PATH]
+              [--run-name RUN_NAME] [--log-step LOG_STEP]
+              [--number-of-workers NUMBER_OF_WORKERS] [--disable-cuda]
+              [--cuda-device CUDA_DEVICE] [--torch-seed TORCH_SEED]
+              [--input-size INPUT_SIZE] [--number-of-epochs NUMBER_OF_EPOCHS]
+              [--batch-size BATCH_SIZE] [--learning-rate LEARNING_RATE]
+              [--test] [--max-data-points MAX_DATA_POINTS]
+              [--accuracy-threshold ACCURACY_THRESHOLD]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --checkpointPath CHECKPOINTPATH
+  --checkpoint-path CHECKPOINT_PATH
                         output path (default: ./runs)
-  --dataPath DATAPATH   data path (default: ./data/Sint-Maarten-2017)
-  --runName RUNNAME     name to identify execution (default: <timestamp>)
-  --logStep LOGSTEP     batch step size for logging information (default: 100)
-  --numberOfWorkers NUMBEROFWORKERS
+  --data-path DATA_PATH
+                        data path (default: ./data/Sint-Maarten-2017)
+  --run-name RUN_NAME   name to identify execution (default: <timestamp>)
+  --log-step LOG_STEP   batch step size for logging information (default: 100)
+  --number-of-workers NUMBER_OF_WORKERS
                         number of threads used by data loader (default: 8)
-  --disableCuda         disable the use of CUDA (default: False)
-  --cudaDevice CUDADEVICE
+  --disable-cuda        disable the use of CUDA (default: False)
+  --cuda-device CUDA_DEVICE
                         specify which GPU to use (default: 0)
-  --torchSeed TORCHSEED
+  --torch-seed TORCH_SEED
                         set a torch seed (default: 42)
-  --inputSize INPUTSIZE
+  --input-size INPUT_SIZE
                         extent of input layer in the network (default: 32)
-  --numberOfEpochs NUMBEROFEPOCHS
+  --number-of-epochs NUMBER_OF_EPOCHS
                         number of epochs for training (default: 100)
-  --batchSize BATCHSIZE
+  --batch-size BATCH_SIZE
                         batch size for training (default: 32)
-  --learningRate LEARNINGRATE
+  --learning-rate LEARNING_RATE
                         learning rate for training (default: 0.001)
   --test                test the model on the test set instead of training
                         (default: False)
-  --maxDataPoints MAXDATAPOINTS
+  --max-data-points MAX_DATA_POINTS
                         limit the total number of data points used, for
                         debugging on GPU-less laptops (default: None)
-  --accuracyThreshold ACCURACYTHRESHOLD
+  --accuracy-threshold ACCURACY_THRESHOLD
                         window size to calculate regression accuracy (default:
                         0.1)
 ```
