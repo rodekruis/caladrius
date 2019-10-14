@@ -38,7 +38,7 @@ export class ModelSelector extends React.Component {
     render() {
         return (
             <label>
-                Pick your favorite flavor:
+                Choose a trained model:
                 <select value={this.state.current_model} onChange={this.handle_change}>
                     {this.create_select_options()}
                 </select>

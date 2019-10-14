@@ -4,6 +4,7 @@ import time
 import argparse
 import pickle
 import logging
+import re
 
 import torch
 
@@ -51,6 +52,16 @@ def load_obj(path):
         return pickle.load(f)
 
 
+def run_name_type(run_name):
+    run_name = str(run_name)
+    pattern = re.compile('^[a-zA-Z0-9_\.]{3,30}$')
+    if not pattern.match(run_name):
+        raise argparse.ArgumentTypeError('Run name can contain only ' +
+            'alphanumeric, underscore (_) and dot (.) characters. ' +
+            'Must be at least 3 characters and at most 30 characters long.')
+    return run_name
+
+
 def configuration():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -59,7 +70,7 @@ def configuration():
                         help='output path')
     parser.add_argument('--data-path', type=str, default=os.path.join('.', 'data', 'Sint-Maarten-2017'),
                         help='data path')
-    parser.add_argument('--run-name', type=str, default='{:.0f}'.format(time.time()),
+    parser.add_argument('--run-name', type=run_name_type, default='{:.0f}'.format(time.time()),
                         help='name to identify execution')
     parser.add_argument('--log-step', type=int, default=100,
                         help='batch step size for logging information')
