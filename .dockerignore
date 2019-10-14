@@ -1,5 +1,6 @@
 data/**/*
 data/
+runs/
 node_modules/*/*
 node_modules/
 **/*.pyc
@@ -14,3 +15,5 @@ tox.ini
 build/
 dist/
 venv/
+.vscode/
+caladrius.code-workspace

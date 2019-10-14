@@ -1,9 +1,12 @@
 # Caladrius
 runs
 
-# Yarn
+# VS Code
+.vscode/
+caladrius.code-workspace
+
+# NodeJS
 node_modules
-yarn-error.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

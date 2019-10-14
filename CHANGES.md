@@ -1,3 +1,11 @@
+0.6.0 (2019-10-14)
+------------------
+- Added interface backend to access model and dataset
+- Interface allows switching models via dropdown
+- Removed builds from conda env file
+- Removed yarn dependency
+- Updated Docker image
+
 0.5.0 (2019-09-22)
 ------------------
 - Added `accuracy_threshold` as input argument

@@ -9,23 +9,34 @@ The network architecture is a pseudo-siamese network with two ImageNet pre-train
 
 Install [Docker](https://www.docker.com/get-started).
 
-Download the [Caladrius Docker Image](https://hub.docker.com/r/gulfaraz/caladrius) using `docker pull gulfaraz/caladrius`.
+Download the [Caladrius Docker Image](https://hub.docker.com/r/gulfaraz/caladrius) using,
+
+```
+docker pull gulfaraz/caladrius
+```
 
 Create a [data](#dataset) folder in your local machine.
 
-Create a docker container using `docker run --name caladrius -dit -v <path/to/data>:/workspace/data gulfaraz/caladrius`.
+Create a docker container using,
 
-Access the container using `docker exec -it caladrius bash`.
+```
+docker run --name caladrius -dit -v <path/to/data>:/workspace/data -p 5000:5000 gulfaraz/caladrius
+```
 
+Access the container using,
+
+```
+docker exec -it caladrius bash
+```
 
 ## Manual Setup
 
 #### Requirements:
+
 - [Python 3.6.5 or higher](https://www.python.org/downloads/)
 - [Anaconda or Miniconda 2019.07 or higher](https://www.anaconda.com/distribution/#download-section)
 - [NodeJS v10 or higher](https://nodejs.org/en/download/)
-- [Yarn v1.17.3 or higher](https://yarnpkg.com/)
-- Run the following script:
+- Run the following script,
 
 ```bash
 ./caladrius_install.sh
@@ -33,17 +44,31 @@ Access the container using `docker exec -it caladrius bash`.
 
 ## Dataset - Sint Maarten 2017 Hurricane Irma
 
+##### 1. Download Raw Dataset:
 The Sint Maarten 2017 dataset can be downloaded from [here](https://rodekruis.sharepoint.com/sites/510-Team/Gedeelde%20%20documenten/%5BPRJ%5D%20Automated%20Damage%20Assessment/DATASET/Sint-Maarten-2017/rc.tgz "RC Challenge 1 Raw Dataset").
 
-Extract the contents to the `data` folder. (Default Path: `./data`)
+##### 2. Extract Raw Dataset:
+
+To extract the contents to the `data` folder execute,
+
 ```
 tar -xvzf rc.tgz
 ```
 
-To create the training dataset, execute `python caladrius/sint_maarten_2017.py --run-all`.
-This will create the dataset as per the [specifications](DATASET.md).
+##### 3. Create Training Dataset:
 
-There are several parameters that you can specify, described below:
+Transform the raw dataset to a training dataset using,
+
+```
+python caladrius/sint_maarten_2017.py --run-all
+```
+
+The above command will create the dataset as per the [specifications](DATASET.md).
+
+##### Configuration:
+
+`sint_maarten_2017.py` accepts the command line arguments described below,
+
 ```
 usage: sint_maarten_2017.py [-h] [--run-all] [--create-image-stamps]
                       [--query-address-api] [--address-api ADDRESS_API]
@@ -77,11 +102,15 @@ optional arguments:
                         address-api has been run) (default: False)
 ```
 
-
-
 ## Interface
 
-Execute `npm start` and the interface should be accessible at `http://localhost:3000`.
+From the `caladrius/interface` directory execute,
+
+```
+npm start
+```
+
+The interface should be accessible at `http://localhost:5000`.
 
 ## Model
 
@@ -101,7 +130,8 @@ python caladrius/run.py --run-name caladrius_2019 --test
 
 
 ## Configuration
-There are several parameters, that can be set, the full list is the following:
+
+`run.py` accepts the command line arguments described below,
 
 ```
 usage: run.py [-h] [--checkpoint-path CHECKPOINT_PATH] [--data-path DATA_PATH]
@@ -149,16 +179,18 @@ optional arguments:
 ## Development
 
 When making changes, increment `VERSION` according to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
-and update `CHANGES.md`
-
+and update `CHANGES.md`.
 
 ## Docker image
 
-To build and tag the Docker image with `VERSION`, use:
+To build and tag the Docker image with `VERSION`,
+
 ```bash
 make build_production
 ```
-For development and tagging with the latest commit version:
+
+For development and tagging with the latest commit version,
+
 ```bash
 make build_fast
 ```

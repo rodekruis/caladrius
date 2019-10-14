@@ -11,7 +11,7 @@ VOLUME ["/workspace/data"]
 COPY . /workspace
 
 ENV HOME="/home"
-ENV PATH="$HOME/conda/bin:$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+ENV PATH="$HOME/conda/bin:$PATH"
 
 # Install any needed packages
 RUN apt-get update &&\
@@ -28,20 +28,18 @@ RUN mkdir $HOME/.conda &&\
     rm $HOME/miniconda.sh &&\
     $HOME/conda/bin/conda update -n base -c defaults conda
 
-# Install NodeJS and Yarn
-ENV PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+# Install NodeJS
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends nodejs &&\
-    rm -rf /var/lib/apt/lists/* &&\
-    curl -o- -L https://yarnpkg.com/install.sh | bash
+    rm -rf /var/lib/apt/lists/*
 
 # Install Caladrius
 RUN /bin/bash caladrius_install.sh &&\
     echo "source activate caladriusenv" >> ~/.bashrc
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# Make port 5000 available to the world outside this container
+EXPOSE 5000
 
 # Define environment variable
 ENV NAME CALADRIUS
