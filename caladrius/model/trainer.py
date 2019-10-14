@@ -18,12 +18,12 @@ logger = create_logger(__name__)
 class QuasiSiameseNetwork(object):
 
     def __init__(self, args):
-        input_size = (args.inputSize, args.inputSize)
+        input_size = (args.input_size, args.input_size)
 
-        self.run_name = args.runName
+        self.run_name = args.run_name
         self.input_size = input_size
-        self.lr = args.learningRate
-        self.accuracy_threshold = args.accuracyThreshold
+        self.lr = args.learning_rate
+        self.accuracy_threshold = args.accuracy_threshold
 
         self.criterion = nnloss.MSELoss()
 
@@ -48,7 +48,7 @@ class QuasiSiameseNetwork(object):
                                               min_lr=1e-5,
                                               verbose=True)
 
-    def run_epoch(self, epoch, loader, device, phase='train'):
+    def run_epoch(self, epoch, loader, device, predictions_path, phase='train'):
         assert phase in ('train', 'validation', 'test')
 
         self.model = self.model.to(device)
@@ -62,8 +62,8 @@ class QuasiSiameseNetwork(object):
         running_n = 0.0
 
         if not (phase == 'train'):
-            prediction_file_name = '{}_epoch_{:03d}_predictions.txt'.format(self.run_name, epoch)
-            prediction_file_path = os.path.join(loader.dataset.directory, prediction_file_name)
+            prediction_file_name = '{}_{}_epoch_{:03d}_predictions.txt'.format(self.run_name, phase, epoch)
+            prediction_file_path = os.path.join(predictions_path, prediction_file_name)
             prediction_file = open(prediction_file_path, 'w+')
             prediction_file.write('filename label prediction\n')
 
@@ -106,7 +106,7 @@ class QuasiSiameseNetwork(object):
 
         return epoch_loss, epoch_accuracy
 
-    def train(self, n_epochs, datasets, device, save_path):
+    def train(self, n_epochs, datasets, device, model_path, predictions_path):
         train_set, train_loader = datasets.load('train')
         validation_set, validation_loader = datasets.load('validation')
 
@@ -117,11 +117,11 @@ class QuasiSiameseNetwork(object):
         for epoch in range(1, n_epochs + 1):
             # train network
             train_loss, train_accuracy = self.run_epoch(
-                epoch, train_loader, device, phase='train')
+                epoch, train_loader, device, predictions_path, phase='train')
 
             # eval on validation
             validation_loss, validation_accuracy = self.run_epoch(
-                epoch, validation_loader, device, phase='validation')
+                epoch, validation_loader, device, predictions_path, phase='validation')
 
             self.lr_scheduler.step(validation_loss)
 
@@ -129,8 +129,8 @@ class QuasiSiameseNetwork(object):
                 best_accuracy = validation_accuracy
                 best_model_wts = copy.deepcopy(self.model.state_dict())
 
-                logger.info('Epoch {:03d} Checkpoint: Saving to {}'.format(epoch, save_path))
-                torch.save(best_model_wts, save_path)
+                logger.info('Epoch {:03d} Checkpoint: Saving to {}'.format(epoch, model_path))
+                torch.save(best_model_wts, model_path)
 
         time_elapsed = time.time() - start_time
         logger.info('Training complete in {:.0f}m {:.0f}s'.format(
@@ -138,7 +138,7 @@ class QuasiSiameseNetwork(object):
 
         logger.info('Best validation Accuracy: {:4f}.'.format(best_accuracy))
 
-    def test(self, datasets, device, load_path):
-        self.model.load_state_dict(torch.load(load_path, map_location=device))
+    def test(self, datasets, device, model_path, predictions_path):
+        self.model.load_state_dict(torch.load(model_path, map_location=device))
         test_set, test_loader = datasets.load('test')
-        self.run_epoch(1, test_loader, device, phase='test')
+        self.run_epoch(1, test_loader, device, predictions_path, phase='test')

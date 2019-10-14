@@ -1,6 +1,6 @@
 import React from 'react';
-import { images, image_placeholder } from './images.js'
 import './map_image.css';
+
 
 export class MapImage extends React.Component {
 
@@ -10,13 +10,11 @@ export class MapImage extends React.Component {
     }
 
     selectImage() {
+        let image_key = '/510-logo.png';
         if (Object.keys(this.props.selected_datum).length > 0) {
-            let image_key = this.props.image_label + '/' + this.props.selected_datum.filename
-            return images[image_key]
+            image_key = '/' + this.props.image_label + '/' + this.props.selected_datum.filename;
         }
-        else {
-            return image_placeholder
-        }
+        return image_key;
     }
 
     render() {

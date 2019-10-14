@@ -3,7 +3,7 @@ import { Map as LeafletMap, TileLayer, Polygon, LayerGroup, LayersControl } from
 import HeatmapLayer from 'react-leaflet-heatmap-layer'
 import 'leaflet/dist/leaflet.css';
 import './map.css';
-import { get_point_colour } from './colours';
+import { get_point_colour } from '../colours';
 
 const map_url = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 const attribution= "";
