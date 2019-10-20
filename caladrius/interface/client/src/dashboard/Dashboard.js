@@ -1,11 +1,11 @@
 import * as React from "react";
-import { load_csv_data, load_admin_regions } from '../data.js'
+import { load_csv_data, load_admin_regions } from "../data.js";
 import { Scatterplot } from "../scatter-plot/Scatterplot";
 import { MapImage } from "../datapoint-viewer/MapImage";
 import { ModelSelector } from "./ModelSelector";
 import { PointInfoTable, CountAvgTable } from "../scoreboard/Tables";
-import { Map } from "../map-widget/Map"
-import './dashboard.css';
+import { Map } from "../map-widget/Map";
+import "./dashboard.css";
 
 export class Dashboard extends React.Component {
     constructor(props) {
@@ -17,10 +17,10 @@ export class Dashboard extends React.Component {
             selected_datum: {},
             damage_boundary_a: 0.3,
             damage_boundary_b: 0.7,
-            map_center: [18.0425, -63.0548]
+            map_center: [18.0425, -63.0548],
         };
         this.load_model = this.load_model.bind(this);
-    };
+    }
 
     componentDidMount() {
         load_admin_regions(data => {
@@ -36,16 +36,16 @@ export class Dashboard extends React.Component {
 
     handleClick(datum) {
         this.setState({
-            selected_datum: datum
-        })
+            selected_datum: datum,
+        });
     }
 
     handleDragA(x) {
-        this.setState({ damage_boundary_a: x })
+        this.setState({ damage_boundary_a: x });
     }
 
     handleDragB(x) {
-        this.setState({ damage_boundary_b: x })
+        this.setState({ damage_boundary_b: x });
     }
 
     render() {
@@ -72,13 +72,13 @@ export class Dashboard extends React.Component {
                         <div className="map-image-container">
                             <div className="map-before-image-container">
                                 <MapImage
-                                    image_label={'before'}
+                                    image_label={"before"}
                                     selected_datum={this.state.selected_datum}
                                 />
                             </div>
                             <div className="map-after-image-container">
                                 <MapImage
-                                    image_label={'after'}
+                                    image_label={"after"}
                                     selected_datum={this.state.selected_datum}
                                 />
                             </div>
@@ -87,16 +87,22 @@ export class Dashboard extends React.Component {
                             <div className="tables-container">
                                 <div className="table-selection-container">
                                     <PointInfoTable
-                                        selected_datum={this.state.selected_datum}
-                                        table_id={'infoToolTipBox'}
+                                        selected_datum={
+                                            this.state.selected_datum
+                                        }
+                                        table_id={"infoToolTipBox"}
                                     />
                                 </div>
                                 <div className="table-global-container">
                                     <CountAvgTable
                                         data={this.state.data}
-                                        damage_boundary_a={this.state.damage_boundary_a}
-                                        damage_boundary_b={this.state.damage_boundary_b}
-                                        table_id={'countAvgTable'}
+                                        damage_boundary_a={
+                                            this.state.damage_boundary_a
+                                        }
+                                        damage_boundary_b={
+                                            this.state.damage_boundary_b
+                                        }
+                                        table_id={"countAvgTable"}
                                     />
                                 </div>
                             </div>
@@ -106,8 +112,12 @@ export class Dashboard extends React.Component {
                                     height={404}
                                     data={this.state.data}
                                     onClick={datum => this.handleClick(datum)}
-                                    damage_boundary_a={this.state.damage_boundary_a}
-                                    damage_boundary_b={this.state.damage_boundary_b}
+                                    damage_boundary_a={
+                                        this.state.damage_boundary_a
+                                    }
+                                    damage_boundary_b={
+                                        this.state.damage_boundary_b
+                                    }
                                     selected_datum={this.state.selected_datum}
                                     admin_regions={this.state.admin_regions}
                                 />
@@ -116,7 +126,6 @@ export class Dashboard extends React.Component {
                     </div>
                 </div>
             </div>
-        )
-    };
+        );
+    }
 }
-

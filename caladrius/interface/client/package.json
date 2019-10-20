@@ -1,39 +1,39 @@
 {
-  "name": "caladrius",
-  "version": "0.6.0",
-  "private": true,
-  "dependencies": {
-    "d3": "^5.9.2",
-    "jquery": "^3.4.1",
-    "leaflet": "^1.5.1",
-    "leaflet.heat": "^0.2.0",
-    "proj4": "^2.5.0",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-leaflet": "^2.4.0",
-    "react-leaflet-heatmap-layer": "^2.0.0",
-    "react-scripts": "3.0.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "proxy": "http://localhost:5000"
+    "name": "caladrius",
+    "version": "0.6.0",
+    "private": true,
+    "dependencies": {
+        "d3": "^5.9.2",
+        "jquery": "^3.4.1",
+        "leaflet": "^1.5.1",
+        "leaflet.heat": "^0.2.0",
+        "proj4": "^2.5.0",
+        "react": "^16.8.6",
+        "react-dom": "^16.8.6",
+        "react-leaflet": "^2.4.0",
+        "react-leaflet-heatmap-layer": "^2.0.0",
+        "react-scripts": "3.0.1"
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
+    },
+    "eslintConfig": {
+        "extends": "react-app"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "proxy": "http://localhost:5000"
 }

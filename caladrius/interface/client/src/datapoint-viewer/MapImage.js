@@ -1,27 +1,29 @@
-import React from 'react';
-import './map_image.css';
-
+import React from "react";
+import "./map_image.css";
 
 export class MapImage extends React.Component {
-
     constructor(props) {
         super(props);
-        this.selectImage = this.selectImage.bind(this)
+        this.selectImage = this.selectImage.bind(this);
     }
 
     selectImage() {
-        let image_key = '/510-logo.png';
+        let image_key = "/510-logo.png";
         if (Object.keys(this.props.selected_datum).length > 0) {
-            image_key = '/' + this.props.image_label + '/' + this.props.selected_datum.filename;
+            image_key =
+                "/" +
+                this.props.image_label +
+                "/" +
+                this.props.selected_datum.filename;
         }
         return image_key;
     }
 
     render() {
-        let image = this.selectImage()
+        let image = this.selectImage();
         return (
             <img
-                className='map-image'
+                className="map-image"
                 src={image}
                 alt={this.props.image_label}
             />
