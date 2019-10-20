@@ -1,10 +1,11 @@
 import * as React from 'react';
 
+
 export class ModelSelector extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            current_model: null,
+            current_model: "",
             models: []
         };
         this.handle_change = this.handle_change.bind(this);
@@ -27,7 +28,7 @@ export class ModelSelector extends React.Component {
 
     create_select_options() {
         let items = [
-            <option key={null} value={null} selected disabled>Select Model</option>
+            <option key={""} value={""} disabled>Select Model</option>
         ];
         this.state.models.forEach((model, index) => {
             items.push(<option key={model.model_name} value={index}>{model.model_name}</option>);
