@@ -2,7 +2,12 @@ import time
 import json
 import numpy as np
 import torch
-from sklearn.metrics import f1_score, recall_score, confusion_matrix, classification_report
+from sklearn.metrics import (
+    f1_score,
+    recall_score,
+    confusion_matrix,
+    classification_report,
+)
 
 from caladrius.utils import create_logger
 
@@ -25,9 +30,6 @@ class RollingEval(object):
     def recall(self):
         return recall_score(self.y_true, self.y_pred, average="micro")
 
-    def confusion_matrix(self):
-        pass
-
     def every_measure(self):
         return classification_report(self.y_true, self.y_pred)
 
@@ -42,18 +44,18 @@ class Evaluator(object):
     def evaluate_set(self, set_name):
         assert set_name in self.datasets.keys()
         logger.info("Starting evaluation of model")
-        y_true, y_pred = self.gather_outputs(
-            self.model, self.datasets[set_name])
-        f1_score = f1_score(y_true, y_pred, average="micro")
+        y_true, y_pred = self.gather_outputs(self.model, self.datasets[set_name])
+        micro_f1_score = f1_score(y_true, y_pred, average="micro")
 
-        logger.info("F1-Score ({}) : {}".format(set_name, f1_score))
-        return f1_score
+        logger.info("F1-Score ({}) : {}".format(set_name, micro_f1_score))
+        return micro_f1_score
 
     def gather_outputs(self, model, dataset):
         y_true = []
         y_pred = []
         logger.info(
-            "Gathering inputs. Total number of datapoints: {}".format(len(dataset)))
+            "Gathering inputs. Total number of datapoints: {}".format(len(dataset))
+        )
         with torch.no_grad():
             for idx, (image1, image2, y_true_batch) in enumerate(dataset):
                 y_pred_batch = model(image1, image2)
