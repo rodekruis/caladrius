@@ -5,6 +5,7 @@
     "dependencies": {
         "d3": "^5.9.2",
         "jquery": "^3.4.1",
+        "jspdf": "^1.5.3",
         "leaflet": "^1.5.1",
         "leaflet.heat": "^0.2.0",
         "proj4": "^2.5.0",

@@ -5,6 +5,7 @@ import { MapImage } from "../datapoint-viewer/MapImage";
 import { ModelSelector } from "./ModelSelector";
 import { PointInfoTable, CountAvgTable } from "../scoreboard/Tables";
 import { Map } from "../map-widget/Map";
+import { Report } from "../report/Report";
 import "./dashboard.css";
 
 export class Dashboard extends React.Component {
@@ -53,6 +54,7 @@ export class Dashboard extends React.Component {
             <div className="dashboard-container">
                 <div className="model-selector">
                     <ModelSelector load_model={this.load_model} />
+                    <Report />
                 </div>
                 <div className="graph-image-map-container">
                     <div className="graph-container">
