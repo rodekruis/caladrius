@@ -12,19 +12,25 @@ def main():
     logger = create_logger(__name__)
     sys.excepthook = attach_exception_hook(logger)
 
-    logger.info('START with Configuration:')
+    logger.info("START with Configuration:")
     for k, v in sorted(vars(args).items()):
-        logger.info('{0}: {1}'.format(k, v))
+        logger.info("{0}: {1}".format(k, v))
 
     qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
     if not args.test:
-        qsn.train(args.number_of_epochs, datasets, args.device, args.model_path, args.prediction_path)
-    logger.info('Evaluation on test dataset')
+        qsn.train(
+            args.number_of_epochs,
+            datasets,
+            args.device,
+            args.model_path,
+            args.prediction_path,
+        )
+    logger.info("Evaluation on test dataset")
     qsn.test(datasets, args.device, args.model_path, args.prediction_path)
 
-    logger.info('END')
+    logger.info("END")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -1,6 +1,8 @@
 * {
     box-sizing: border-box;
-    font-family: "Segoe UI","Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+    font-family: "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
 }
 
 .dashboard-container {
@@ -8,7 +10,7 @@
     flex-direction: column;
     align-items: stretch;
 }
-    
+
 .model-selector {
     order: 1;
 }
@@ -19,7 +21,7 @@
     flex-direction: row;
     align-items: stretch;
 }
-    
+
 .graph-container {
     order: 1;
 }

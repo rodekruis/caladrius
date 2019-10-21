@@ -24,7 +24,7 @@ def get_pretrained_iv3(output_size):
 
     ct = []
     for name, child in model_conv.named_children():
-        if 'Conv2d_4a_3x3' in ct:
+        if "Conv2d_4a_3x3" in ct:
             for params in child.parameters():
                 params.requires_grad = True
         ct.append(name)
@@ -42,52 +42,61 @@ def get_pretrained_iv3_transforms(set_name):
     std = [0.5, 0.5, 0.5]
     scale = 360
     input_shape = 299
-    train_transform = transforms.Compose([
-        transforms.Resize(scale),
-        transforms.RandomResizedCrop(input_shape),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomVerticalFlip(),
-        transforms.RandomRotation(degrees=90),
-        transforms.ToTensor(),
-        transforms.Normalize(mean, std)])
+    train_transform = transforms.Compose(
+        [
+            transforms.Resize(scale),
+            transforms.RandomResizedCrop(input_shape),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomVerticalFlip(),
+            transforms.RandomRotation(degrees=90),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std),
+        ]
+    )
 
-    test_transform = transforms.Compose([
-        transforms.Resize(scale),
-        transforms.CenterCrop(input_shape),
-        transforms.ToTensor(),
-        transforms.Normalize(mean, std)])
+    test_transform = transforms.Compose(
+        [
+            transforms.Resize(scale),
+            transforms.CenterCrop(input_shape),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std),
+        ]
+    )
 
     return {
-        'train': train_transform,
-        'validation': test_transform,
-        'test': test_transform
+        "train": train_transform,
+        "validation": test_transform,
+        "test": test_transform,
     }[set_name]
 
 
 class SiameseNetwork(nn.Module):
-    def __init__(self, output_size=512,
-                 similarity_layers_sizes=[512, 512], dropout=0.5):
+    def __init__(
+        self, output_size=512, similarity_layers_sizes=[512, 512], dropout=0.5
+    ):
         super().__init__()
         self.left_network = get_pretrained_iv3(output_size)
         self.right_network = get_pretrained_iv3(output_size)
 
         similarity_layers = OrderedDict()
         similarity_layers["layer_0"] = nn.Linear(
-            output_size*2, similarity_layers_sizes[0])
+            output_size * 2, similarity_layers_sizes[0]
+        )
         similarity_layers["relu_0"] = nn.ReLU(inplace=True)
         similarity_layers["bn_0"] = nn.BatchNorm1d(similarity_layers_sizes[0])
         if dropout:
-            similarity_layers["dropout_0"] = nn.Dropout(
-                dropout, inplace=True)
+            similarity_layers["dropout_0"] = nn.Dropout(dropout, inplace=True)
         prev_hidden_size = similarity_layers_sizes[0]
         for idx, hidden in enumerate(similarity_layers_sizes[1:], 1):
             similarity_layers["layer_{}".format(idx)] = nn.Linear(
-                prev_hidden_size, hidden)
+                prev_hidden_size, hidden
+            )
             similarity_layers["relu_{}".format(idx)] = nn.ReLU(inplace=True)
             similarity_layers["bn_{}".format(idx)] = nn.BatchNorm1d(hidden)
             if dropout:
                 similarity_layers["dropout_{}".format(idx)] = nn.Dropout(
-                    dropout, inplace=True)
+                    dropout, inplace=True
+                )
 
         self.similarity = nn.Sequential(similarity_layers)
 
