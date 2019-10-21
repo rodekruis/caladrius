@@ -1,6 +1,6 @@
 {
     "name": "caladrius",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "description": "Assessing Building Damage caused by Natural Disasters using Satellite Images",
     "main": "index.js",
     "scripts": {
