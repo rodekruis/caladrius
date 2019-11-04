@@ -9,7 +9,7 @@ from sklearn.metrics import (
     classification_report,
 )
 
-from caladrius.utils import create_logger
+from utils import create_logger
 
 
 logger = create_logger(__name__)

@@ -7,7 +7,7 @@ import torchvision
 from torch import nn
 import torchvision.transforms as transforms
 
-from caladrius.utils import create_logger
+from utils import create_logger
 
 
 logger = create_logger(__name__)
