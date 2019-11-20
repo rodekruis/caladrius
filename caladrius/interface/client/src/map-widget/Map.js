@@ -19,19 +19,22 @@ let center = [18.0425, -63.0548];
 export class Map extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            global_map: this.initialize_map()
+        };
         this.get_building_shape_array = this.get_building_shape_array.bind(
             this
         );
         this.get_admin_regions = this.get_admin_regions.bind(this);
     }
 
-    render() {
+    initialize_map() {
         if (Object.keys(this.props.selected_datum).length > 0) {
             center = this.props.selected_datum["feature"]["geometry"][
                 "coordinates"
             ][0][0][0];
         }
-        return (
+        const map = (
             <LeafletMap center={center} zoom={zoom}>
                 <TileLayer url={map_url} attribution={attribution} />
                 <LayerGroup>{this.get_admin_regions()}</LayerGroup>
@@ -43,6 +46,12 @@ export class Map extends React.Component {
                 </LayersControl>
             </LeafletMap>
         );
+        this.props.setGlobalMap(map);
+        return map;
+    }
+
+    render() {
+        return this.state.global_map;
     }
 
     get_building_shape_array() {

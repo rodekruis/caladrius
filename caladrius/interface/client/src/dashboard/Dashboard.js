@@ -19,8 +19,10 @@ export class Dashboard extends React.Component {
             damage_boundary_a: 0.3,
             damage_boundary_b: 0.7,
             map_center: [18.0425, -63.0548],
+            global_map: null,
         };
         this.load_model = this.load_model.bind(this);
+        this.setGlobalMap = this.setGlobalMap.bind(this);
     }
 
     componentDidMount() {
@@ -41,6 +43,10 @@ export class Dashboard extends React.Component {
         });
     }
 
+    setGlobalMap(x) {
+        this.setState({ global_map: x });
+    }
+
     handleDragA(x) {
         this.setState({ damage_boundary_a: x });
     }
@@ -54,7 +60,7 @@ export class Dashboard extends React.Component {
             <div className="dashboard-container">
                 <div className="model-selector">
                     <ModelSelector load_model={this.load_model} />
-                    <Report />
+                    <Report globalMap={this.state.global_map} />
                 </div>
                 <div className="graph-image-map-container">
                     <div className="graph-container">
@@ -114,6 +120,7 @@ export class Dashboard extends React.Component {
                                     height={404}
                                     data={this.state.data}
                                     onClick={datum => this.handleClick(datum)}
+                                    setGlobalMap={this.setGlobalMap}
                                     damage_boundary_a={
                                         this.state.damage_boundary_a
                                     }
