@@ -1,3 +1,9 @@
+0.6.2 (YYYY-MM-DD)
+------------------
+- [] use [bulma](https://bulma.io/) ui
+- [] add authentication
+- [] modularize the UI components
+
 0.6.1 (2019-11-22)
 ------------------
 - Integrated formatters for Python ([Black](https://black.readthedocs.io/en/stable/) and [flake8](https://gitlab.com/pycqa/flake8)) and javascript/css/html/json ([Prettier](https://prettier.io/))
