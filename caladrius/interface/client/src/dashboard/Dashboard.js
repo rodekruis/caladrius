@@ -6,13 +6,14 @@ import { ModelSelector } from "./ModelSelector";
 import { PointInfoTable, CountAvgTable } from "../scoreboard/Tables";
 import { Map } from "../map-widget/Map";
 import { Report } from "../report/Report";
+import { AddressList } from "../address-list/AddressList";
 import "./dashboard.css";
 
 export class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            current_model: null,
+            current_model: "",
             data: [],
             admin_regions: [],
             selected_datum: {},
@@ -33,9 +34,11 @@ export class Dashboard extends React.Component {
         });
     }
 
-    load_model(model_name, prediction_filename) {
+    load_model(model) {
+        const model_name = model.model_directory;
+        const prediction_filename = model.predictions.test[0];
         load_csv_data(model_name, prediction_filename, data => {
-            this.setState({ data: data });
+            this.setState({ current_model: model, data: data });
         });
     }
 
@@ -55,50 +58,6 @@ export class Dashboard extends React.Component {
 
     handleDragB(x) {
         this.setState({ damage_boundary_b: x });
-    }
-
-    sortData(data) {
-        let order = ["destroyed", "significant", "partial", "none"];
-        return data.sort((a, b) => {
-            return (
-                order.indexOf(a.feature.properties._damage) -
-                order.indexOf(b.feature.properties._damage)
-            );
-        });
-    }
-
-    showAddresses(data) {
-        return data.map(datapoint => {
-            return (
-                <tr key={datapoint.objectId}>
-                    <td>
-                        <button onClick={() => this.handleClick(datapoint)}>
-                            VIEW
-                        </button>
-                    </td>
-                    <td>{datapoint.feature.properties._damage}</td>
-                    <td>
-                        {datapoint.feature.properties.address ||
-                            "ADDRESS NOT AVAILABLE"}
-                    </td>
-                </tr>
-            );
-        });
-    }
-
-    createAddressTable(data) {
-        return (
-            <table>
-                <thead>
-                    <tr>
-                        <th>Inspect</th>
-                        <th>Damage</th>
-                        <th>Address</th>
-                    </tr>
-                </thead>
-                <tbody>{this.showAddresses(data)}</tbody>
-            </table>
-        );
     }
 
     toggle_nav_menu_class() {
@@ -152,12 +111,15 @@ export class Dashboard extends React.Component {
                     >
                         <div className="navbar-end">
                             <div className="navbar-item">
-                                <ModelSelector load_model={this.load_model} />
+                                <ModelSelector
+                                    current_model={this.state.current_model}
+                                    load_model={this.load_model}
+                                />
                             </div>
                             <div className="navbar-item">
                                 <Report
                                     globalMap={this.state.global_map}
-                                    data={this.sortData(this.state.data)}
+                                    data={this.state.data}
                                 />
                             </div>
                         </div>
@@ -235,14 +197,15 @@ export class Dashboard extends React.Component {
                         </div>
                     </div>
                 </div>
-                <div className="address-container">
-                    <h3>Address</h3>
-                    {this.state.data.length > 0
-                        ? this.createAddressTable(
-                              this.sortData(this.state.data)
-                          )
-                        : "Data Unavailable"}
-                </div>
+                {this.state.current_model ? (
+                    <div className="address-container">
+                        <AddressList
+                            data={this.state.data}
+                            view_datapoint={datum => this.handleClick(datum)}
+                            selected_datum={this.state.selected_datum}
+                        />
+                    </div>
+                ) : null}
             </div>
         );
     }

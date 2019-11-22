@@ -4,7 +4,6 @@ export class ModelSelector extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            current_model: "",
             models: [],
         };
         this.handle_change = this.handle_change.bind(this);
@@ -19,12 +18,8 @@ export class ModelSelector extends React.Component {
     }
 
     handle_change(event) {
-        this.setState({ current_model: event.target.value });
         const current_model = this.state.models[event.target.value];
-        this.props.load_model(
-            current_model.model_directory,
-            current_model.predictions.test[0]
-        );
+        this.props.load_model(current_model);
         event.preventDefault();
     }
 
@@ -48,7 +43,7 @@ export class ModelSelector extends React.Component {
         return (
             <div className="select">
                 <select
-                    value={this.state.current_model}
+                    value={this.props.current_model}
                     onChange={this.handle_change}
                 >
                     {this.create_select_options()}
