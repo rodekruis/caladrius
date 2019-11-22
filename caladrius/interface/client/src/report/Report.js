@@ -15,10 +15,6 @@ export class Report extends React.Component {
         this.create = this.create.bind(this);
     }
 
-    componentDidMount() {
-        console.log(this.props.globalMap);
-    }
-
     add_title(doc) {
         doc.setFontSize(TITLE_FONT_SIZE);
         doc.text("Caladrius Report", 15, 25);
@@ -50,13 +46,6 @@ export class Report extends React.Component {
         this.setState({ global_map_image: canvas.toDataURL("image/svg+xml", 1.0) });
     }
 
-    add_global_map(doc, map) {
-        // var dimensions = map.getSize();
-        leafletImage(this.props.globalMap, this.convert_leaflet_map_to_image);
-        console.log(this.state.global_map_image);
-        doc.addImage(this.state.global_map_image, 'PNG', 10, 10, 100, 100);
-    }
-
     add_addresses(doc) {
         doc.addPage();
         doc.setFontSize(HEADER_FONT_SIZE);
@@ -68,8 +57,6 @@ export class Report extends React.Component {
         this.add_title(doc);
         const timestamp = this.add_timestamp(doc);
         this.add_global_statistics(doc);
-        console.log(this.props.globalMap);
-        this.add_global_map(doc, this.props.globalMap);
         this.add_addresses(doc);
         doc.save("Caladrius-Report-" + timestamp + ".pdf");
     }
