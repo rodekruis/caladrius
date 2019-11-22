@@ -28,11 +28,8 @@ export class AddressList extends React.Component {
                     </td>
                     <td>{datapoint.priority}</td>
                     <td>
-                        {datapoint.feature.properties.address || (
-                            <span className="has-text-danger">
-                                ADDRESS NOT AVAILABLE
-                            </span>
-                        )}
+                        {datapoint.feature.properties.address ||
+                            "ADDRESS NOT AVAILABLE"}
                     </td>
                 </tr>
             );
