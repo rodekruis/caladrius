@@ -1,9 +1,9 @@
-0.6.1 (YYYY-MM-DD)
+0.6.1 (2019-11-22)
 ------------------
 - Integrated formatters for Python ([Black](https://black.readthedocs.io/en/stable/) and [flake8](https://gitlab.com/pycqa/flake8)) and javascript/css/html/json ([Prettier](https://prettier.io/))
 - Enforced formatters using [husky](https://github.com/typicode/husky), [lint-staged](https://github.com/okonet/lint-staged) and [pre-commit](https://pre-commit.com/)
 - Fixed bugs in interface
-- [ ] Create/Download Report
+- Create/Download Report
 
 0.6.0 (2019-10-14)
 ------------------

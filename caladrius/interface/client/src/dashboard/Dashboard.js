@@ -56,35 +56,47 @@ export class Dashboard extends React.Component {
     }
 
     sortData(data) {
-        let order = [ "destroyed", "significant", "partial", "none" ];
+        let order = ["destroyed", "significant", "partial", "none"];
         return data.sort((a, b) => {
-            return order.indexOf(a.feature.properties._damage) - order.indexOf(b.feature.properties._damage)
+            return (
+                order.indexOf(a.feature.properties._damage) -
+                order.indexOf(b.feature.properties._damage)
+            );
         });
     }
 
     showAddresses(data) {
         return data.map(datapoint => {
-            return <tr key={datapoint.objectId}>
-                <td><button onClick={() => this.handleClick(datapoint)}>VIEW</button></td>
-                <td>{datapoint.feature.properties._damage}</td>
-                <td>{datapoint.feature.properties.address || "ADDRESS NOT AVAILABLE"}</td>
+            return (
+                <tr key={datapoint.objectId}>
+                    <td>
+                        <button onClick={() => this.handleClick(datapoint)}>
+                            VIEW
+                        </button>
+                    </td>
+                    <td>{datapoint.feature.properties._damage}</td>
+                    <td>
+                        {datapoint.feature.properties.address ||
+                            "ADDRESS NOT AVAILABLE"}
+                    </td>
                 </tr>
+            );
         });
     }
 
     createAddressTable(data) {
-        return (<table>
-            <thead>
-                <tr>
-                    <th>Inspect</th>
-                    <th>Damage</th>
-                    <th>Address</th>
-                </tr>
-            </thead>
-            <tbody>
-                { this.showAddresses(data) }
-            </tbody>
-        </table>);
+        return (
+            <table>
+                <thead>
+                    <tr>
+                        <th>Inspect</th>
+                        <th>Damage</th>
+                        <th>Address</th>
+                    </tr>
+                </thead>
+                <tbody>{this.showAddresses(data)}</tbody>
+            </table>
+        );
     }
 
     render() {
@@ -92,7 +104,10 @@ export class Dashboard extends React.Component {
             <div className="dashboard-container">
                 <div className="model-selector">
                     <ModelSelector load_model={this.load_model} />
-                    <Report globalMap={this.state.global_map} data={this.sortData(this.state.data)} />
+                    <Report
+                        globalMap={this.state.global_map}
+                        data={this.sortData(this.state.data)}
+                    />
                 </div>
                 <div className="graph-image-map-container">
                     <div className="graph-container">
@@ -168,7 +183,11 @@ export class Dashboard extends React.Component {
                 </div>
                 <div className="address-container">
                     <h3>Address</h3>
-                    { this.state.data.length > 0 ? this.createAddressTable(this.sortData(this.state.data)) : "Data Unavailable" }
+                    {this.state.data.length > 0
+                        ? this.createAddressTable(
+                              this.sortData(this.state.data)
+                          )
+                        : "Data Unavailable"}
                 </div>
             </div>
         );

@@ -20,7 +20,7 @@ export class Map extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            global_map: this.initialize_map()
+            global_map: this.initialize_map(),
         };
         this.get_building_shape_array = this.get_building_shape_array.bind(
             this
