@@ -3,6 +3,7 @@
     "version": "0.6.2",
     "private": true,
     "dependencies": {
+        "bulma": "^0.8.0",
         "d3": "^5.9.2",
         "jquery": "^3.4.1",
         "jspdf": "^1.5.3",
