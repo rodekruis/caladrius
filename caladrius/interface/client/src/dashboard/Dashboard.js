@@ -20,9 +20,11 @@ export class Dashboard extends React.Component {
             damage_boundary_b: 0.7,
             map_center: [18.0425, -63.0548],
             global_map: null,
+            nav_menu_class: "",
         };
         this.load_model = this.load_model.bind(this);
         this.setGlobalMap = this.setGlobalMap.bind(this);
+        this.toggle_nav_menu_class = this.toggle_nav_menu_class.bind(this);
     }
 
     componentDidMount() {
@@ -99,16 +101,68 @@ export class Dashboard extends React.Component {
         );
     }
 
+    toggle_nav_menu_class() {
+        this.setState({
+            nav_menu_class: this.state.nav_menu_class ? "" : " is-active",
+        });
+    }
+
     render() {
         return (
             <div className="dashboard-container">
-                <div className="model-selector">
-                    <ModelSelector load_model={this.load_model} />
-                    <Report
-                        globalMap={this.state.global_map}
-                        data={this.sortData(this.state.data)}
-                    />
-                </div>
+                <nav
+                    className="navbar is-fixed-top"
+                    role="navigation"
+                    aria-label="main navigation"
+                >
+                    <div className="navbar-brand">
+                        <a
+                            className="navbar-item"
+                            href="https://www.510.global/"
+                        >
+                            <img
+                                src="/510-logo.png"
+                                width="74"
+                                height="24.75"
+                            />
+                        </a>
+                        <a className="navbar-item is-primary" href="/">
+                            CALADRIUS
+                        </a>
+
+                        <a
+                            role="button"
+                            className={
+                                "navbar-burger burger" +
+                                this.state.nav_menu_class
+                            }
+                            aria-label="menu"
+                            aria-expanded="false"
+                            data-target="navbar-caladrius-controls"
+                            onClick={this.toggle_nav_menu_class}
+                        >
+                            <span aria-hidden="true"></span>
+                            <span aria-hidden="true"></span>
+                            <span aria-hidden="true"></span>
+                        </a>
+                    </div>
+                    <div
+                        id="navbar-caladrius-controls"
+                        className={"navbar-menu" + this.state.nav_menu_class}
+                    >
+                        <div className="navbar-end">
+                            <div className="navbar-item">
+                                <ModelSelector load_model={this.load_model} />
+                            </div>
+                            <div className="navbar-item">
+                                <Report
+                                    globalMap={this.state.global_map}
+                                    data={this.sortData(this.state.data)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </nav>
                 <div className="graph-image-map-container">
                     <div className="graph-container">
                         <Scatterplot

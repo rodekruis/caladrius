@@ -11,12 +11,8 @@
     align-items: stretch;
 }
 
-.model-selector {
-    order: 1;
-}
-
 .graph-image-map-container {
-    order: 2;
+    order: 1;
     display: flex;
     flex-direction: row;
     align-items: stretch;

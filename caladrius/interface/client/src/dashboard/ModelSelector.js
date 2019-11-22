@@ -31,7 +31,7 @@ export class ModelSelector extends React.Component {
     create_select_options() {
         let items = [
             <option key={""} value={""} disabled>
-                Select Model
+                Choose a trained model
             </option>,
         ];
         this.state.models.forEach((model, index) => {
@@ -46,15 +46,14 @@ export class ModelSelector extends React.Component {
 
     render() {
         return (
-            <label>
-                Choose a trained model:
+            <div className="select">
                 <select
                     value={this.state.current_model}
                     onChange={this.handle_change}
                 >
                     {this.create_select_options()}
                 </select>
-            </label>
+            </div>
         );
     }
 }
