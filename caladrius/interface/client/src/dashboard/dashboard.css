@@ -30,6 +30,10 @@
     order: 2;
 }
 
+.address-container {
+    order: 3;
+}
+
 .map-image-container,
 .widget-container {
     display: flex;
