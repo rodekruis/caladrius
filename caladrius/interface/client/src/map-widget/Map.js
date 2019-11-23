@@ -29,7 +29,7 @@ export class Map extends React.Component {
     }
 
     initialize_map() {
-        if (Object.keys(this.props.selected_datum).length > 0) {
+        if (this.props.selected_datum) {
             center = this.props.selected_datum["feature"]["geometry"][
                 "coordinates"
             ][0][0][0];
@@ -61,7 +61,9 @@ export class Map extends React.Component {
                 this.props.damage_boundary_a,
                 this.props.damage_boundary_b,
                 datum.objectId,
-                this.props.selected_datum.objectId
+                this.props.selected_datum
+                    ? this.props.selected_datum.objectId
+                    : null
             );
             return (
                 <Polygon

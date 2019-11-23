@@ -20,7 +20,7 @@ export class PointInfoTable extends Table {
         let damage = "N/A";
         let prediction = 0.0;
         let label = 0.0;
-        if (Object.keys(this.props.selected_datum).length) {
+        if (this.props.selected_datum) {
             damage = this.props.selected_datum.priority;
             prediction = this.props.selected_datum.prediction
                 .toString()

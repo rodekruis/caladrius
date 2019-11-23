@@ -13,7 +13,7 @@ export class App extends React.Component {
             models: [],
             selected_model: "",
             data: [],
-            selected_datum: {},
+            selected_datum: null,
             admin_regions: [],
             loading: true,
         };

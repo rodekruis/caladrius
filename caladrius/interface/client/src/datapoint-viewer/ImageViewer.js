@@ -8,7 +8,7 @@ export class ImageViewer extends React.Component {
                 <div className="tile is-parent is-vertical">
                     <article className="tile is-child">
                         <h4 id="map" className="title is-4">
-                            Before Image
+                            Before Event
                         </h4>
                         <div className="map-before-image-container is-flex">
                             <MapImage
@@ -21,7 +21,7 @@ export class ImageViewer extends React.Component {
                 <div className="tile is-parent">
                     <article className="tile is-child">
                         <h4 id="map" className="title is-4">
-                            After Image
+                            After Event
                         </h4>
                         <div className="map-after-image-container is-flex">
                             <MapImage
