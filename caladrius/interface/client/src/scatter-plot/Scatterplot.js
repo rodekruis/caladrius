@@ -39,39 +39,44 @@ export class Scatterplot extends React.Component {
         };
 
         return (
-            <svg height={this.props.height} width={this.props.width}>
-                <g transform={`translate(${margin.left},${margin.top})`}>
-                    <AxisBottom {...axis_props} />
-                    <AxisLeft {...axis_props} />
-                    <AxisBottomLabel {...axis_props} />
-                    <AxisLeftLabel {...axis_props} />
-                    <Title {...axis_props} />
-                    <Circles
-                        data={this.props.data}
-                        axis={axis_props}
-                        onClick={this.props.onClick}
-                        selected_datum={this.props.selected_datum}
-                        damage_boundary_a={this.props.damage_boundary_a}
-                        damage_boundary_b={this.props.damage_boundary_b}
-                    />
-                    <DamageBoundary
-                        axis={axis_props}
-                        onDrag={this.props.onDragA}
-                        x={this.props.damage_boundary_a}
-                        xmin={0.0}
-                        xmax={this.props.damage_boundary_b}
-                        stroke={least}
-                    />
-                    <DamageBoundary
-                        axis={axis_props}
-                        onDrag={this.props.onDragB}
-                        x={this.props.damage_boundary_b}
-                        xmin={this.props.damage_boundary_a}
-                        xmax={1.0}
-                        stroke={heavy}
-                    />
-                </g>
-            </svg>
+            <div>
+                <h4 id="map" className="title is-4">
+                    Correlation Graph
+                </h4>
+                <svg height={this.props.height} width={this.props.width}>
+                    <g transform={`translate(${margin.left},${margin.top})`}>
+                        <AxisBottom {...axis_props} />
+                        <AxisLeft {...axis_props} />
+                        <AxisBottomLabel {...axis_props} />
+                        <AxisLeftLabel {...axis_props} />
+                        <Title {...axis_props} />
+                        <Circles
+                            data={this.props.data}
+                            axis={axis_props}
+                            onClick={this.props.onClick}
+                            selected_datum={this.props.selected_datum}
+                            damage_boundary_a={this.props.damage_boundary_a}
+                            damage_boundary_b={this.props.damage_boundary_b}
+                        />
+                        <DamageBoundary
+                            axis={axis_props}
+                            onDrag={this.props.onDragA}
+                            x={this.props.damage_boundary_a}
+                            xmin={0.0}
+                            xmax={this.props.damage_boundary_b}
+                            stroke={least}
+                        />
+                        <DamageBoundary
+                            axis={axis_props}
+                            onDrag={this.props.onDragB}
+                            x={this.props.damage_boundary_b}
+                            xmin={this.props.damage_boundary_a}
+                            xmax={1.0}
+                            stroke={heavy}
+                        />
+                    </g>
+                </svg>
+            </div>
         );
     }
 }

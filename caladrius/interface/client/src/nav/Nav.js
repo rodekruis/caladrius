@@ -1,26 +1,13 @@
 import * as React from "react";
-import { load_csv_data } from "../data.js";
-import { ModelSelector } from "./ModelSelector";
 import { Report } from "../report/Report";
 
 export class Nav extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            current_model: "",
             nav_menu_class: "",
         };
-        this.load_model = this.load_model.bind(this);
         this.toggle_nav_menu_class = this.toggle_nav_menu_class.bind(this);
-    }
-
-    load_model(model) {
-        const model_name = model.model_directory;
-        const prediction_filename = model.predictions.test[0];
-        load_csv_data(model_name, prediction_filename, data => {
-            this.setState({ current_model: model });
-            this.props.set_data(data);
-        });
     }
 
     toggle_nav_menu_class() {
@@ -65,16 +52,10 @@ export class Nav extends React.Component {
                 >
                     <div className="navbar-end">
                         <div className="navbar-item">
-                            <ModelSelector
-                                current_model={this.state.current_model}
-                                load_model={this.load_model}
-                            />
+                            {this.props.render_model_selector()}
                         </div>
                         <div className="navbar-item">
-                            <Report
-                                globalMap={this.state.global_map}
-                                data={this.state.data}
-                            />
+                            <Report data={this.props.data} />
                         </div>
                     </div>
                 </div>

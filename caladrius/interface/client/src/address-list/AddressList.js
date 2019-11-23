@@ -52,15 +52,11 @@ export class AddressList extends React.Component {
     }
 
     render() {
-        return (
-            <div className="container is-fluid">
+        return this.props.data.length > 0 ? (
+            <section className="section">
                 <h1 className="title">Address List</h1>
-                {this.props.data.length > 0 ? (
-                    this.createAddressTable(this.props.data)
-                ) : (
-                    <div class="notification">Addresses are unavailable.</div>
-                )}
-            </div>
-        );
+                {this.createAddressTable(this.props.data)}
+            </section>
+        ) : null;
     }
 }

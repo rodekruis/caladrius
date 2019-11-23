@@ -46,7 +46,7 @@ export class Map extends React.Component {
                 </LayersControl>
             </LeafletMap>
         );
-        this.props.setGlobalMap(map);
+        this.props.set_global_map(map);
         return map;
     }
 

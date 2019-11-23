@@ -3,33 +3,22 @@ import * as React from "react";
 export class ModelSelector extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            models: [],
-        };
-        this.handle_change = this.handle_change.bind(this);
+        this.load_model = this.load_model.bind(this);
     }
 
-    componentDidMount() {
-        fetch("/api/models")
-            .then(res => res.json())
-            .then(models => {
-                this.setState({ models: models });
-            });
-    }
-
-    handle_change(event) {
-        const current_model = this.state.models[event.target.value];
-        this.props.load_model(current_model);
+    load_model(event) {
+        const selected_model = this.props.models[event.target.value];
+        this.props.load_model(selected_model);
         event.preventDefault();
     }
 
-    create_select_options() {
+    show_models() {
         let items = [
             <option key={""} value={""} disabled>
                 Choose a trained model
             </option>,
         ];
-        this.state.models.forEach((model, index) => {
+        this.props.models.forEach((model, index) => {
             items.push(
                 <option key={model.model_name} value={index}>
                     {model.model_name}
@@ -43,10 +32,16 @@ export class ModelSelector extends React.Component {
         return (
             <div className="select">
                 <select
-                    value={this.props.current_model}
-                    onChange={this.handle_change}
+                    value={
+                        this.props.selected_model
+                            ? this.props.models.indexOf(
+                                  this.props.selected_model
+                              )
+                            : ""
+                    }
+                    onChange={this.load_model}
                 >
-                    {this.create_select_options()}
+                    {this.show_models()}
                 </select>
             </div>
         );
