@@ -99,7 +99,7 @@ export class Dashboard extends React.Component {
                         </div>
                     </div>
                 ) : (
-                    <section className="hero is-medium">
+                    <section className="hero is-large">
                         <div className="hero-body">
                             <div className="container">
                                 <h2 className="title">
