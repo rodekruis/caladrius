@@ -4,7 +4,7 @@ class Table extends React.Component {
     render() {
         return (
             <div>
-                <table id={this.props.table_id} className="table is-fullwidth">
+                <table id={this.props.table_id} className="table">
                     <thead>
                         <tr>{this.renderTableHeader()}</tr>
                     </thead>

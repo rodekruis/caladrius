@@ -8,7 +8,7 @@ export class Scoreboard extends React.Component {
 
     render() {
         return (
-            <div className="tile is-parent is-vertical">
+            <div className="tile is-parent">
                 <article className="tile is-child table-selection-container">
                     <h4 id="map" className="title is-4">
                         Selected Datapoint

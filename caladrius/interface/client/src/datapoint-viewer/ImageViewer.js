@@ -4,9 +4,9 @@ import "./image_viewer.css";
 
 export class ImageViewer extends React.Component {
     render() {
-        return (
+        return this.props.selected_datum ? (
             <div className="tile">
-                <div className="tile is-parent is-vertical">
+                <div className="tile is-parent">
                     <article className="tile is-child">
                         <h4 id="before-event-header" className="title is-4">
                             Before Event
@@ -32,6 +32,11 @@ export class ImageViewer extends React.Component {
                         </div>
                     </article>
                 </div>
+            </div>
+        ) : (
+            <div className="notification image-viewer-notification">
+                Click on a datapoint in the Correlation Graph to view the
+                building damage.
             </div>
         );
     }

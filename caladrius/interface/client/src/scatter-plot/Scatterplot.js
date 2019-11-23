@@ -40,7 +40,7 @@ export class Scatterplot extends React.Component {
 
         return (
             <div>
-                <h4 id="map" className="title is-4">
+                <h4 id="map" className="title">
                     Correlation Graph
                 </h4>
                 <svg height={this.props.height} width={this.props.width}>

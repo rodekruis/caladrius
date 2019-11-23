@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Report } from "../report/Report";
+import "./nav.css";
 
 export class Nav extends React.Component {
     constructor(props) {
@@ -19,7 +20,7 @@ export class Nav extends React.Component {
     render() {
         return (
             <nav
-                className="navbar is-fixed-top"
+                className="navbar is-fixed-top caladrius-navbar"
                 role="navigation"
                 aria-label="main navigation"
             >

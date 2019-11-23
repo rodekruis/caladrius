@@ -7,3 +7,9 @@
 .datum-image {
     width: 100%;
 }
+
+.image-viewer-notification {
+    height: 316.5px;
+    display: flex;
+    align-items: center;
+}
