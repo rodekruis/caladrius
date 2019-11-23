@@ -3,7 +3,6 @@ import { Scatterplot } from "../scatter-plot/Scatterplot";
 import { ImageViewer } from "../datapoint-viewer/ImageViewer";
 import { Scoreboard } from "../scoreboard/Scoreboard";
 import { Map } from "../map-widget/Map";
-import "./dashboard.css";
 
 export class Dashboard extends React.Component {
     constructor(props) {

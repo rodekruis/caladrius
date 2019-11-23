@@ -1,0 +1,9 @@
+.image-container {
+    height: 256px;
+    width: 256px;
+    align-items: center;
+}
+
+.datum-image {
+    width: 100%;
+}

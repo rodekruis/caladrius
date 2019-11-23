@@ -1,7 +1,6 @@
 import React from "react";
-import "./map_image.css";
 
-export class MapImage extends React.Component {
+export class DatumImage extends React.Component {
     constructor(props) {
         super(props);
         this.selectImage = this.selectImage.bind(this);
@@ -23,7 +22,7 @@ export class MapImage extends React.Component {
         let image = this.selectImage();
         return (
             <img
-                className="map-image"
+                className="datum-image"
                 src={image}
                 alt={this.props.image_label}
             />
