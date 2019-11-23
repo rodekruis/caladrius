@@ -93,7 +93,10 @@ export class Report extends React.Component {
     render() {
         return (
             <div className="report-container">
-                <button className="report-button" onClick={this.create}>
+                <button
+                    className="button is-primary report-button"
+                    onClick={this.create}
+                >
                     Download Report
                 </button>
             </div>

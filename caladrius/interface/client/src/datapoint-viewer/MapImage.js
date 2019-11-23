@@ -9,7 +9,7 @@ export class MapImage extends React.Component {
 
     selectImage() {
         let image_key = "/510-logo.png";
-        if (Object.keys(this.props.selected_datum).length > 0) {
+        if (this.props.selected_datum) {
             image_key =
                 "/" +
                 this.props.image_label +

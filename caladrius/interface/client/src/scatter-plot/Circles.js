@@ -48,7 +48,9 @@ class Circle extends React.Component {
                     this.props.damage_boundary_a,
                     this.props.damage_boundary_b,
                     this.props.datum.objectId,
-                    this.props.selected_datum.objectId
+                    this.props.selected_datum
+                        ? this.props.selected_datum.objectId
+                        : null
                 )
             )
             .on("mouseover", function(d) {
@@ -61,7 +63,9 @@ class Circle extends React.Component {
                         that.props.damage_boundary_a,
                         that.props.damage_boundary_b,
                         that.props.datum.objectId,
-                        that.props.selected_datum.objectId
+                        that.props.selected_datum
+                            ? that.props.selected_datum.objectId
+                            : null
                     )
                 );
             });

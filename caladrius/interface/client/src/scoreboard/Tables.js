@@ -1,11 +1,10 @@
 import React from "react";
-import "./tables.css";
 
 class Table extends React.Component {
     render() {
         return (
             <div>
-                <table id={this.props.table_id}>
+                <table id={this.props.table_id} className="table is-fullwidth">
                     <thead>
                         <tr>{this.renderTableHeader()}</tr>
                     </thead>
@@ -21,8 +20,8 @@ export class PointInfoTable extends Table {
         let damage = "N/A";
         let prediction = 0.0;
         let label = 0.0;
-        if (Object.keys(this.props.selected_datum).length) {
-            damage = this.props.selected_datum.feature.properties._damage;
+        if (this.props.selected_datum) {
+            damage = this.props.selected_datum.priority;
             prediction = this.props.selected_datum.prediction
                 .toString()
                 .slice(0, 4);
@@ -50,7 +49,7 @@ export class PointInfoTable extends Table {
 
 export class CountAvgTable extends Table {
     renderTableHeader() {
-        const header = ["Damage", "Least", "Partial", "Heavy"];
+        const header = ["Priority", "Low", "Medium", "High"];
         return header.map(colname => {
             return <th key={colname}>{colname}</th>;
         });
@@ -97,8 +96,8 @@ export class CountAvgTable extends Table {
         }
         return (
             <tbody>
-                {this.renderRow("Count", count_data)}
-                {this.renderRow("Average", average_data)}
+                {this.renderRow("Buildings", count_data)}
+                {this.renderRow("Damage", average_data)}
             </tbody>
         );
     }
