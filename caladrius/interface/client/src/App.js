@@ -78,7 +78,7 @@ export class App extends React.Component {
                             <div className="container">
                                 <h2 className="title">
                                     <progress
-                                        class="progress is-warning"
+                                        className="progress is-warning"
                                         max="100"
                                     >
                                         100%
