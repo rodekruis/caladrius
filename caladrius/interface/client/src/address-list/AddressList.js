@@ -27,10 +27,7 @@ export class AddressList extends React.Component {
                         </button>
                     </td>
                     <td>{this.props.get_datum_priority(datapoint)}</td>
-                    <td>
-                        {datapoint.feature.properties.address ||
-                            "ADDRESS NOT AVAILABLE"}
-                    </td>
+                    <td>{datapoint.address || "ADDRESS NOT AVAILABLE"}</td>
                 </tr>
             );
         });

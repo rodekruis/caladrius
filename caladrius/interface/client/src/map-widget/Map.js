@@ -30,9 +30,7 @@ export class Map extends React.Component {
 
     initialize_map() {
         if (this.props.selected_datum) {
-            center = this.props.selected_datum["feature"]["geometry"][
-                "coordinates"
-            ][0][0][0];
+            center = this.props.selected_datum.coordinates[0];
         }
         const map = (
             <LeafletMap center={center} zoom={zoom}>
@@ -68,9 +66,7 @@ export class Map extends React.Component {
             return (
                 <Polygon
                     color={colour}
-                    positions={
-                        datum["feature"]["geometry"]["coordinates"][0][0]
-                    }
+                    positions={datum.coordinates}
                     key={datum.objectId}
                     onClick={() => this.props.onClick(datum)}
                 />
@@ -88,26 +84,11 @@ export class Map extends React.Component {
 }
 
 function heatMapMaker(cacheData, mode) {
-    let heatCoordinates = [];
-    if (mode === "label") {
-        heatCoordinates = cacheData.map(x => [
-            x.feature.geometry.coordinates[0][0][0][0],
-            x.feature.geometry.coordinates[0][0][0][1],
-            x.label,
-        ]);
-    } else if (mode === "prediction") {
-        heatCoordinates = cacheData.map(x => [
-            x.feature.geometry.coordinates[0][0][0][0],
-            x.feature.geometry.coordinates[0][0][0][1],
-            x.prediction,
-        ]);
-    } else if (mode === "category") {
-        heatCoordinates = cacheData.map(x => [
-            x.feature.geometry.coordinates[0][0][0][0],
-            x.feature.geometry.coordinates[0][0][0][1],
-            categoryToValue(x.feature.properties._damage),
-        ]);
-    }
+    let heatCoordinates = cacheData.map(x => [
+        x.coordinates[0][0],
+        x.coordinates[0][1],
+        x.prediction,
+    ]);
     return (
         <LayersControl.Overlay name={mode}>
             <HeatmapLayer
@@ -118,20 +99,4 @@ function heatMapMaker(cacheData, mode) {
             />
         </LayersControl.Overlay>
     );
-}
-
-function categoryToValue(category) {
-    var value;
-    if (category === "none") {
-        value = 0;
-    } else if (category === "partial") {
-        value = 0.2;
-    } else if (category === "heavy") {
-        value = 0.5;
-    } else if (category === "destroyed") {
-        value = 0.8;
-    } else {
-        value = 0;
-    }
-    return value;
 }
