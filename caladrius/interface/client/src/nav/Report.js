@@ -35,8 +35,8 @@ export class Report extends React.Component {
             15,
             40,
             {
-                width: 10,
-                height: 10,
+                width: 500,
+                height: 500,
             }
         );
     }
