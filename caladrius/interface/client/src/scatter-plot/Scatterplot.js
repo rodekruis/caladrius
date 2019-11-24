@@ -46,7 +46,7 @@ export class Scatterplot extends React.Component {
                         <Circles
                             data={this.props.data}
                             axis={axis_props}
-                            onClick={this.props.onClick}
+                            set_datum={this.props.set_datum}
                             selected_datum={this.props.selected_datum}
                             damage_boundary_a={this.props.damage_boundary_a}
                             damage_boundary_b={this.props.damage_boundary_b}

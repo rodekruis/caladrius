@@ -18,6 +18,7 @@ export class Scoreboard extends React.Component {
                         <PointInfoTable
                             selected_datum={this.props.selected_datum}
                             table_id={"infoToolTipBox"}
+                            get_datum_priority={this.props.get_datum_priority}
                         />
                     ) : (
                         <div className="notification damage-stats-notification">

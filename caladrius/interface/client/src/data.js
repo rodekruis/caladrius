@@ -27,8 +27,6 @@ function renderPredictions(predictions, callback) {
                 d.objectId = parseInt(d.filename.replace(".png", ""));
                 d.label = parseFloat(d.label);
                 d.prediction = parseFloat(d.prediction);
-                d.category = categorizer(d.prediction);
-                d.priority = priority_label(d.category);
                 // feature mapping
                 d.feature = getFeature(geoData, d.objectId);
                 if (d.feature) {
@@ -56,24 +54,6 @@ export function load_csv_data(model_name, prediction_filename, callback) {
         .then(predictions => {
             renderPredictions(predictions, callback);
         });
-}
-
-function priority_label(category) {
-    const priority_map = ["Low", "Medium", "High"];
-    return priority_map[category];
-}
-
-function categorizer(prediction) {
-    var lowerBound = 0.3;
-    var upperBound = 0.7;
-
-    if (prediction < lowerBound) {
-        return 0;
-    } else if (prediction > upperBound) {
-        return 2;
-    } else {
-        return 1;
-    }
 }
 
 function getFeature(gdata, objectId) {

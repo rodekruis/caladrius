@@ -3,7 +3,6 @@ import { load_csv_data, load_admin_regions } from "./data.js";
 import { ModelSelector } from "./nav/ModelSelector";
 import { Nav } from "./nav/Nav";
 import { Dashboard } from "./dashboard/Dashboard";
-import { AddressList } from "./address-list/AddressList";
 import { Footer } from "./footer/Footer";
 
 export class App extends React.Component {
@@ -98,11 +97,6 @@ export class App extends React.Component {
                         selected_model={this.state.selected_model}
                     />
                 )}
-                <AddressList
-                    data={this.state.data}
-                    view_datapoint={this.set_datum}
-                    selected_datum={this.state.selected_datum}
-                />
                 <Footer />
             </div>
         );
