@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Report } from "../report/Report";
+import { Report } from "./Report";
 import "./nav.css";
 
 export class Nav extends React.Component {
@@ -56,7 +56,10 @@ export class Nav extends React.Component {
                             {this.props.render_model_selector()}
                         </div>
                         <div className="navbar-item">
-                            <Report data={this.props.data} />
+                            <Report
+                                data={this.props.data}
+                                selected_model={this.props.selected_model}
+                            />
                         </div>
                     </div>
                 </div>

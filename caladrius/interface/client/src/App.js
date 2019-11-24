@@ -71,6 +71,7 @@ export class App extends React.Component {
                 <Nav
                     render_model_selector={this.render_model_selector}
                     data={this.state.data}
+                    selected_model={this.state.selected_model}
                 />
                 {this.state.loading ? (
                     <section className="hero is-large">

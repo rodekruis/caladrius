@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as jsPDF from "jspdf";
 import * as leafletImage from "leaflet-image";
-import "./report.css";
 
 const TITLE_FONT_SIZE = 36;
 const HEADER_FONT_SIZE = 24;
@@ -96,6 +95,7 @@ export class Report extends React.Component {
                 <button
                     className="button is-primary report-button"
                     onClick={this.create}
+                    disabled={!this.props.selected_model}
                 >
                     Download Report
                 </button>
