@@ -7,7 +7,7 @@ export class Circles extends React.Component {
         const circles = this.props.data.map(datum => {
             return (
                 <Circle
-                    key={datum.objectId}
+                    key={datum.object_id}
                     axis={this.props.axis}
                     datum={datum}
                     set_datum={() => this.props.set_datum(datum)}
@@ -47,9 +47,9 @@ class Circle extends React.Component {
                     this.props.datum.prediction,
                     this.props.damage_boundary_a,
                     this.props.damage_boundary_b,
-                    this.props.datum.objectId,
+                    this.props.datum.object_id,
                     this.props.selected_datum
-                        ? this.props.selected_datum.objectId
+                        ? this.props.selected_datum.object_id
                         : null
                 )
             )
@@ -62,9 +62,9 @@ class Circle extends React.Component {
                         that.props.datum.prediction,
                         that.props.damage_boundary_a,
                         that.props.damage_boundary_b,
-                        that.props.datum.objectId,
+                        that.props.datum.object_id,
                         that.props.selected_datum
-                            ? that.props.selected_datum.objectId
+                            ? that.props.selected_datum.object_id
                             : null
                     )
                 );

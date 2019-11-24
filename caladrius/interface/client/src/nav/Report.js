@@ -55,10 +55,8 @@ export class Report extends React.Component {
         let address_table = [];
         data.map(datapoint => {
             address_table.push({
-                damage: datapoint.feature.properties._damage,
-                address:
-                    datapoint.feature.properties.address ||
-                    "ADDRESS NOT AVAILABLE",
+                damage: this.props.get_datum_priority(datapoint),
+                address: datapoint.address || "ADDRESS NOT AVAILABLE",
             });
         });
         const address_table_header = [

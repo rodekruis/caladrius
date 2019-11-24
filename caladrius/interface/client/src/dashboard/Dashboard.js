@@ -11,32 +11,20 @@ export class Dashboard extends React.Component {
         this.state = {
             damage_boundary_a: 0.3,
             damage_boundary_b: 0.7,
-            global_map: null,
         };
-        this.set_global_map = this.set_global_map.bind(this);
-        this.get_datum_priority = this.get_datum_priority.bind(this);
+        this.drag_threshold = this.drag_threshold.bind(this);
     }
 
-    set_global_map(x) {
-        this.setState({ global_map: x });
-    }
-
-    handleDragA(x) {
-        this.setState({ damage_boundary_a: x });
-    }
-
-    handleDragB(x) {
-        this.setState({ damage_boundary_b: x });
-    }
-
-    get_datum_priority(datum) {
-        if (datum.prediction < this.state.damage_boundary_a) {
-            return "Low";
-        } else if (datum.prediction > this.state.damage_boundary_b) {
-            return "High";
-        } else {
-            return "Medium";
-        }
+    drag_threshold(key) {
+        return (value => {
+            let state_update = {};
+            state_update[key] = value;
+            this.setState(state_update);
+            this.props.set_datum_priority(
+                this.state.damage_boundary_a,
+                this.state.damage_boundary_b
+            );
+        }).bind(this);
     }
 
     render() {
@@ -53,12 +41,12 @@ export class Dashboard extends React.Component {
                                                 width={600}
                                                 height={600}
                                                 set_datum={this.props.set_datum}
-                                                onDragA={x =>
-                                                    this.handleDragA(x)
-                                                }
-                                                onDragB={x =>
-                                                    this.handleDragB(x)
-                                                }
+                                                onDragA={this.drag_threshold(
+                                                    "damage_boundary_a"
+                                                )}
+                                                onDragB={this.drag_threshold(
+                                                    "damage_boundary_b"
+                                                )}
                                                 data={this.props.data}
                                                 selected_datum={
                                                     this.props.selected_datum
@@ -98,7 +86,8 @@ export class Dashboard extends React.Component {
                                                             .damage_boundary_b
                                                     }
                                                     get_datum_priority={
-                                                        this.get_datum_priority
+                                                        this.props
+                                                            .get_datum_priority
                                                     }
                                                 />
                                             </div>
@@ -113,8 +102,7 @@ export class Dashboard extends React.Component {
                             </h4>
                             <Map
                                 data={this.props.data}
-                                onClick={this.props.set_datum}
-                                set_global_map={this.set_global_map}
+                                set_datum={this.props.set_datum}
                                 damage_boundary_a={this.state.damage_boundary_a}
                                 damage_boundary_b={this.state.damage_boundary_b}
                                 selected_datum={this.props.selected_datum}
@@ -125,7 +113,7 @@ export class Dashboard extends React.Component {
                             data={this.props.data}
                             view_datapoint={this.props.set_datum}
                             selected_datum={this.props.selected_datum}
-                            get_datum_priority={this.get_datum_priority}
+                            get_datum_priority={this.props.get_datum_priority}
                         />
                     </div>
                 ) : (

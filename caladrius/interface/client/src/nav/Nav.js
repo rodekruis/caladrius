@@ -59,6 +59,9 @@ export class Nav extends React.Component {
                             <Report
                                 data={this.props.data}
                                 selected_model={this.props.selected_model}
+                                get_datum_priority={
+                                    this.props.get_datum_priority
+                                }
                             />
                         </div>
                     </div>

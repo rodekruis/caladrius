@@ -10,7 +10,7 @@ export class AddressList extends React.Component {
         return this.props.data.map(datapoint => {
             return (
                 <tr
-                    key={datapoint.objectId}
+                    key={datapoint.object_id}
                     className={
                         this.props.selected_datum == datapoint
                             ? "is-selected"

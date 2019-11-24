@@ -37,11 +37,11 @@ function render_predictions(predictions, callback) {
             predictions = ssv.parse(predictions);
             predictions.pop();
             predictions.forEach(function(d) {
-                d.objectId = parseInt(d.filename.replace(".png", ""));
+                d.object_id = parseInt(d.filename.replace(".png", ""));
                 d.label = parseFloat(d.label);
                 d.prediction = parseFloat(d.prediction);
                 // feature properties
-                const feature = get_feature(geoData, d.objectId);
+                const feature = get_feature(geoData, d.object_id);
                 if (feature) {
                     d.coordinates = get_coordinates(feature);
                     d.address = get_address(feature);
@@ -54,11 +54,11 @@ function render_predictions(predictions, callback) {
         });
 }
 
-function get_feature(gdata, objectId) {
+function get_feature(gdata, object_id) {
     var feature = null;
     for (var featureIndex in gdata.features) {
         var currentFeature = gdata.features[featureIndex];
-        if (currentFeature.properties.OBJECTID === objectId) {
+        if (currentFeature.properties.OBJECTID === object_id) {
             var newObject = jQuery.extend(true, {}, currentFeature);
             var oldCoordinates = newObject.geometry.coordinates[0][0];
             var newGeometry = {

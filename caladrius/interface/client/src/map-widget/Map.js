@@ -11,10 +11,9 @@ import "leaflet/dist/leaflet.css";
 import "./map.css";
 import { get_point_colour } from "../colours";
 
-const map_url = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-const attribution = "";
-const zoom = 18;
-let center = [18.0425, -63.0548];
+const MAP_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const DEFAULT_ZOOM_LEVEL = 14;
+let DEFAULT_CENTER_COORDINATES = [18.0425, -63.0548];
 
 export class Map extends React.Component {
     constructor(props) {
@@ -33,23 +32,19 @@ export class Map extends React.Component {
             center = this.props.selected_datum.coordinates[0];
         }
         const map = (
-            <LeafletMap center={center} zoom={zoom}>
-                <TileLayer url={map_url} attribution={attribution} />
-                <LayerGroup>{this.get_admin_regions()}</LayerGroup>
+            <LeafletMap
+                center={DEFAULT_CENTER_COORDINATES}
+                zoom={DEFAULT_ZOOM_LEVEL}
+            >
+                <TileLayer url={MAP_URL} />
                 <LayerGroup>{this.get_building_shape_array()}</LayerGroup>
+                <LayerGroup>{this.get_admin_regions()}</LayerGroup>
                 <LayersControl>
-                    {heatMapMaker(this.props.data, "label")}
-                    {heatMapMaker(this.props.data, "prediction")}
-                    {heatMapMaker(this.props.data, "category")}
+                    {this.prediction_heat_map(this.props.data)}
                 </LayersControl>
             </LeafletMap>
         );
-        this.props.set_global_map(map);
         return map;
-    }
-
-    render() {
-        return this.state.global_map;
     }
 
     get_building_shape_array() {
@@ -58,17 +53,17 @@ export class Map extends React.Component {
                 datum.prediction,
                 this.props.damage_boundary_a,
                 this.props.damage_boundary_b,
-                datum.objectId,
+                datum.object_id,
                 this.props.selected_datum
-                    ? this.props.selected_datum.objectId
+                    ? this.props.selected_datum.object_id
                     : null
             );
             return (
                 <Polygon
                     color={colour}
                     positions={datum.coordinates}
-                    key={datum.objectId}
-                    onClick={() => this.props.onClick(datum)}
+                    key={datum.object_id}
+                    onClick={() => this.props.set_datum(datum)}
                 />
             );
         });
@@ -76,27 +71,61 @@ export class Map extends React.Component {
     }
 
     get_admin_regions() {
-        let admin_boundary_array = this.props.admin_regions.map((datum, i) => {
-            return <Polygon color={"black"} positions={datum} key={i} />;
-        });
+        const contrast_color_array = [
+            "#e6194B",
+            "#3cb44b",
+            "#ffe119",
+            "#4363d8",
+            "#f58231",
+            "#42d4f4",
+            "#f032e6",
+            "#fabebe",
+            "#469990",
+            "#e6beff",
+            "#9A6324",
+            "#fffac8",
+            "#800000",
+            "#aaffc3",
+            "#000075",
+        ];
+        const admin_boundary_array = this.props.admin_regions.map(
+            (datum, index) => {
+                return (
+                    <Polygon
+                        color={
+                            contrast_color_array[
+                                index % contrast_color_array.length
+                            ]
+                        }
+                        weight="1"
+                        positions={datum}
+                        key={index}
+                    />
+                );
+            }
+        );
         return admin_boundary_array;
     }
-}
 
-function heatMapMaker(cacheData, mode) {
-    let heatCoordinates = cacheData.map(x => [
-        x.coordinates[0][0],
-        x.coordinates[0][1],
-        x.prediction,
-    ]);
-    return (
-        <LayersControl.Overlay name={mode}>
-            <HeatmapLayer
-                points={heatCoordinates}
-                longitudeExtractor={m => m[1]}
-                latitudeExtractor={m => m[0]}
-                intensityExtractor={m => parseFloat(m[2])}
-            />
-        </LayersControl.Overlay>
-    );
+    prediction_heat_map(cacheData) {
+        let heatCoordinates = cacheData.map(x => [
+            x.coordinates[0][0],
+            x.coordinates[0][1],
+            x.prediction,
+        ]);
+        return (
+            <LayersControl.Overlay name={"Heat Map"}>
+                <HeatmapLayer
+                    points={heatCoordinates}
+                    longitudeExtractor={m => m[1]}
+                    latitudeExtractor={m => m[0]}
+                    intensityExtractor={m => parseFloat(m[2])}
+                />
+            </LayersControl.Overlay>
+        );
+    }
+
+    render() {
+        return this.state.global_map;
+    }
 }
