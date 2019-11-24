@@ -90,23 +90,3 @@ export class AxisLeftLabel extends AxisComponent {
         );
     }
 }
-
-export class Title extends AxisComponent {
-    createComponent() {
-        d3.select(this.ref.current)
-            .attr("id", "title")
-            .style("text-anchor", "middle")
-            .text("Siamese Network Model");
-    }
-
-    render() {
-        let x_trans = this.props.width / 2;
-        let y_trans = 0 - this.props.margin.top / 2.0;
-        return (
-            <text
-                transform={`translate(${x_trans}, ${y_trans})`}
-                ref={this.ref}
-            />
-        );
-    }
-}
