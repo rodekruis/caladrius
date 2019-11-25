@@ -1,6 +1,6 @@
 import React from "react";
 import * as d3 from "d3";
-import { get_point_colour, selected } from "../colours";
+import { get_prediction_colour, selected } from "../colours";
 
 export class Circles extends React.Component {
     render() {
@@ -43,14 +43,10 @@ class Circle extends React.Component {
             .attr("cy", this.props.axis.yScale(this.props.datum.label))
             .attr("r", 5)
             .attr("fill", () =>
-                get_point_colour(
+                get_prediction_colour(
                     this.props.datum.prediction,
                     this.props.damage_boundary_a,
-                    this.props.damage_boundary_b,
-                    this.props.datum.object_id,
-                    this.props.selected_datum
-                        ? this.props.selected_datum.object_id
-                        : null
+                    this.props.damage_boundary_b
                 )
             )
             .on("mouseover", function(d) {
@@ -58,14 +54,10 @@ class Circle extends React.Component {
             })
             .on("mouseout", function(d) {
                 d3.select(this).attr("fill", () =>
-                    get_point_colour(
+                    get_prediction_colour(
                         that.props.datum.prediction,
                         that.props.damage_boundary_a,
-                        that.props.damage_boundary_b,
-                        that.props.datum.object_id,
-                        that.props.selected_datum
-                            ? that.props.selected_datum.object_id
-                            : null
+                        that.props.damage_boundary_b
                     )
                 );
             });

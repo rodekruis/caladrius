@@ -9,60 +9,52 @@ import {
 import HeatmapLayer from "react-leaflet-heatmap-layer";
 import "leaflet/dist/leaflet.css";
 import "./map.css";
-import { get_point_colour } from "../colours";
+import { get_prediction_colour, contrast_color_array } from "../colours";
 
-const MAP_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-const DEFAULT_ZOOM_LEVEL = 14;
-let DEFAULT_CENTER_COORDINATES = [18.0425, -63.0548];
+const MAPBOX_ACCESS_TOKEN =
+    "pk.eyJ1IjoiZ3VsZmFyYXoiLCJhIjoiY2p6NW10bmxhMGRidzNldDQ1ZmwxZ2gwbCJ9.tqPa766Wzm0xwy0p9_T3Jg";
+const MAPBOX_BASE_URL = "https://api.tiles.mapbox.com/v4";
+const DEFAULT_MAP_ID = "mapbox.satellite";
+const ATTRIBUTION =
+    'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>';
+const DEFAULT_ZOOM_LEVEL = 13;
+const INTERACTION_ZOOM_LEVEL = 18;
+let DEFAULT_CENTER_COORDINATES = [18.035, -63.07];
 
 export class Map extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            global_map: this.initialize_map(),
-        };
         this.get_building_shape_array = this.get_building_shape_array.bind(
             this
         );
         this.get_admin_regions = this.get_admin_regions.bind(this);
     }
 
-    initialize_map() {
-        if (this.props.selected_datum) {
-            center = this.props.selected_datum.coordinates[0];
-        }
-        const map = (
-            <LeafletMap
-                center={DEFAULT_CENTER_COORDINATES}
-                zoom={DEFAULT_ZOOM_LEVEL}
-            >
-                <TileLayer url={MAP_URL} />
-                <LayerGroup>{this.get_building_shape_array()}</LayerGroup>
-                <LayerGroup>{this.get_admin_regions()}</LayerGroup>
-                <LayersControl>
-                    {this.prediction_heat_map(this.props.data)}
-                </LayersControl>
-            </LeafletMap>
-        );
-        return map;
-    }
-
     get_building_shape_array() {
         let building_shape_array = this.props.data.map(datum => {
-            let colour = get_point_colour(
+            const colour = get_prediction_colour(
                 datum.prediction,
                 this.props.damage_boundary_a,
-                this.props.damage_boundary_b,
-                datum.object_id,
-                this.props.selected_datum
-                    ? this.props.selected_datum.object_id
-                    : null
+                this.props.damage_boundary_b
             );
+
+            let fill_opacity = 1;
+            let dash_array = 0;
+            if (
+                this.props.selected_datum &&
+                this.props.selected_datum.object_id == datum.object_id
+            ) {
+                fill_opacity = 0.2;
+                dash_array = 4;
+            }
             return (
                 <Polygon
                     color={colour}
+                    weight="2"
                     positions={datum.coordinates}
                     key={datum.object_id}
+                    fillOpacity={fill_opacity}
+                    dashArray={dash_array}
                     onClick={() => this.props.set_datum(datum)}
                 />
             );
@@ -70,24 +62,25 @@ export class Map extends React.Component {
         return building_shape_array;
     }
 
+    get_mapbox_layer(
+        map_id,
+        layer_name,
+        attribution,
+        base_url,
+        mapbox_access_token
+    ) {
+        const street_map_url = `${MAPBOX_BASE_URL}/${map_id}/{z}/{x}/{y}.png?access_token=${mapbox_access_token}`;
+        return (
+            <LayersControl.BaseLayer
+                name={layer_name}
+                checked={map_id == DEFAULT_MAP_ID}
+            >
+                <TileLayer url={street_map_url} attribution={ATTRIBUTION} />
+            </LayersControl.BaseLayer>
+        );
+    }
+
     get_admin_regions() {
-        const contrast_color_array = [
-            "#e6194B",
-            "#3cb44b",
-            "#ffe119",
-            "#4363d8",
-            "#f58231",
-            "#42d4f4",
-            "#f032e6",
-            "#fabebe",
-            "#469990",
-            "#e6beff",
-            "#9A6324",
-            "#fffac8",
-            "#800000",
-            "#aaffc3",
-            "#000075",
-        ];
         const admin_boundary_array = this.props.admin_regions.map(
             (datum, index) => {
                 return (
@@ -104,7 +97,11 @@ export class Map extends React.Component {
                 );
             }
         );
-        return admin_boundary_array;
+        return (
+            <LayersControl.Overlay name={"Admin Regions"} checked={true}>
+                <LayerGroup>{admin_boundary_array}</LayerGroup>
+            </LayersControl.Overlay>
+        );
     }
 
     prediction_heat_map(cacheData) {
@@ -114,7 +111,7 @@ export class Map extends React.Component {
             x.prediction,
         ]);
         return (
-            <LayersControl.Overlay name={"Heat Map"}>
+            <LayersControl.Overlay name={"Heat Map"} checked={true}>
                 <HeatmapLayer
                     points={heatCoordinates}
                     longitudeExtractor={m => m[1]}
@@ -126,6 +123,35 @@ export class Map extends React.Component {
     }
 
     render() {
-        return this.state.global_map;
+        const center_coordinates = this.props.selected_datum
+            ? this.props.selected_datum.coordinates[0]
+            : DEFAULT_CENTER_COORDINATES;
+        const zoom_level = this.props.selected_datum
+            ? INTERACTION_ZOOM_LEVEL
+            : DEFAULT_ZOOM_LEVEL;
+        const map = (
+            <LeafletMap center={center_coordinates} zoom={zoom_level}>
+                <LayersControl>
+                    {this.get_mapbox_layer(
+                        "mapbox.streets",
+                        "Street",
+                        ATTRIBUTION,
+                        MAPBOX_BASE_URL,
+                        MAPBOX_ACCESS_TOKEN
+                    )}
+                    {this.get_mapbox_layer(
+                        "mapbox.satellite",
+                        "Satellite",
+                        ATTRIBUTION,
+                        MAPBOX_BASE_URL,
+                        MAPBOX_ACCESS_TOKEN
+                    )}
+                    {this.get_admin_regions()}
+                    {this.prediction_heat_map(this.props.data)}
+                </LayersControl>
+                <LayerGroup>{this.get_building_shape_array()}</LayerGroup>
+            </LeafletMap>
+        );
+        return map;
     }
 }

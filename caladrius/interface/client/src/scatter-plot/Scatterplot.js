@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import { AxisBottom, AxisBottomLabel, AxisLeft, AxisLeftLabel } from "./Axes";
 import { Circles } from "./Circles";
 import { DamageBoundary } from "./DamageBoundary";
-import { least, heavy } from "../colours";
+import { yellow, red } from "../colours";
 
 const margin = { top: 50, right: 50, bottom: 50, left: 50 };
 
@@ -57,7 +57,7 @@ export class Scatterplot extends React.Component {
                             x={this.props.damage_boundary_a}
                             xmin={0.0}
                             xmax={this.props.damage_boundary_b}
-                            stroke={least}
+                            stroke={yellow}
                         />
                         <DamageBoundary
                             axis={axis_props}
@@ -65,7 +65,7 @@ export class Scatterplot extends React.Component {
                             x={this.props.damage_boundary_b}
                             xmin={this.props.damage_boundary_a}
                             xmax={1.0}
-                            stroke={heavy}
+                            stroke={red}
                         />
                     </g>
                 </svg>

@@ -49,7 +49,7 @@ export class DamageBoundary extends React.Component {
                 .attr("y1", 0)
                 .attr("y2", this.props.axis.height)
                 .attr("stroke", this.props.stroke)
-                .attr("stroke-width", 5)
+                .attr("stroke-width", 2)
                 .call(drag);
         }
     }
