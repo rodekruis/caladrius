@@ -21,40 +21,64 @@ export class DamageBoundary extends React.Component {
         let xmin = this.props.axis.xScale(this.props.xmin);
         const drag = d3
             .drag()
-            .subject(d => {
-                return d3.select(this.ref);
-            })
-            .on("start", function() {
-                d3.event.sourceEvent.stopPropagation();
-                d3.select(this).classed("dragging", true);
-            })
             .on("drag", function() {
                 let x = d3.event.x;
                 let xnew = x < xmin ? xmin : x > xmax ? xmax : x;
                 d3.select(this)
+                    .select("line")
                     .attr("x1", xnew)
                     .attr("x2", xnew);
+                d3.select(this)
+                    .select("circle")
+                    .attr("cx", xnew);
             })
             .on("end", function() {
-                d3.select(this).classed("dragging", false);
                 that.props.onDrag(
-                    that.props.axis.inverseXScale(d3.select(this).attr("x1"))
+                    that.props.axis.inverseXScale(
+                        d3
+                            .select(this)
+                            .select("circle")
+                            .attr("cx")
+                    )
                 );
             });
-
-        if (this.ref) {
-            d3.select(this.ref)
-                .attr("x1", this.props.axis.xScale(this.props.x))
-                .attr("x2", this.props.axis.xScale(this.props.x))
-                .attr("y1", 0)
-                .attr("y2", this.props.axis.height)
-                .attr("stroke", this.props.stroke)
-                .attr("stroke-width", 2)
-                .call(drag);
-        }
+        d3.select(this.ref).call(drag);
+        d3.select(this.ref)
+            .select("line")
+            .style("cursor", "pointer")
+            .on("mouseover", e => {
+                d3.select(this.ref)
+                    .select("circle")
+                    .attr("r", 5);
+            })
+            .on("mouseout", e => {
+                d3.select(this.ref)
+                    .select("circle")
+                    .attr("r", 1);
+            });
     }
 
     render() {
-        return <line ref={ref => (this.ref = ref)} />;
+        return (
+            <g ref={ref => (this.ref = ref)}>
+                <line
+                    stroke={this.props.stroke}
+                    strokeWidth={2}
+                    x1={this.props.axis.xScale(this.props.x)}
+                    x2={this.props.axis.xScale(this.props.x)}
+                    y1={0}
+                    y2={this.props.axis.height}
+                />
+                <circle
+                    stroke={this.props.stroke}
+                    strokeWidth={2}
+                    fill={this.props.stroke}
+                    r={1}
+                    cx={this.props.axis.xScale(this.props.x)}
+                    cy={this.props.axis.height / 25}
+                    fillOpacity={1.0}
+                />
+            </g>
+        );
     }
 }
