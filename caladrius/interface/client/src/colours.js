@@ -10,6 +10,14 @@ export function get_prediction_colour(prediction, lower_bound, upper_bound) {
         : orange;
 }
 
+export function get_heatmap_gradient(lower_bound, upper_bound) {
+    let heatmap_gradient = {};
+    heatmap_gradient[lower_bound] = yellow;
+    heatmap_gradient[upper_bound] = red;
+    heatmap_gradient[lower_bound + (upper_bound - lower_bound) / 2] = orange;
+    return heatmap_gradient;
+}
+
 export const contrast_color_array = [
     "#3cb44b",
     "#4363d8",

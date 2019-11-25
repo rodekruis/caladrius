@@ -9,7 +9,11 @@ import {
 import HeatmapLayer from "react-leaflet-heatmap-layer";
 import "leaflet/dist/leaflet.css";
 import "./map.css";
-import { get_prediction_colour, contrast_color_array } from "../colours";
+import {
+    get_prediction_colour,
+    contrast_color_array,
+    get_heatmap_gradient,
+} from "../colours";
 
 const MAPBOX_ACCESS_TOKEN =
     "pk.eyJ1IjoiZ3VsZmFyYXoiLCJhIjoiY2p6NW10bmxhMGRidzNldDQ1ZmwxZ2gwbCJ9.tqPa766Wzm0xwy0p9_T3Jg";
@@ -59,7 +63,11 @@ export class Map extends React.Component {
                 />
             );
         });
-        return building_shape_array;
+        return (
+            <LayersControl.Overlay name={"Buildings"} checked={true}>
+                <LayerGroup>{building_shape_array}</LayerGroup>
+            </LayersControl.Overlay>
+        );
     }
 
     get_mapbox_layer(
@@ -117,6 +125,13 @@ export class Map extends React.Component {
                     longitudeExtractor={m => m[1]}
                     latitudeExtractor={m => m[0]}
                     intensityExtractor={m => parseFloat(m[2])}
+                    minOpacity={0.2}
+                    radius={20}
+                    blur={5}
+                    gradient={get_heatmap_gradient(
+                        this.props.damage_boundary_a,
+                        this.props.damage_boundary_b
+                    )}
                 />
             </LayersControl.Overlay>
         );
@@ -148,8 +163,8 @@ export class Map extends React.Component {
                     )}
                     {this.get_admin_regions()}
                     {this.prediction_heat_map(this.props.data)}
+                    {this.get_building_shape_array()}
                 </LayersControl>
-                <LayerGroup>{this.get_building_shape_array()}</LayerGroup>
             </LeafletMap>
         );
         return map;
