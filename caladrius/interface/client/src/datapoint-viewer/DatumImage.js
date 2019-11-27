@@ -3,12 +3,12 @@ import React from "react";
 export class DatumImage extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { switching_datum: true };
+        this.state = { loading: true };
     }
 
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.selected_datum !== this.props.selected_datum) {
-            this.setState({ switching_datum: true });
+            this.setState({ loading: true });
         }
     }
 
@@ -29,7 +29,7 @@ export class DatumImage extends React.Component {
             <div
                 className={
                     "image-container is-flex" +
-                    (this.state.switching_datum ? " image-loading" : "")
+                    (this.state.loading ? " image-loading" : "")
                 }
             >
                 <img
@@ -38,7 +38,7 @@ export class DatumImage extends React.Component {
                     alt={this.props.image_label}
                     onLoad={() => {
                         this.setState({
-                            switching_datum: false,
+                            loading: false,
                         });
                     }}
                 />

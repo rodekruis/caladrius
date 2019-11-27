@@ -10,7 +10,7 @@ export class Axes extends React.Component {
                     className="x-axis axis"
                     axisTransform="translate(0, 100)"
                     axis={d3.axisBottom}
-                    labelTransform="translate(90, 99) rotate(0)"
+                    labelTransform="translate(91.5, -1) rotate(0)"
                     labelText="Prediction"
                 />
                 <Axis
@@ -18,7 +18,7 @@ export class Axes extends React.Component {
                     className="y-axis axis"
                     axisTransform="translate(0, 0)"
                     axis={d3.axisLeft}
-                    labelTransform="translate(5, 5) rotate(-90)"
+                    labelTransform="translate(5, 0.5) rotate(-90)"
                     labelText="Label"
                 />
             </g>
@@ -36,6 +36,7 @@ export class Axis extends React.Component {
         d3.select(this.ref.current)
             .call(this.props.axis(this.props.scale).tickSize(0))
             .append("text")
+            .attr("fill", "currentColor")
             .attr("class", `${this.props.className}-label`)
             .attr("transform", this.props.labelTransform)
             .text(this.props.labelText);

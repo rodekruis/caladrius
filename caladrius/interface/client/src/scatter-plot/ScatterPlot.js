@@ -34,7 +34,7 @@ export class ScatterPlot extends React.Component {
 
     render() {
         return (
-            <div>
+            <div className="scatter-plot-container">
                 <h4 id="map" className="title">
                     Correlation Graph
                 </h4>
