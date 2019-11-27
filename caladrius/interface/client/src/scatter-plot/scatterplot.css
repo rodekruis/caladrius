@@ -1,0 +1,14 @@
+.axis {
+    font-size: 4px;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke-width: 0.5px;
+}
+
+line,
+circle {
+    cursor: pointer;
+}

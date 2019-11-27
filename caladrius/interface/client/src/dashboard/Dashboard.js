@@ -38,8 +38,6 @@ export class Dashboard extends React.Component {
                                     <div className="tile is-parent is-6">
                                         <article className="tile is-child">
                                             <Scatterplot
-                                                width={600}
-                                                height={600}
                                                 set_datum={this.props.set_datum}
                                                 onDragA={this.drag_threshold(
                                                     "damage_boundary_a"
@@ -70,27 +68,22 @@ export class Dashboard extends React.Component {
                                             }
                                         />
                                         <div className="tile">
-                                            <div className="tile">
-                                                <Scoreboard
-                                                    selected_datum={
-                                                        this.props
-                                                            .selected_datum
-                                                    }
-                                                    data={this.props.data}
-                                                    damage_boundary_a={
-                                                        this.state
-                                                            .damage_boundary_a
-                                                    }
-                                                    damage_boundary_b={
-                                                        this.state
-                                                            .damage_boundary_b
-                                                    }
-                                                    get_datum_priority={
-                                                        this.props
-                                                            .get_datum_priority
-                                                    }
-                                                />
-                                            </div>
+                                            <Scoreboard
+                                                selected_datum={
+                                                    this.props.selected_datum
+                                                }
+                                                data={this.props.data}
+                                                damage_boundary_a={
+                                                    this.state.damage_boundary_a
+                                                }
+                                                damage_boundary_b={
+                                                    this.state.damage_boundary_b
+                                                }
+                                                get_datum_priority={
+                                                    this.props
+                                                        .get_datum_priority
+                                                }
+                                            />
                                         </div>
                                     </div>
                                 </div>

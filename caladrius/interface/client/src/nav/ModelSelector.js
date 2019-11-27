@@ -15,7 +15,7 @@ export class ModelSelector extends React.Component {
     show_models() {
         let items = [
             <option key={""} value={""} disabled>
-                Choose a trained model
+                Select Model
             </option>,
         ];
         this.props.models.forEach((model, index) => {

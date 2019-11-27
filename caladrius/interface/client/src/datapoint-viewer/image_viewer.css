@@ -9,7 +9,7 @@
 }
 
 .image-viewer-notification {
-    height: 307px;
+    height: 316.75px; /* height of .image-viewer-container - 24 */
     display: flex;
     align-items: center;
 }

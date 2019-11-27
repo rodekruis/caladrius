@@ -42,9 +42,9 @@ class Circle extends React.Component {
             this.props.selected_datum == this.props.datum ? 1.0 : 0.3;
         let that = this;
         d3.select(this.ref.current)
-            .attr("cx", this.props.axis.xScale(this.props.datum.prediction))
-            .attr("cy", this.props.axis.yScale(this.props.datum.label))
-            .attr("r", 5)
+            .attr("cx", this.props.axis.x_scale(this.props.datum.prediction))
+            .attr("cy", this.props.axis.y_scale(this.props.datum.label))
+            .attr("r", 1)
             .attr("fill", () =>
                 get_prediction_colour(
                     this.props.datum.prediction,

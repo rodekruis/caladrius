@@ -5,7 +5,7 @@ import "./image_viewer.css";
 export class ImageViewer extends React.Component {
     render() {
         return this.props.selected_datum ? (
-            <div className="tile">
+            <div className="tile image-viewer-container">
                 <div className="tile is-parent">
                     <article className="tile is-child">
                         <h4 id="before-event-header" className="title is-4">
