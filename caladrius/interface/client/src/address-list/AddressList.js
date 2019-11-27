@@ -12,7 +12,7 @@ export class AddressList extends React.Component {
                 <tr
                     key={datapoint.object_id}
                     className={
-                        this.props.selected_datum == datapoint
+                        this.props.selected_datum === datapoint
                             ? "is-selected"
                             : ""
                     }
@@ -21,7 +21,7 @@ export class AddressList extends React.Component {
                         <button
                             className="button is-small"
                             onClick={() => this.props.view_datapoint(datapoint)}
-                            disabled={this.props.selected_datum == datapoint}
+                            disabled={this.props.selected_datum === datapoint}
                         >
                             VIEW
                         </button>

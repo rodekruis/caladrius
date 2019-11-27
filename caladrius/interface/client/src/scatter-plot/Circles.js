@@ -39,8 +39,7 @@ class Circle extends React.Component {
     draw_plot() {
         const maximum_opacity = 1.0;
         const minimum_opacity =
-            this.props.selected_datum == this.props.datum ? 1.0 : 0.3;
-        let that = this;
+            this.props.selected_datum === this.props.datum ? 1.0 : 0.3;
         d3.select(this.ref.current)
             .attr("cx", this.props.axis.x_scale(this.props.datum.prediction))
             .attr("cy", this.props.axis.y_scale(this.props.datum.label))

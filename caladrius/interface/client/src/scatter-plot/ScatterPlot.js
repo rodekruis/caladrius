@@ -4,9 +4,9 @@ import { Axes } from "./Axes";
 import { Circles } from "./Circles";
 import { DamageBoundary } from "./DamageBoundary";
 import { yellow, red } from "../colours";
-import "./scatterplot.css";
+import "./scatter_plot.css";
 
-export class Scatterplot extends React.Component {
+export class ScatterPlot extends React.Component {
     constructor(props) {
         super(props);
         let range = [0, 100]; // svg components are aligned according to range [0, 100]

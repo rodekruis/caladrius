@@ -3,7 +3,9 @@
 }
 
 .axis path,
-.axis line {
+.axis line,
+.damage-boundary path,
+.damage-boundary line {
     fill: none;
     stroke-width: 0.5px;
 }

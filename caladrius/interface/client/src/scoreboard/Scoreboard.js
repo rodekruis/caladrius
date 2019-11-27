@@ -3,10 +3,6 @@ import { PointInfoTable, CountAvgTable } from "./Tables";
 import "./scoreboard.css";
 
 export class Scoreboard extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (
             <div className="tile">

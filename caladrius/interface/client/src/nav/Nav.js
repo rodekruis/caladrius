@@ -26,13 +26,18 @@ export class Nav extends React.Component {
             >
                 <div className="navbar-brand">
                     <a className="navbar-item" href="https://www.510.global/">
-                        <img src="/510-logo.png" width="74" height="24.75" />
+                        <img
+                            src="/510-logo.png"
+                            alt="www.510.global"
+                            width="74"
+                            height="24.75"
+                        />
                     </a>
                     <a className="navbar-item is-primary" href="/">
                         CALADRIUS
                     </a>
 
-                    <a
+                    <span
                         role="button"
                         className={
                             "navbar-burger burger" + this.state.nav_menu_class
@@ -45,7 +50,7 @@ export class Nav extends React.Component {
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
-                    </a>
+                    </span>
                 </div>
                 <div
                     id="navbar-caladrius-controls"

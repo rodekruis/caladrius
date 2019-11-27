@@ -1,6 +1,5 @@
 import * as React from "react";
 import * as jsPDF from "jspdf";
-import * as leafletImage from "leaflet-image";
 
 const TITLE_FONT_SIZE = 36;
 const HEADER_FONT_SIZE = 24;
@@ -58,6 +57,7 @@ export class Report extends React.Component {
                 damage: this.props.get_datum_priority(datapoint),
                 address: datapoint.address || "ADDRESS NOT AVAILABLE",
             });
+            return datapoint;
         });
         const address_table_header = [
             {

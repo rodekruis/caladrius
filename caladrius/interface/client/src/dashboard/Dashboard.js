@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Scatterplot } from "../scatter-plot/Scatterplot";
+import { ScatterPlot } from "../scatter-plot/ScatterPlot";
 import { ImageViewer } from "../datapoint-viewer/ImageViewer";
 import { Scoreboard } from "../scoreboard/Scoreboard";
 import { Map } from "../map-widget/Map";
@@ -12,11 +12,10 @@ export class Dashboard extends React.Component {
             damage_boundary_a: 0.3,
             damage_boundary_b: 0.7,
         };
-        this.drag_threshold = this.drag_threshold.bind(this);
     }
 
     drag_threshold(key) {
-        return (value => {
+        return value => {
             let state_update = {};
             state_update[key] = value;
             this.setState(state_update);
@@ -24,7 +23,7 @@ export class Dashboard extends React.Component {
                 this.state.damage_boundary_a,
                 this.state.damage_boundary_b
             );
-        }).bind(this);
+        };
     }
 
     render() {
@@ -37,7 +36,7 @@ export class Dashboard extends React.Component {
                                 <div className="tile">
                                     <div className="tile is-parent is-6">
                                         <article className="tile is-child">
-                                            <Scatterplot
+                                            <ScatterPlot
                                                 set_datum={this.props.set_datum}
                                                 onDragA={this.drag_threshold(
                                                     "damage_boundary_a"

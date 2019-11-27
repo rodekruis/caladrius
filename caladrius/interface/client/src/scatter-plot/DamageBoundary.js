@@ -67,7 +67,7 @@ export class DamageBoundary extends React.Component {
 
     render() {
         return (
-            <g ref={this.ref}>
+            <g ref={this.ref} className="damage-boundary">
                 <circle
                     stroke={this.props.stroke}
                     strokeWidth={1}

@@ -46,7 +46,7 @@ export class Map extends React.Component {
             let dash_array = 0;
             if (
                 this.props.selected_datum &&
-                this.props.selected_datum.object_id == datum.object_id
+                this.props.selected_datum.object_id === datum.object_id
             ) {
                 fill_opacity = 0.2;
                 dash_array = 4;
@@ -81,7 +81,7 @@ export class Map extends React.Component {
         return (
             <LayersControl.BaseLayer
                 name={layer_name}
-                checked={map_id == DEFAULT_MAP_ID}
+                checked={map_id === DEFAULT_MAP_ID}
             >
                 <TileLayer url={street_map_url} attribution={ATTRIBUTION} />
             </LayersControl.BaseLayer>
