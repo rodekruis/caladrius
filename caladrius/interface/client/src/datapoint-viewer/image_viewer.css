@@ -2,6 +2,17 @@
     height: 256px;
     width: 256px;
     align-items: center;
+    position: relative;
+}
+
+.image-loading:after {
+    content: "Loading...";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #ffffff;
 }
 
 .datum-image {

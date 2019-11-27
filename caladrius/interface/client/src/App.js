@@ -51,9 +51,7 @@ export class App extends React.Component {
     }
 
     set_datum(datum) {
-        this.setState({
-            selected_datum: datum,
-        });
+        this.setState({ selected_datum: datum });
     }
 
     get_datum_priority_function(lower_bound = 0.3, upper_bound = 0.7) {

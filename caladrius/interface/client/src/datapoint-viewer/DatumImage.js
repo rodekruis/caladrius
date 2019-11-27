@@ -3,15 +3,21 @@ import React from "react";
 export class DatumImage extends React.Component {
     constructor(props) {
         super(props);
-        this.selectImage = this.selectImage.bind(this);
+        this.state = { switching_datum: true };
     }
 
-    selectImage() {
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.selected_datum !== this.props.selected_datum) {
+            this.setState({ switching_datum: true });
+        }
+    }
+
+    select_image() {
         let image_key = "/510-logo.png";
         if (this.props.selected_datum) {
             image_key =
                 "/" +
-                this.props.image_label +
+                this.props.image_folder +
                 "/" +
                 this.props.selected_datum.filename;
         }
@@ -19,13 +25,24 @@ export class DatumImage extends React.Component {
     }
 
     render() {
-        let image = this.selectImage();
         return (
-            <img
-                className="datum-image"
-                src={image}
-                alt={this.props.image_label}
-            />
+            <div
+                className={
+                    "image-container is-flex" +
+                    (this.state.switching_datum ? " image-loading" : "")
+                }
+            >
+                <img
+                    className="datum-image"
+                    src={this.select_image()}
+                    alt={this.props.image_label}
+                    onLoad={() => {
+                        this.setState({
+                            switching_datum: false,
+                        });
+                    }}
+                />
+            </div>
         );
     }
 }

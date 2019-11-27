@@ -11,12 +11,11 @@ export class ImageViewer extends React.Component {
                         <h4 id="before-event-header" className="title is-4">
                             Before Event
                         </h4>
-                        <div className="image-container before-image-container is-flex">
-                            <DatumImage
-                                image_label={"before"}
-                                selected_datum={this.props.selected_datum}
-                            />
-                        </div>
+                        <DatumImage
+                            image_folder={"before"}
+                            image_label={"Image Before Event"}
+                            selected_datum={this.props.selected_datum}
+                        />
                     </article>
                 </div>
                 <div className="tile is-parent">
@@ -24,12 +23,11 @@ export class ImageViewer extends React.Component {
                         <h4 id="after-event-header" className="title is-4">
                             After Event
                         </h4>
-                        <div className="image-container after-image-container is-flex">
-                            <DatumImage
-                                image_label={"after"}
-                                selected_datum={this.props.selected_datum}
-                            />
-                        </div>
+                        <DatumImage
+                            image_folder={"after"}
+                            image_label={"Image After Event"}
+                            selected_datum={this.props.selected_datum}
+                        />
                     </article>
                 </div>
             </div>
