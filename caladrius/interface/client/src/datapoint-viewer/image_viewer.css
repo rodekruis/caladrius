@@ -1,0 +1,26 @@
+.image-container {
+    height: 256px;
+    width: 256px;
+    align-items: center;
+    position: relative;
+}
+
+.image-loading:after {
+    content: "Loading...";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #ffffff;
+}
+
+.datum-image {
+    width: 100%;
+}
+
+.image-viewer-notification {
+    height: 316.75px; /* height of .image-viewer-container - 24 */
+    display: flex;
+    align-items: center;
+}

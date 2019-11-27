@@ -4,7 +4,7 @@ class Table extends React.Component {
     render() {
         return (
             <div>
-                <table id={this.props.table_id} className="table is-fullwidth">
+                <table id={this.props.table_id} className="table">
                     <thead>
                         <tr>{this.renderTableHeader()}</tr>
                     </thead>
@@ -21,7 +21,7 @@ export class PointInfoTable extends Table {
         let prediction = 0.0;
         let label = 0.0;
         if (this.props.selected_datum) {
-            damage = this.props.selected_datum.priority;
+            damage = this.props.get_datum_priority(this.props.selected_datum);
             prediction = this.props.selected_datum.prediction
                 .toString()
                 .slice(0, 4);

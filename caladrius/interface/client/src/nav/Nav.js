@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Report } from "../report/Report";
+import { Report } from "./Report";
+import "./nav.css";
 
 export class Nav extends React.Component {
     constructor(props) {
@@ -19,19 +20,24 @@ export class Nav extends React.Component {
     render() {
         return (
             <nav
-                className="navbar is-fixed-top"
+                className="navbar is-fixed-top caladrius-navbar"
                 role="navigation"
                 aria-label="main navigation"
             >
                 <div className="navbar-brand">
                     <a className="navbar-item" href="https://www.510.global/">
-                        <img src="/510-logo.png" width="74" height="24.75" />
+                        <img
+                            src="/510-logo.png"
+                            alt="www.510.global"
+                            width="74"
+                            height="24.75"
+                        />
                     </a>
                     <a className="navbar-item is-primary" href="/">
                         CALADRIUS
                     </a>
 
-                    <a
+                    <span
                         role="button"
                         className={
                             "navbar-burger burger" + this.state.nav_menu_class
@@ -44,7 +50,7 @@ export class Nav extends React.Component {
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
-                    </a>
+                    </span>
                 </div>
                 <div
                     id="navbar-caladrius-controls"
@@ -55,7 +61,14 @@ export class Nav extends React.Component {
                             {this.props.render_model_selector()}
                         </div>
                         <div className="navbar-item">
-                            <Report data={this.props.data} />
+                            <Report
+                                data={this.props.data}
+                                selected_model={this.props.selected_model}
+                                get_datum_priority={
+                                    this.props.get_datum_priority
+                                }
+                                loading={this.props.loading}
+                            />
                         </div>
                     </div>
                 </div>

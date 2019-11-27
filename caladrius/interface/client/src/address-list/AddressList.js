@@ -10,9 +10,9 @@ export class AddressList extends React.Component {
         return this.props.data.map(datapoint => {
             return (
                 <tr
-                    key={datapoint.objectId}
+                    key={datapoint.object_id}
                     className={
-                        this.props.selected_datum == datapoint
+                        this.props.selected_datum === datapoint
                             ? "is-selected"
                             : ""
                     }
@@ -21,16 +21,13 @@ export class AddressList extends React.Component {
                         <button
                             className="button is-small"
                             onClick={() => this.props.view_datapoint(datapoint)}
-                            disabled={this.props.selected_datum == datapoint}
+                            disabled={this.props.selected_datum === datapoint}
                         >
                             VIEW
                         </button>
                     </td>
-                    <td>{datapoint.priority}</td>
-                    <td>
-                        {datapoint.feature.properties.address ||
-                            "ADDRESS NOT AVAILABLE"}
-                    </td>
+                    <td>{this.props.get_datum_priority(datapoint)}</td>
+                    <td>{datapoint.address || "ADDRESS NOT AVAILABLE"}</td>
                 </tr>
             );
         });
