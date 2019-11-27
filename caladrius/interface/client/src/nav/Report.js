@@ -93,7 +93,7 @@ export class Report extends React.Component {
                 <button
                     className="button is-primary report-button"
                     onClick={this.create}
-                    disabled={!this.props.selected_model}
+                    disabled={!this.props.selected_model || this.props.loading}
                 >
                     Download Report
                 </button>

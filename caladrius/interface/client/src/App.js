@@ -83,6 +83,7 @@ export class App extends React.Component {
                 models={this.state.models}
                 selected_model={this.state.selected_model}
                 load_model={this.load_model}
+                loading={this.state.loading}
             />
         );
     }
@@ -95,6 +96,7 @@ export class App extends React.Component {
                     data={this.state.data}
                     selected_model={this.state.selected_model}
                     get_datum_priority={this.state.get_datum_priority}
+                    loading={this.state.loading}
                 />
                 {this.state.loading ? (
                     <section className="hero is-large">

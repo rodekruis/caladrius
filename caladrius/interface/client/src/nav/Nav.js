@@ -67,6 +67,7 @@ export class Nav extends React.Component {
                                 get_datum_priority={
                                     this.props.get_datum_priority
                                 }
+                                loading={this.props.loading}
                             />
                         </div>
                     </div>

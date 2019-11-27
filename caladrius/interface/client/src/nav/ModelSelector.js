@@ -40,6 +40,7 @@ export class ModelSelector extends React.Component {
                             : ""
                     }
                     onChange={this.load_model}
+                    disabled={this.props.loading}
                 >
                     {this.show_models()}
                 </select>
