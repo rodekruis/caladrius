@@ -1,9 +1,9 @@
 0.6.2 (YYYY-MM-DD)
 ------------------
 - [x] use [bulma](https://bulma.io/) ui
-- [ ] refactor d3
+- [x] refactor d3
 - [ ] add authentication
-- [ ] modularize the UI components
+- [x] modularize the UI components
 
 0.6.1 (2019-11-22)
 ------------------
