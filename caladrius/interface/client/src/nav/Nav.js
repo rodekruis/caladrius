@@ -72,7 +72,7 @@ export class Nav extends React.Component {
                             </div>
                             <div className="navbar-item">
                                 <button
-                                    className="button"
+                                    className="button is-danger"
                                     onClick={this.props.on_logout}
                                 >
                                     Exit

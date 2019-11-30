@@ -29,7 +29,7 @@ export class Login extends React.Component {
         return (
             <div className="columns is-centered is-vcentered login-container">
                 <div className="column is-narrow">
-                    <article className="panel is-primary">
+                    <article className="panel is-info">
                         <p className="panel-heading">Welcome to Caladrius</p>
                         <div className="panel-block">
                             <form
@@ -75,8 +75,11 @@ export class Login extends React.Component {
                                 <div className="field">
                                     <div className="control">
                                         <label className="checkbox">
-                                            <input type="checkbox" /> I agree to
-                                            the{" "}
+                                            <input
+                                                type="checkbox"
+                                                required={true}
+                                            />{" "}
+                                            I agree to the{" "}
                                             <a href="#">terms and conditions</a>
                                             .
                                         </label>
