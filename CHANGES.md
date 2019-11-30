@@ -1,9 +1,11 @@
-0.6.2 (YYYY-MM-DD)
+0.6.2 (2019-11-30)
 ------------------
-- [x] use [bulma](https://bulma.io/) ui
-- [x] refactor d3
-- [ ] add authentication
-- [x] modularize the UI components
+- use [bulma](https://bulma.io/) ui
+- refactor d3
+- add authentication
+- modularize the UI components
+- calculate model accuracy based on threshold
+- added terms and conditions
 
 0.6.1 (2019-11-22)
 ------------------
