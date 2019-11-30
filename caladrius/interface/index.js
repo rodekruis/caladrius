@@ -26,9 +26,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, Config.CLIENT_BUILD)));
 
 app.get("/terms-and-conditions", (req, res) => {
-    res.sendFile(
-        path.join(__dirname + Config.CLIENT_BUILD + "/terms_and_conditions.txt")
-    );
+    res.sendFile(path.join(__dirname + "/terms_and_conditions.txt"));
 });
 
 app.get("/", (req, res) => {

@@ -44,6 +44,9 @@ export class App extends React.Component {
             this.setState({ loading: true }, () => {
                 fetch_admin_regions(admin_regions => {
                     this.fetch_models(models => {
+                        if ("errno" in models) {
+                            models = [];
+                        }
                         this.setState({
                             admin_regions: admin_regions,
                             models: models,
