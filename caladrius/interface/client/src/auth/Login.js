@@ -21,7 +21,7 @@ export class Login extends React.Component {
     };
 
     submit_handler = event => {
-        this.props.login(this.state.username, this.state.password);
+        this.props.on_login(this.state.username, this.state.password);
         event.preventDefault();
     };
 
@@ -70,6 +70,22 @@ export class Login extends React.Component {
                                             required={true}
                                             autoComplete="current-password"
                                         />
+                                        <p
+                                            className={`help ${
+                                                this.props.is_authenticated
+                                                    ? "is-success"
+                                                    : "is-danger"
+                                            } ${
+                                                this.props.login_attempted
+                                                    ? ""
+                                                    : "is-hidden"
+                                            }`}
+                                        >
+                                            Access{" "}
+                                            {this.props.is_authenticated
+                                                ? "Granted"
+                                                : "Denied"}
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="field">
@@ -80,7 +96,12 @@ export class Login extends React.Component {
                                                 required={true}
                                             />{" "}
                                             I agree to the{" "}
-                                            <a href="#">terms and conditions</a>
+                                            <a
+                                                href="/terms-and-conditions"
+                                                target="_blank"
+                                            >
+                                                terms and conditions
+                                            </a>
                                             .
                                         </label>
                                     </div>

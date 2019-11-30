@@ -22,6 +22,19 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.use(cookieParser());
 
+// open
+app.use(express.static(path.join(__dirname, Config.CLIENT_BUILD)));
+
+app.get("/terms-and-conditions", (req, res) => {
+    res.sendFile(
+        path.join(__dirname + Config.CLIENT_BUILD + "/terms_and_conditions.txt")
+    );
+});
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname + Config.CLIENT_BUILD + "/index.html"));
+});
+
 // authentication
 app.use((req, res, next) => {
     req.cookies[Config.COOKIE_NAME] || req.path === "/api/login"
@@ -37,8 +50,7 @@ app.post("/api/login", Auth.login);
 
 app.get("/api/logout", Auth.logout);
 
-// Serve the static files from the React app
-app.use(express.static(path.join(__dirname, Config.CLIENT_BUILD)));
+// static
 app.use(express.static("../../data/Sint-Maarten-2017/test"));
 
 // backend API

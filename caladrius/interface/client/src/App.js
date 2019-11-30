@@ -12,6 +12,7 @@ export class App extends React.Component {
         super(props);
         this.state = {
             is_authenticated: false,
+            login_attempted: false,
             username: null,
             models: [],
             selected_model: "",
@@ -59,17 +60,15 @@ export class App extends React.Component {
             this.setState(
                 {
                     is_authenticated: success,
+                    login_attempted: !success,
                     username: username,
                     loading: false,
                 },
                 this.load_admin_regions_and_models
             );
-            if (!success) {
-                console.log({ html: "Access Denied", classes: "rounded" });
-            }
         };
 
-        this.setState({ loading: true }, () => {
+        this.setState({ loading: true, login_attempted: true }, () => {
             Auth.login(username, password, login_handler);
         });
     };
@@ -179,17 +178,25 @@ export class App extends React.Component {
         return <Footer />;
     };
 
+    render_login = () => {
+        return (
+            <Login
+                on_login={this.on_login}
+                is_authenticated={this.state.is_authenticated}
+                login_attempted={this.state.login_attempted}
+            />
+        );
+    };
+
     render() {
         return (
             <div>
                 {this.render_nav(this.state.is_authenticated)}
-                {this.state.loading ? (
-                    this.render_loader()
-                ) : this.state.is_authenticated ? (
-                    this.render_dashboard()
-                ) : (
-                    <Login login={this.on_login} />
-                )}
+                {this.state.loading
+                    ? this.render_loader()
+                    : this.state.is_authenticated
+                    ? this.render_dashboard()
+                    : this.render_login()}
                 {this.render_footer()}
             </div>
         );
