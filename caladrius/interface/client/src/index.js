@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { Dashboard } from "./dashboard/Dashboard";
+import { App } from "./App";
+import "bulma";
 
 // Render application
-ReactDOM.render(<Dashboard />, document.getElementById("root"));
+ReactDOM.render(<App />, document.getElementById("root"));

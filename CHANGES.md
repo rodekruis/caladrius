@@ -1,3 +1,12 @@
+0.6.2 (2019-11-30)
+------------------
+- use [bulma](https://bulma.io/) ui
+- refactor d3
+- add authentication
+- modularize the UI components
+- calculate model accuracy based on threshold
+- added terms and conditions
+
 0.6.1 (2019-11-22)
 ------------------
 - Integrated formatters for Python ([Black](https://black.readthedocs.io/en/stable/) and [flake8](https://gitlab.com/pycqa/flake8)) and javascript/css/html/json ([Prettier](https://prettier.io/))

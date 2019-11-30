@@ -1,8 +1,9 @@
 {
     "name": "caladrius",
-    "version": "0.6.1",
+    "version": "0.6.2",
     "private": true,
     "dependencies": {
+        "bulma": "^0.8.0",
         "d3": "^5.9.2",
         "jquery": "^3.4.1",
         "jspdf": "^1.5.3",
@@ -37,5 +38,8 @@
             "last 1 safari version"
         ]
     },
-    "proxy": "http://localhost:5000"
+    "proxy": "http://localhost:5000",
+    "devDependencies": {
+        "node-sass": "^4.13.0"
+    }
 }

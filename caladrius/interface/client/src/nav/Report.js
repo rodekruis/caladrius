@@ -1,7 +1,5 @@
 import * as React from "react";
 import * as jsPDF from "jspdf";
-import * as leafletImage from "leaflet-image";
-import "./report.css";
 
 const TITLE_FONT_SIZE = 36;
 const HEADER_FONT_SIZE = 24;
@@ -36,8 +34,8 @@ export class Report extends React.Component {
             15,
             40,
             {
-                width: 10,
-                height: 10,
+                width: 500,
+                height: 500,
             }
         );
     }
@@ -56,11 +54,10 @@ export class Report extends React.Component {
         let address_table = [];
         data.map(datapoint => {
             address_table.push({
-                damage: datapoint.feature.properties._damage,
-                address:
-                    datapoint.feature.properties.address ||
-                    "ADDRESS NOT AVAILABLE",
+                damage: this.props.get_datum_priority(datapoint),
+                address: datapoint.address || "ADDRESS NOT AVAILABLE",
             });
+            return datapoint;
         });
         const address_table_header = [
             {
@@ -93,7 +90,11 @@ export class Report extends React.Component {
     render() {
         return (
             <div className="report-container">
-                <button className="report-button" onClick={this.create}>
+                <button
+                    className="button is-primary report-button"
+                    onClick={this.create}
+                    disabled={!this.props.selected_model || this.props.loading}
+                >
                     Download Report
                 </button>
             </div>

@@ -9,20 +9,27 @@ class Server {
         if (req.query.directory) {
             filename = path.join(req.query.directory, filename);
         }
-        DatasetManager.get_dataset_file(req.query.name, filename).then(file =>
-            res.send(file)
-        );
+        DatasetManager.get_dataset_file(req.query.name, filename)
+            .then(file => res.send(file))
+            .catch(error => {
+                res.status(500).send(error);
+            });
     }
 
     get_models(req, res) {
-        ModelManager.get_models().then(files => res.send(files));
+        ModelManager.get_models()
+            .then(files => res.send(files))
+            .catch(error => {
+                res.status(500).send(error);
+            });
     }
 
     get_predictions(req, res) {
-        ModelManager.get_predictions(
-            req.query.directory,
-            req.query.filename
-        ).then(file => res.send(file));
+        ModelManager.get_predictions(req.query.directory, req.query.filename)
+            .then(file => res.send(file))
+            .catch(error => {
+                res.status(500).send(error);
+            });
     }
 }
 
