@@ -1,13 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-
-// these need to be manually configured
-const MODEL_DIRECTORY = "../../runs";
+const Config = require("./config");
 
 class ModelManager {
     get_models() {
         return new Promise((resolve, reject) => {
-            fs.readdir(MODEL_DIRECTORY, (err, models) => {
+            fs.readdir(Config.MODEL_DIRECTORY, (err, models) => {
                 if (err) {
                     if (err.code === "ENOENT") {
                         resolve([]);
@@ -18,7 +16,7 @@ class ModelManager {
                     const promises = [];
                     models.forEach(model => {
                         const model_path = path.join(
-                            MODEL_DIRECTORY,
+                            Config.MODEL_DIRECTORY,
                             model,
                             "predictions"
                         );
@@ -90,7 +88,7 @@ class ModelManager {
 
     get_predictions(model_directory, filename) {
         const prediction_file_path = path.join(
-            MODEL_DIRECTORY,
+            Config.MODEL_DIRECTORY,
             model_directory,
             "predictions",
             filename

@@ -58,7 +58,7 @@ export class ScatterPlot extends React.Component {
                             axis={this.state.axis_scales}
                             onDrag={this.props.onDragA}
                             x={this.props.damage_boundary_a}
-                            xmin={0.01}
+                            xmin={0.0}
                             xmax={this.props.damage_boundary_b - 0.01}
                             stroke={yellow}
                         />
@@ -67,7 +67,7 @@ export class ScatterPlot extends React.Component {
                             onDrag={this.props.onDragB}
                             x={this.props.damage_boundary_b}
                             xmin={this.props.damage_boundary_a + 0.01}
-                            xmax={0.99}
+                            xmax={1.0}
                             stroke={red}
                         />
                     </g>
