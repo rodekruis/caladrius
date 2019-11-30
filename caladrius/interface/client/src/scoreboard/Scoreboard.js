@@ -1,5 +1,5 @@
 import * as React from "react";
-import { PointInfoTable, CountAvgTable } from "./Tables";
+import { BuildingStatsTable, ClassificationStatsTable } from "./Tables";
 import "./scoreboard.css";
 
 export class Scoreboard extends React.Component {
@@ -9,12 +9,12 @@ export class Scoreboard extends React.Component {
                 <div className="tile is-parent">
                     <article className="tile is-child table-selection-container">
                         <h4 id="map" className="title is-4">
-                            Damage Stats
+                            Building Stats
                         </h4>
                         {this.props.selected_datum ? (
-                            <PointInfoTable
+                            <BuildingStatsTable
                                 selected_datum={this.props.selected_datum}
-                                table_id={"infoToolTipBox"}
+                                table_id={"building-stats-table"}
                                 get_datum_priority={
                                     this.props.get_datum_priority
                                 }
@@ -30,13 +30,13 @@ export class Scoreboard extends React.Component {
                 <div className="tile is-parent">
                     <article className="tile is-child table-global-container">
                         <h4 id="map" className="title is-4">
-                            Overall Stats
+                            Classification Stats
                         </h4>
-                        <CountAvgTable
+                        <ClassificationStatsTable
                             data={this.props.data}
                             damage_boundary_a={this.props.damage_boundary_a}
                             damage_boundary_b={this.props.damage_boundary_b}
-                            table_id={"countAvgTable"}
+                            table_id={"classification-stats-table"}
                         />
                     </article>
                 </div>
