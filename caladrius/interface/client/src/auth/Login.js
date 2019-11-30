@@ -1,4 +1,5 @@
 import * as React from "react";
+import "./login.css";
 
 export class Login extends React.Component {
     constructor(props) {
@@ -26,54 +27,75 @@ export class Login extends React.Component {
 
     render() {
         return (
-            <div className="login container">
-                <form className="login-form" onSubmit={this.submit_handler}>
-                    <div className="card login-card z-depth-5">
-                        <div className="card-content">
-                            <div className="card-title center-align">
-                                <h4>Welcome</h4>
-                            </div>
-                            <div className="row">
-                                <div className="input-field col s12">
-                                    <input
-                                        id="username"
-                                        name="username"
-                                        type="text"
-                                        className="validate"
-                                        value={this.state.username}
-                                        onChange={this.input_change_handler}
-                                        required={true}
-                                        autoComplete="username"
-                                    />
-                                    <label htmlFor="username">Username</label>
+            <div className="columns is-centered is-vcentered login-container">
+                <div className="column is-narrow">
+                    <article className="panel is-primary">
+                        <p className="panel-heading">Welcome to Caladrius</p>
+                        <div className="panel-block">
+                            <form
+                                className="login-form"
+                                onSubmit={this.submit_handler}
+                            >
+                                <div className="field">
+                                    <label className="label" htmlFor="username">
+                                        Username
+                                    </label>
+                                    <div className="control">
+                                        <input
+                                            className="input"
+                                            id="username"
+                                            name="username"
+                                            type="text"
+                                            placeholder="demo"
+                                            value={this.state.username}
+                                            onChange={this.input_change_handler}
+                                            required={true}
+                                            autoComplete="username"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="row">
-                                <div className="input-field col s12">
-                                    <input
-                                        id="password"
-                                        name="password"
-                                        type="password"
-                                        className="validate"
-                                        value={this.state.password}
-                                        onChange={this.input_change_handler}
-                                        required={true}
-                                        autoComplete="current-password"
-                                    />
-                                    <label htmlFor="password">Password</label>
+                                <div className="field">
+                                    <label className="label" htmlFor="password">
+                                        Password
+                                    </label>
+                                    <div className="control">
+                                        <input
+                                            className="input"
+                                            id="password"
+                                            name="password"
+                                            type="password"
+                                            placeholder="510.global"
+                                            value={this.state.password}
+                                            onChange={this.input_change_handler}
+                                            required={true}
+                                            autoComplete="current-password"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="row">
-                                <button
-                                    type="submit"
-                                    className="button is-primary"
-                                >
-                                    Enter
-                                </button>
-                            </div>
+                                <div className="field">
+                                    <div className="control">
+                                        <label className="checkbox">
+                                            <input type="checkbox" /> I agree to
+                                            the{" "}
+                                            <a href="#">terms and conditions</a>
+                                            .
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="field is-grouped is-grouped-centered">
+                                    <div className="control">
+                                        <button
+                                            className="button is-primary"
+                                            type="submit"
+                                        >
+                                            Enter
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                    </div>
-                </form>
+                    </article>
+                </div>
             </div>
         );
     }
