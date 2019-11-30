@@ -8,14 +8,13 @@ export class Nav extends React.Component {
         this.state = {
             nav_menu_class: "",
         };
-        this.toggle_nav_menu_class = this.toggle_nav_menu_class.bind(this);
     }
 
-    toggle_nav_menu_class() {
+    toggle_nav_menu_class = () => {
         this.setState({
             nav_menu_class: this.state.nav_menu_class ? "" : " is-active",
         });
-    }
+    };
 
     render() {
         return (
@@ -56,21 +55,31 @@ export class Nav extends React.Component {
                     id="navbar-caladrius-controls"
                     className={"navbar-menu" + this.state.nav_menu_class}
                 >
-                    <div className="navbar-end">
-                        <div className="navbar-item">
-                            {this.props.render_model_selector()}
+                    {this.props.is_authenticated ? (
+                        <div className="navbar-end">
+                            <div className="navbar-item">
+                                {this.props.render_model_selector()}
+                            </div>
+                            <div className="navbar-item">
+                                <Report
+                                    data={this.props.data}
+                                    selected_model={this.props.selected_model}
+                                    get_datum_priority={
+                                        this.props.get_datum_priority
+                                    }
+                                    loading={this.props.loading}
+                                />
+                            </div>
+                            <div className="navbar-item">
+                                <button
+                                    className="button"
+                                    onClick={this.props.on_logout}
+                                >
+                                    Exit
+                                </button>
+                            </div>
                         </div>
-                        <div className="navbar-item">
-                            <Report
-                                data={this.props.data}
-                                selected_model={this.props.selected_model}
-                                get_datum_priority={
-                                    this.props.get_datum_priority
-                                }
-                                loading={this.props.loading}
-                            />
-                        </div>
-                    </div>
+                    ) : null}
                 </div>
             </nav>
         );

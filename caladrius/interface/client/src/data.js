@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import jQuery from "jquery";
 import proj4 from "proj4";
 
-export function load_admin_regions(callback) {
+export function fetch_admin_regions(callback) {
     fetch("/api/dataset?name=Sint-Maarten-2017&filename=admin_regions.geojson")
         .then(res => res.json())
         .then(region_boundaries => {
@@ -16,7 +16,7 @@ export function load_admin_regions(callback) {
         });
 }
 
-export function load_csv_data(model_name, prediction_filename, callback) {
+export function fetch_csv_data(model_name, prediction_filename, callback) {
     const csv_path =
         "/api/model/predictions?directory=" +
         model_name +
