@@ -6,13 +6,14 @@ export function fetch_admin_regions(callback) {
     fetch("/api/dataset?name=Sint-Maarten-2017&filename=admin_regions.geojson")
         .then(res => res.json())
         .then(region_boundaries => {
-            callback(
-                region_boundaries["features"].map(region =>
+            if ("features" in region_boundaries) {
+                region_boundaries = region_boundaries["features"].map(region =>
                     region["geometry"]["coordinates"][0].map(coordinates =>
                         convert_coordinates(coordinates)
                     )
-                )
-            );
+                );
+            }
+            callback(region_boundaries);
         });
 }
 

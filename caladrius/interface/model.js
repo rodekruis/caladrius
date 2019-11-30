@@ -5,13 +5,9 @@ const Config = require("./config");
 class ModelManager {
     get_models() {
         return new Promise((resolve, reject) => {
-            fs.readdir(Config.MODEL_DIRECTORY, (err, models) => {
-                if (err) {
-                    if (err.code === "ENOENT") {
-                        resolve([]);
-                    } else {
-                        reject(null);
-                    }
+            fs.readdir(Config.MODEL_DIRECTORY, (error, models) => {
+                if (error) {
+                    reject(error);
                 } else {
                     const promises = [];
                     models.forEach(model => {
@@ -93,12 +89,7 @@ class ModelManager {
             "predictions",
             filename
         );
-        return new Promise((resolve, reject) => {
-            fs.readFile(prediction_file_path, "utf8", (err, data) => {
-                if (err) reject(null);
-                resolve(data);
-            });
-        });
+        return fs.promises.readFile(prediction_file_path, "utf8");
     }
 }
 
