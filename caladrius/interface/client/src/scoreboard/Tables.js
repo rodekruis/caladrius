@@ -170,6 +170,7 @@ export class ClassificationStatsTable extends Table {
                     predcition_class
                 )
             );
+            return datum;
         });
         let accuracy = 0;
         if (are_predictions_correct.length > 0) {

@@ -97,7 +97,7 @@ export class App extends React.Component {
         this.setState(prevState => {
             return {
                 selected_datum:
-                    prevState.selected_datum == datum ? null : datum,
+                    prevState.selected_datum === datum ? null : datum,
             };
         });
     };
