@@ -160,59 +160,6 @@ def getImage(source_image, geometry, moment, name, path_temp_data,nonzero_pixel_
             return saveImage(image, transform, out_meta, moment, name,path_temp_data)
         return None
 
-def createDatapoints(df,path_images_before,path_images_after, path_temp_data,list_damage_types):
-    """
-    Loops through all the building polygons and calls functions which create an image per polygon.
-    Args:
-        path_temp_data:
-        df (pd.DataFrame): dataframe which contains all the needed info from the labels
-        path_images_before (str): path where before images are saved
-        path_images_after (str): path where after images are saved
-        list_damage_types (list): accepted damage types of buildings
-    """
-
-    #total number of buildings pre+post
-    logger.info('Feature Size {}'.format(len(df)))
-
-    before_files = [os.path.join(path_images_before, before_file) for before_file in os.listdir(path_images_before)]
-    before_files.sort()
-    filepath_labels=os.path.join(path_temp_data, 'labels.txt')
-    with open(filepath_labels, 'w+') as labels_file:
-        count = 0
-
-        for index, row in tqdm(df.iterrows(), total=df.shape[0]):
-
-            # filter based on damage. Only accept described damage types. Un-classified is filtered out
-            damage = row['_damage']
-            if damage not in list_damage_types:
-                continue
-
-            # pre geom
-            #.bounds gives the bounding box around the polygon defined in row['geometry_pre']
-            bounds_pre = row['geometry_pre'].bounds
-            geoms_pre = makesquare(*bounds_pre)
-
-            # post geom
-            bounds_post = row['geometry_post'].bounds
-            geoms_post = makesquare(*bounds_post)
-
-            # identify data point
-            objectID = row['OBJECTID']
-
-            try:
-                #call function to crop the image to the building, which in turn calls function to save the cropped image
-                before_file = getImage(os.path.join(path_images_before, row['file_pre']), geoms_pre,'before','{}.png'.format(objectID),path_temp_data)
-                after_file = getImage(os.path.join(path_images_after, row['file_post']), geoms_post,'after', '{}.png'.format(objectID),path_temp_data)
-                if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) \
-                        and os.path.isfile(after_file):
-                    labels_file.write('{0}.png {1:.4f}\n'.format(objectID, damage_quantifier(damage)))
-                    count += 1
-            except ValueError as ve:
-                    continue
-
-    logger.info('Created {} Datapoints'.format(count))
-    return filepath_labels
-
 def splitDatapoints(filepath_labels,path_output,path_temp_data,train_split=0.8,validation_split=0.1,test_split=0.1):
     """
     Split the dataset in train, validation and test set and move all the images to its corresponding folder.
@@ -282,6 +229,58 @@ def splitDatapoints(filepath_labels,path_output,path_temp_data,train_split=0.8,v
 
     return split_mappings
 
+def createDatapoints(df,path_images_before,path_images_after, path_temp_data,list_damage_types):
+    """
+    Loops through all the building polygons and calls functions which create an image per polygon.
+    Args:
+        path_temp_data:
+        df (pd.DataFrame): dataframe which contains all the needed info from the labels
+        path_images_before (str): path where before images are saved
+        path_images_after (str): path where after images are saved
+        list_damage_types (list): accepted damage types of buildings
+    """
+
+    #total number of buildings pre+post
+    logger.info('Feature Size {}'.format(len(df)))
+
+    before_files = [os.path.join(path_images_before, before_file) for before_file in os.listdir(path_images_before)]
+    before_files.sort()
+    filepath_labels=os.path.join(path_temp_data, 'labels.txt')
+    with open(filepath_labels, 'w+') as labels_file:
+        count = 0
+
+        for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+
+            # filter based on damage. Only accept described damage types. Un-classified is filtered out
+            damage = row['_damage']
+            if damage not in list_damage_types:
+                continue
+
+            # pre geom
+            #.bounds gives the bounding box around the polygon defined in row['geometry_pre']
+            bounds_pre = row['geometry_pre'].bounds
+            geoms_pre = makesquare(*bounds_pre)
+
+            # post geom
+            bounds_post = row['geometry_post'].bounds
+            geoms_post = makesquare(*bounds_post)
+
+            # identify data point
+            objectID = row['OBJECTID']
+
+            try:
+                #call function to crop the image to the building, which in turn calls function to save the cropped image
+                before_file = getImage(os.path.join(path_images_before, row['file_pre']), geoms_pre,'before','{}.png'.format(objectID),path_temp_data)
+                after_file = getImage(os.path.join(path_images_after, row['file_post']), geoms_post,'after', '{}.png'.format(objectID),path_temp_data)
+                if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) \
+                        and os.path.isfile(after_file):
+                    labels_file.write('{0}.png {1:.4f}\n'.format(objectID, damage_quantifier(damage)))
+                    count += 1
+            except ValueError as ve:
+                    continue
+
+    logger.info('Created {} Datapoints'.format(count))
+    return filepath_labels
 
 def xbd_preprocess(json_labels_path,output_folder,disaster_types=None):
     """
@@ -297,7 +296,10 @@ def xbd_preprocess(json_labels_path,output_folder,disaster_types=None):
     #if we only want to take into account certain types or occurences of disasters
     #might be a faster way to do this though..
     if disaster_types:
-        json_files_selection=[j for j in json_files if any(d in j for d in disaster_types)]
+        disaster_types_list=[item for item in disaster_types.split(',')]
+        json_files_selection=[j for j in json_files if any(d in j for d in disaster_types_list)]
+        if len(json_files_selection)==0:
+            logger.info('No files match your disaster types')
     else:
         json_files_selection=json_files
     json_files_selection.sort()
@@ -405,7 +407,7 @@ def main():
     parser.add_argument(
         "--input",
         # required=True,
-        default=os.path.join('../data', 'xBD_train'),
+        default=os.path.join('../data', 'xBD'),
         metavar="/path/to/dataset",
         help="Full path to the directory with /Before , /After and /labels",
     )
@@ -430,8 +432,9 @@ def main():
     parser.add_argument(
         "--disaster",
         default=None,
+        type=str,
         metavar="disaster_types",
-        help="List of disasters to be included. This can be types or specific occurences, as long as the json and image files contain these names."
+        help="List of disasters to be included, as a delimited string. E.g. 'typhoon','flood' This can be types or specific occurences, as long as the json and image files contain these names."
     )
 
     args = parser.parse_args()
