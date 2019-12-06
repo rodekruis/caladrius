@@ -180,7 +180,6 @@ def configuration():
     )
 
     if torch.cuda.is_available() and not arg_vars["disable_cuda"]:
-        torch.set_default_tensor_type("torch.cuda.FloatTensor")
         arg_vars["device"] = torch.device("cuda:{}".format(arg_vars["cuda_device"]))
     else:
         arg_vars["device"] = torch.device("cpu")
