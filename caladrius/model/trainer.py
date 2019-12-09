@@ -46,7 +46,7 @@ class QuasiSiameseNetwork(object):
             self.optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=True
         )
 
-        self.writer=SummaryWriter()
+        self.writer=SummaryWriter(os.path.join("./runs",self.run_name))
 
     def run_epoch(self, epoch, loader, device, predictions_path, phase="train"):
         assert phase in ("train", "validation", "test")
