@@ -14,12 +14,18 @@ logger = create_logger(__name__)
 
 
 def get_pretrained_iv3(output_size):
+    #fetch pretrained inception_v3 model
     model_conv = torchvision.models.inception_v3(pretrained=True)
 
+    #requires_grad indicates if parameter is learnable
+    #so set all parameters to non-learnable
     for i, param in model_conv.named_parameters():
         param.requires_grad = False
 
+    #want to create own fully connected layer instead of using pretrained layer
+    #get number of input features to fully connected layer
     num_ftrs = model_conv.fc.in_features
+    #creaty fully connected layer
     model_conv.fc = nn.Linear(num_ftrs, output_size)
 
     ct = []
