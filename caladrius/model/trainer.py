@@ -7,6 +7,7 @@ from torch.optim import Adam
 from torch.nn.modules import loss as nnloss
 import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.utils.tensorboard import SummaryWriter
 
 from model.network import get_pretrained_iv3_transforms, SiameseNetwork
 from utils import create_logger
@@ -40,9 +41,12 @@ class QuasiSiameseNetwork(object):
         logger.debug("Num params: {}".format(len([_ for _ in self.model.parameters()])))
 
         self.optimizer = Adam(self.model.parameters(), lr=self.lr)
+        #reduces the learning rate when loss plateaus, i.e. doesn't improve
         self.lr_scheduler = ReduceLROnPlateau(
             self.optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=True
         )
+
+        self.writer=SummaryWriter()
 
     def run_epoch(self, epoch, loader, device, predictions_path, phase="train"):
         assert phase in ("train", "validation", "test")
@@ -146,6 +150,14 @@ class QuasiSiameseNetwork(object):
             validation_loss, validation_accuracy = self.run_epoch(
                 epoch, validation_loader, device, predictions_path, phase="validation"
             )
+
+            self.writer.add_scalar('Train/Loss', train_loss, epoch)
+            self.writer.add_scalar('Train/Accuracy', train_accuracy, epoch)
+            self.writer.add_scalar('Validation/Loss', validation_loss, epoch)
+            self.writer.add_scalar('Validation/Accuracy', validation_accuracy, epoch)
+            #Used to make sure tensorboard saves output at this point of time.
+            #Somehow doesn't work gives "SummaryWriter" has no attribute "flush"
+            # self.writer.flush()
 
             self.lr_scheduler.step(validation_loss)
 
