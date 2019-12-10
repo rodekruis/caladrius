@@ -27,40 +27,43 @@ logging.getLogger("rasterio").setLevel(logging.ERROR)
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.ERROR)
 
 
-def damage_quantifier(category):
+def damage_quantifier(category,label_type):
     """
     Assign value based on damage category.
-    Done because caladrius outputs regression instead of classification.
-    We might want to rethink this
     Args:
         category (str):damage category
 
     Returns (float): value of damage
 
     """
-    stats = {
-        'none': {
-            'mean': 0.2,
-            'std': 0.2
-        },
-        'partial': {
-            'mean': 0.55,
-            'std': 0.15
-        },
-        'significant': {
-            'mean': 0.85,
-            'std': 0.15
+    if label_type=="classification":
+        damage_dict={"no-damage":0,"minor-damage":1,"major-damage":2,"destroyed":3}
+        return damage_dict[category]
+
+    elif label_type=="regression":
+        stats = {
+            'none': {
+                'mean': 0.2,
+                'std': 0.2
+            },
+            'partial': {
+                'mean': 0.55,
+                'std': 0.15
+            },
+            'significant': {
+                'mean': 0.85,
+                'std': 0.15
+            }
         }
-    }
 
-    if category == 'no-damage':
-        value = np.random.normal(stats['none']['mean'], stats['none']['std'])
-    elif category == 'minor-damage':
-        value = np.random.normal(stats['partial']['mean'], stats['partial']['std'])
-    else:
-        value = np.random.normal(stats['significant']['mean'], stats['significant']['std'])
+        if category == 'no-damage':
+            value = np.random.normal(stats['none']['mean'], stats['none']['std'])
+        elif category == 'minor-damage':
+            value = np.random.normal(stats['partial']['mean'], stats['partial']['std'])
+        else:
+            value = np.random.normal(stats['significant']['mean'], stats['significant']['std'])
 
-    return np.clip(value, 0.0, 1.0)
+        return np.clip(value, 0.0, 1.0)
 
 
 def makesquare(minx, miny, maxx, maxy,extension_factor=20):
@@ -229,7 +232,7 @@ def splitDatapoints(filepath_labels,path_output,path_temp_data,train_split=0.8,v
 
     return split_mappings
 
-def createDatapoints(df,path_images_before,path_images_after, path_temp_data,list_damage_types):
+def createDatapoints(df,path_images_before,path_images_after, path_temp_data,label_type,list_damage_types):
     """
     Loops through all the building polygons and calls functions which create an image per polygon.
     Args:
@@ -274,7 +277,7 @@ def createDatapoints(df,path_images_before,path_images_after, path_temp_data,lis
                 after_file = getImage(os.path.join(path_images_after, row['file_post']), geoms_post,'after', '{}.png'.format(objectID),path_temp_data)
                 if (before_file is not None) and os.path.isfile(before_file) and (after_file is not None) \
                         and os.path.isfile(after_file):
-                    labels_file.write('{0}.png {1:.4f}\n'.format(objectID, damage_quantifier(damage)))
+                    labels_file.write('{0}.png {1:.4f}\n'.format(objectID, damage_quantifier(damage,label_type)))
                     count += 1
             except ValueError as ve:
                     continue
@@ -331,6 +334,7 @@ def xbd_preprocess(json_labels_path,output_folder,disaster_types=None):
         elif 'post' in file:
             # geometry_post is the polygon, feature_type the type of object (mostly "building"), damage_cat the
             # damage category and uid the unique id of the property
+            df_temp["build_num"] = range(0, len(df_temp))
             df_temp = df_temp.rename(
                 columns={'wkt': 'geometry_post', 'properties.feature_type': 'feature_type', 'properties.subtype': '_damage',
                          'properties.uid': 'uid'})
@@ -347,7 +351,9 @@ def xbd_preprocess(json_labels_path,output_folder,disaster_types=None):
         df['geometry_pre'] = df['geometry_pre'].apply(lambda x: shapely.wkt.loads(x))
     if "geometry_post" in df.columns:
         df['geometry_post'] = df['geometry_post'].apply(lambda x: shapely.wkt.loads(x))
-    df.insert(0, "OBJECTID", range(0, df.shape[0]), True)
+    df.insert(0, "OBJECTID", df["file_post"].str.split("post").str[0]+df["build_num"].map(str), True)
+
+    # df.insert(0, "OBJECTID", range(0, df.shape[0]), True)
 
     #save the information, such that the building image names can later be related to the disaster etc.
     df.to_csv(os.path.join(output_folder,"building_information.csv"))
@@ -437,13 +443,22 @@ def main():
         help="List of disasters to be included, as a delimited string. E.g. 'typhoon','flood' This can be types or specific occurences, as long as the json and image files contain these names."
     )
 
+    parser.add_argument(
+        "--label-type",
+        default="regression",
+        type=str,
+        choices=["regression","classification"],
+        metavar="label_type",
+        help="How the damage label should be produced, on a continuous scale or in classes."
+    )
+
     args = parser.parse_args()
 
     if args.create_image_stamps or args.run_all:
         logger.info("Creating training dataset.")
         BEFORE_FOLDER, AFTER_FOLDER, JSON_FOLDER, TEMP_DATA_FOLDER = create_folders(args.input, args.output)
         df = xbd_preprocess(JSON_FOLDER, args.output, disaster_types=args.disaster)
-        LABELS_FILE = createDatapoints(df, BEFORE_FOLDER, AFTER_FOLDER, TEMP_DATA_FOLDER, args.damage)
+        LABELS_FILE = createDatapoints(df, BEFORE_FOLDER, AFTER_FOLDER, TEMP_DATA_FOLDER, args.label_type, args.damage)
         splitDatapoints(LABELS_FILE, args.output, TEMP_DATA_FOLDER)
     else:
         logger.info("Skipping creation of training dataset.")
