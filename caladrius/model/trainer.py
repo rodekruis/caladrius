@@ -33,7 +33,7 @@ class QuasiSiameseNetwork(object):
         elif self.output_type=="classification":
             self.criterion = nnloss.CrossEntropyLoss()
             self.n_classes = 4  # replace by args
-            self.model = SiameseNetwork(n_classes=self.n_classes)
+            self.model = SiameseNetwork()
 
         self.transforms = {}
 
@@ -221,6 +221,4 @@ class QuasiSiameseNetwork(object):
         """
         self.model.load_state_dict(torch.load(model_path, map_location=device))
         test_set, test_loader = datasets.load("test")
-        test_loss, test_accuracy=self.run_epoch(1, test_loader, device, predictions_path, phase="test")
-        self.writer.add_scalar('Test/Loss', test_loss, epoch)
-        self.writer.add_scalar('Test/Accuracy', test_accuracy, epoch)
+        self.run_epoch(1, test_loader, device, predictions_path, phase="test")
