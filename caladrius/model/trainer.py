@@ -25,6 +25,7 @@ class QuasiSiameseNetwork(object):
         self.lr = args.learning_rate
         self.accuracy_threshold = args.accuracy_threshold
 
+        #define the loss measure
         self.criterion = nnloss.MSELoss()
 
         self.transforms = {}
@@ -45,8 +46,8 @@ class QuasiSiameseNetwork(object):
         self.lr_scheduler = ReduceLROnPlateau(
             self.optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=True
         )
-
-        self.writer=SummaryWriter(os.path.join("./runs",self.run_name))
+        #creates tracking file for tensorboard
+        self.writer=SummaryWriter(args.checkpoint_path)
 
     def run_epoch(self, epoch, loader, device, predictions_path, phase="train"):
         assert phase in ("train", "validation", "test")
@@ -182,4 +183,6 @@ class QuasiSiameseNetwork(object):
     def test(self, datasets, device, model_path, predictions_path):
         self.model.load_state_dict(torch.load(model_path, map_location=device))
         test_set, test_loader = datasets.load("test")
-        self.run_epoch(1, test_loader, device, predictions_path, phase="test")
+        test_loss, test_accuracy=self.run_epoch(1, test_loader, device, predictions_path, phase="test")
+        self.writer.add_scalar('Test/Loss', test_loss, epoch)
+        self.writer.add_scalar('Test/Accuracy', test_accuracy, epoch)
