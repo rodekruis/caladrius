@@ -50,6 +50,19 @@ class QuasiSiameseNetwork(object):
         self.writer=SummaryWriter(args.checkpoint_path)
 
     def run_epoch(self, epoch, loader, device, predictions_path, phase="train"):
+        """
+        Run one epoch of the model
+        Args:
+            epoch (int): which epoch this is
+            loader: loader object with data
+            device (str): which device it is being run on. 'cpu' or 'cuda'
+            predictions_path (str): path to write predictions to
+            phase (str): which phase to run epoch for. 'train', 'validation' or 'test'
+
+        Returns:
+            epoch_loss (float): loss of this epoch
+            epoch_accuracy (float): accuracy of this epoch
+        """
         assert phase in ("train", "validation", "test")
 
         self.model = self.model.to(device)
@@ -135,6 +148,15 @@ class QuasiSiameseNetwork(object):
         return epoch_loss, epoch_accuracy
 
     def train(self, n_epochs, datasets, device, model_path, predictions_path):
+        """
+        Train the model
+        Args:
+            n_epochs (int): number of epochs to be run
+            datasets: DataSet object with datasets loaded
+            device (str): which device it is being run on. 'cpu' or 'cuda'
+            model_path (str): path the save model weights to
+            predictions_path (str): path to write predictions to
+        """
         train_set, train_loader = datasets.load("train")
         validation_set, validation_loader = datasets.load("validation")
 
@@ -181,6 +203,14 @@ class QuasiSiameseNetwork(object):
         logger.info("Best validation Accuracy: {:4f}.".format(best_accuracy))
 
     def test(self, datasets, device, model_path, predictions_path):
+        """
+        Test the model
+        Args:
+            datasets: DataSet object with datasets loaded
+            device (str): which device it is being run on. 'cpu' or 'cuda'
+            model_path (str): path to retrieve the saved model weights from
+            predictions_path (str): path to write predictions to
+        """
         self.model.load_state_dict(torch.load(model_path, map_location=device))
         test_set, test_loader = datasets.load("test")
         test_loss, test_accuracy=self.run_epoch(1, test_loader, device, predictions_path, phase="test")
