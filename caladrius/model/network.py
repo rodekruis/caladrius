@@ -103,7 +103,7 @@ def get_pretrained_iv3_transforms(set_name):
 
 class SiameseNetwork(nn.Module):
     def __init__(
-        self, output_size=512, similarity_layers_sizes=[512, 512], dropout=0.5
+        self, output_size=512, similarity_layers_sizes=[512, 512], dropout=0.5,n_classes=None
     ):
         """
         Construct the Siamese network
@@ -111,6 +111,7 @@ class SiameseNetwork(nn.Module):
             output_size (int): output size of the Inception v3 model
             similarity_layers_sizes (list of ints): output sizes of each similarity layer
             dropout (float): amount of dropout, same for each layer
+            n_classes (int): if output type is classification, this indicates the number of classes
         """
         super().__init__()
         self.left_network = get_pretrained_iv3(output_size)
@@ -139,8 +140,11 @@ class SiameseNetwork(nn.Module):
                 )
 
         self.similarity = nn.Sequential(similarity_layers)
-        #final layer with one output which is the amount of damage from 0 to 1
-        self.output = nn.Linear(hidden, 1)
+        if self.output_type=="regression":
+            #final layer with one output which is the amount of damage from 0 to 1
+            self.output = nn.Linear(hidden, 1)
+        elif self.output_type=="classification":
+            self.output=self.output = nn.Linear(hidden, n_classes)
 
     def forward(self, image_1, image_2):
         """

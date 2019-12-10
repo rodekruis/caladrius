@@ -24,13 +24,19 @@ class QuasiSiameseNetwork(object):
         self.input_size = input_size
         self.lr = args.learning_rate
         self.accuracy_threshold = args.accuracy_threshold
+        self.output_type=args.output_type
 
         #define the loss measure
-        self.criterion = nnloss.MSELoss()
+        if self.output_type=="regression":
+            self.criterion = nnloss.MSELoss()
+            self.model = SiameseNetwork()
+        elif self.output_type=="classification":
+            self.criterion = nnloss.CrossEntropyLoss()
+            self.n_classes = 4  # replace by args
+            self.model = SiameseNetwork(n_classes=self.n_classes)
 
         self.transforms = {}
 
-        self.model = SiameseNetwork()
 
         if torch.cuda.device_count() > 1:
             logger.info("Using {} GPUs".format(torch.cuda.device_count()))
@@ -116,6 +122,8 @@ class QuasiSiameseNetwork(object):
             running_corrects += (
                 (outputs - labels.data).abs().le(self.accuracy_threshold).sum()
             )
+            #running_n is the number of images in current epoch so far
+            #divide loss and accuracy by this to get average loss and accuracy
             running_n += image1.size(0)
 
             if idx % 1 == 0:

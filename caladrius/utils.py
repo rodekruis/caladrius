@@ -148,6 +148,14 @@ def configuration():
         help="window size to calculate regression accuracy",
     )
 
+    parser.add_argument(
+        "--output_type",
+        type=str,
+        default="regression",
+        choices=["regression","classification"],
+        help="choose if want regression or classification model"
+    )
+
     args = parser.parse_args()
 
     arg_vars = vars(args)
