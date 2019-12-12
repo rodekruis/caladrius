@@ -103,7 +103,7 @@ def get_pretrained_iv3_transforms(set_name):
 
 class SiameseNetwork(nn.Module):
     def __init__(
-        self, output_size=512, similarity_layers_sizes=[512, 512], dropout=0.5,n_classes=None
+        self, output_size=512, similarity_layers_sizes=[512, 512], dropout=0.5,output_type="regression",n_classes=None
     ):
         """
         Construct the Siamese network
@@ -140,10 +140,10 @@ class SiameseNetwork(nn.Module):
                 )
 
         self.similarity = nn.Sequential(similarity_layers)
-        if self.output_type=="regression":
+        if output_type=="regression":
             #final layer with one output which is the amount of damage from 0 to 1
             self.output = nn.Linear(hidden, 1)
-        elif self.output_type=="classification":
+        elif output_type=="classification":
             self.output=self.output = nn.Linear(hidden, n_classes)
 
     def forward(self, image_1, image_2):

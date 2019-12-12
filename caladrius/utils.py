@@ -149,7 +149,7 @@ def configuration():
     )
 
     parser.add_argument(
-        "--output_type",
+        "--output-type",
         type=str,
         default="regression",
         choices=["regression","classification"],
