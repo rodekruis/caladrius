@@ -106,27 +106,25 @@ class QuasiSiameseNetwork(object):
             with torch.set_grad_enabled(phase == "train"):
                 outputs = self.model(image1, image2).squeeze()
                 loss = self.criterion(outputs, labels)
-                if self.output_type=="classification":
+                if self.output_type == "classification":
                     _, preds = torch.max(outputs, 1)
                     # _, labels = torch.max(labels, 1)
 
                 if not (phase == "train"):
                     # should we just clamp the regression outputs in general? Not onl for writing to predictions?
                     if self.output_type == "regression":
-                        outputs_write = outputs.clamp(0, 1)
+                        preds = outputs.clamp(0, 1)
                     else:
-                        outputs_write = outputs
-                    prediction_file.writelines(
-                        [
-                            "{} {} {}\n".format(*line)
-                            for line in zip(
-                            filename,
-                            labels.view(-1).tolist(),
-                            outputs_write.view(-1).tolist(),
-                            # .clamp(0, 1) <-- done with regression, but shouldn't really be needed??
+                        prediction_file.writelines(
+                            [
+                                "{} {} {}\n".format(*line)
+                                for line in zip(
+                                filename,
+                                labels.view(-1).tolist(),
+                                preds.view(-1).tolist(),
+                            )
+                            ]
                         )
-                        ]
-                    )
 
                 if phase == "train":
                     loss.backward()
