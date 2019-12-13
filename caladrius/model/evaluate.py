@@ -26,10 +26,12 @@ class RollingEval(object):
 
     def f1_score(self):
         #look at different types of average. average="weighted" is used by xview2_baseline. Averaged="micro" was used by caladrius
-        return f1_score(self.y_true, self.y_pred, average="weighted")
+        return f1_score(self.y_true, self.y_pred, average="macro")
 
-    def recall(self):
-        return recall_score(self.y_true, self.y_pred, average="weighted")
+
+
+    # def recall(self):
+    #     return recall_score(self.y_true, self.y_pred, average="weighted")
 
     # def every_measure(self):
     #     return classification_report(self.y_true, self.y_pred)

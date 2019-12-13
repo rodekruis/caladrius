@@ -80,16 +80,17 @@ class QuasiSiameseNetwork(object):
         running_corrects = 0
         running_n = 0.0
 
-        if self.output_type == "classification":
-            rolling_eval = RollingEval()
+        # if self.output_type == "classification":
+        rolling_eval = RollingEval()
 
-        if not (phase == "train"):
-            prediction_file_name = "{}_{}_epoch_{:03d}_predictions.txt".format(
-                self.run_name, phase, epoch
-            )
-            prediction_file_path = os.path.join(predictions_path, prediction_file_name)
-            prediction_file = open(prediction_file_path, "w+")
-            prediction_file.write("filename label prediction\n")
+        # I also want the predictions saved during training, such that we can retrieve and plot those results later if needed
+        # if not (phase == "train"):
+        prediction_file_name = "{}_{}_epoch_{:03d}_predictions.txt".format(
+            self.run_name, phase, epoch
+        )
+        prediction_file_path = os.path.join(predictions_path, prediction_file_name)
+        prediction_file = open(prediction_file_path, "w+")
+        prediction_file.write("filename label prediction\n")
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(device)
@@ -106,32 +107,32 @@ class QuasiSiameseNetwork(object):
             with torch.set_grad_enabled(phase == "train"):
                 outputs = self.model(image1, image2).squeeze()
                 loss = self.criterion(outputs, labels)
+
                 if self.output_type == "classification":
                     _, preds = torch.max(outputs, 1)
-                    # _, labels = torch.max(labels, 1)
-
-                if not (phase == "train"):
-                    # should we just clamp the regression outputs in general? Not onl for writing to predictions?
-                    if self.output_type == "regression":
-                        preds = outputs.clamp(0, 1)
-                    else:
-                        prediction_file.writelines(
-                            [
-                                "{} {} {}\n".format(*line)
-                                for line in zip(
-                                filename,
-                                labels.view(-1).tolist(),
-                                preds.view(-1).tolist(),
-                            )
-                            ]
-                        )
+                else:
+                    preds=outputs.clamp(0,1)
 
                 if phase == "train":
                     loss.backward()
                     self.optimizer.step()
 
-                if self.output_type == "classification":
-                    rolling_eval.add(labels, preds)
+                # if not (phase == "train"):
+                prediction_file.writelines(
+                    [
+                        "{} {} {}\n".format(*line)
+                        for line in zip(
+                        filename,
+                        labels.view(-1).tolist(),
+                        preds.view(-1).tolist(),
+                    )
+                    ]
+                )
+
+
+
+                # if self.output_type == "classification":
+                rolling_eval.add(labels, preds)
 
             running_loss += loss.item() * image1.size(0)
             # running_n is the number of images in current epoch so far
@@ -141,67 +142,41 @@ class QuasiSiameseNetwork(object):
                 running_corrects += (
                     (outputs - labels.data).abs().le(self.accuracy_threshold).sum()
                 )
-                if idx % 1 == 0:
-                    logger.debug(
-                        "Epoch: {:03d} Phase: {:10s} Batch {:04d}/{:04d}: Loss: {:.4f} Accuracy: {:.4f}".format(
-                            epoch,
-                            phase,
-                            idx,
-                            len(loader),
-                            running_loss / running_n,
-                            running_corrects.double() / running_n,
-                        )
+
+            if self.output_type == "regression":
+                running_error_meas = running_corrects.double() / running_n
+            else:
+                running_error_meas = rolling_eval.f1_score()
+
+            if idx % 1 == 0:
+                logger.debug(
+                    "Epoch: {:03d} Phase: {:10s} Batch {:04d}/{:04d}: Loss: {:.4f} Accuracy: {:.4f}".format(
+                        epoch,
+                        phase,
+                        idx,
+                        len(loader),
+                        running_loss / running_n,
+                        running_error_meas,
+                        # running_corrects.double() / running_n,
                     )
-            elif self.output_type == "classification":
-                running_corrects += torch.sum(preds == labels.data)
-                if idx % 1 == 0:
-                    logger.debug(
-                        "Epoch: {:03d} Phase: {:10s} Batch {:04d}/{:04d}: Loss: {:.4f} Accuracy: {:.4f} F1: {:.4f} Recall: {:.4f}".format(
-                            epoch,
-                            phase,
-                            idx,
-                            len(loader),
-                            running_loss / running_n,
-                            running_corrects.double() / running_n,
-                            rolling_eval.f1_score(), rolling_eval.recall(),
-                        )
-                    )
+                )
 
         epoch_loss = running_loss / running_n
-        epoch_accuracy = running_corrects.double() / running_n
-        # might already be included in rollinv_eval.every_measure()
-        if self.output_type == "classification":
-            epoch_f1 = rolling_eval.f1_score()
-        else:
-            epoch_f1 = None
-        # epoch_recall = rolling_eval.recall()
+        epoch_error_meas = running_error_meas #running_corrects.double() / running_n
 
         if not (phase == "train"):
-            if self.output_type == "regression":
-                prediction_file.write(
-                    "Epoch {:03d} Accuracy: {:.4f}\n".format(epoch, epoch_accuracy)
-                )
-                prediction_file.close()
-            elif self.output_type == "classification":
-                prediction_file.write(
-                    "Epoch: {:03d} Accuracy: {:.4f} F1: {:.4f} Recall: {:.4f}".format(epoch, epoch_accuracy,
-                                                                                      rolling_eval.f1_score(),
-                                                                                      rolling_eval.recall())
-                )
+            prediction_file.write(
+                "Epoch {:03d} Accuracy: {:.4f}\n".format(epoch, epoch_error_meas)
+            )
+            prediction_file.close()
 
-        if self.output_type == "regression":
-            logger.info(
-                "Epoch {:03d} Phase: {:10s} Loss: {:.4f} Accuracy: {:.4f}".format(
-                    epoch, phase, epoch_loss, epoch_accuracy
-                )
+        logger.info(
+            "Epoch {:03d} Phase: {:10s} Loss: {:.4f} Accuracy: {:.4f}".format(
+                epoch, phase, epoch_loss, epoch_error_meas
             )
-        else:
-            logger.info(
-                "Epoch: {:03d} Accuracy: {:.4f} F1: {:.4f} Recall: {:.4f}".format(epoch, epoch_accuracy,
-                                                                                  rolling_eval.f1_score(),
-                                                                                  rolling_eval.recall())
-            )
-        return epoch_loss, epoch_accuracy, epoch_f1
+        )
+
+        return epoch_loss, epoch_error_meas
 
     def train(self, n_epochs, datasets, device, model_path, predictions_path):
         """
@@ -219,28 +194,41 @@ class QuasiSiameseNetwork(object):
         best_accuracy, best_model_wts = 0.0, copy.deepcopy(self.model.state_dict())
 
         start_time = time.time()
+
+        for phase in ["train","validation"]:
+            performance_file_name = "{}_{}_epoch_{:03d}_performance.txt".format(
+                self.run_name, phase, epoch
+            )
+            performance_file_path = os.path.join(performance_path, performance_file_name)
+            performance_file = open(performance_file_path, "w+")
+            performance_file.write("epoch loss error_measure\n")
+
         for epoch in range(1, n_epochs + 1):
             # train network
-            train_loss, train_accuracy, train_f1 = self.run_epoch(
+            train_loss, train_accuracy = self.run_epoch(
                 epoch, train_loader, device, predictions_path, phase="train"
             )
 
             # eval on validation
-            validation_loss, validation_accuracy, validation_f1 = self.run_epoch(
+            validation_loss, validation_accuracy = self.run_epoch(
                 epoch, validation_loader, device, predictions_path, phase="validation"
+            )
+
+            performance_file.writelines(
+                [
+                    "{} {} {}\n".format(*line)
+                    for line in zip(
+                    filename,
+                    labels.view(-1).tolist(),
+                    preds.view(-1).tolist(),
+                )
+                ]
             )
 
             self.writer.add_scalar('Train/Loss', train_loss, epoch)
             self.writer.add_scalar('Train/Accuracy', train_accuracy, epoch)
             self.writer.add_scalar('Validation/Loss', validation_loss, epoch)
             self.writer.add_scalar('Validation/Accuracy', validation_accuracy, epoch)
-            if self.output_type == "classification":
-                self.writer.add_scalar('Train/F1', train_f1, epoch)
-                self.writer.add_scalar('Validation/F1', validation_f1, epoch)
-
-            # Used to make sure tensorboard saves output at this point of time.
-            # Somehow doesn't work gives "SummaryWriter" has no attribute "flush"
-            # self.writer.flush()
 
             self.lr_scheduler.step(validation_loss)
 
