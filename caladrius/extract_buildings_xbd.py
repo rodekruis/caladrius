@@ -452,14 +452,41 @@ def main():
         help="How the damage label should be produced, on a continuous scale or in classes."
     )
 
-    args = parser.parse_args()
+    parser.add_argument(
+        "--train",
+        default=0.8,
+        type=float,
+        choices=Range(0.0,1.0),
+        metavar="train_split",
+        help="Fraction of data that should be labelled as training data"
+    )
+
+    parser.add_argument(
+        "--val",
+        default=0.1,
+        type=float,
+        choices=Range(0.0, 1.0),
+        metavar="val_split",
+        help="Fraction of data that should be labelled as training data"
+    )
+
+    parser.add_argument(
+        "--test",
+        default=0.1,
+        type=float,
+        choices=Range(0.0, 1.0),
+        metavar="test_split",
+        help="Fraction of data that should be labelled as training data"
+    )
 
     if args.create_image_stamps or args.run_all:
         logger.info("Creating training dataset.")
         BEFORE_FOLDER, AFTER_FOLDER, JSON_FOLDER, TEMP_DATA_FOLDER = create_folders(args.input, args.output)
         df = xbd_preprocess(JSON_FOLDER, args.output, disaster_types=args.disaster)
         LABELS_FILE = createDatapoints(df, BEFORE_FOLDER, AFTER_FOLDER, TEMP_DATA_FOLDER, args.label_type, args.damage)
-        splitDatapoints(LABELS_FILE, args.output, TEMP_DATA_FOLDER)
+        splitDatapoints(LABELS_FILE, args.output, TEMP_DATA_FOLDER,train_split=args.train,validation_split=args.val,test_split=args.test)
+        splitDatapoints(filepath_labels, path_output, path_temp_data, train_split=0.8, validation_split=0.1,
+                        test_split=0.1):
     else:
         logger.info("Skipping creation of training dataset.")
 
