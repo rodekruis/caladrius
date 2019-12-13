@@ -456,7 +456,7 @@ def main():
         "--train",
         default=0.8,
         type=float,
-        choices=Range(0.0,1.0),
+        # choices=Range(0.0,1.0),
         metavar="train_split",
         help="Fraction of data that should be labelled as training data"
     )
@@ -465,7 +465,7 @@ def main():
         "--val",
         default=0.1,
         type=float,
-        choices=Range(0.0, 1.0),
+        # choices=Range(0.0, 1.0),
         metavar="val_split",
         help="Fraction of data that should be labelled as training data"
     )
@@ -474,7 +474,7 @@ def main():
         "--test",
         default=0.1,
         type=float,
-        choices=Range(0.0, 1.0),
+        # choices=Range(0.0, 1.0),
         metavar="test_split",
         help="Fraction of data that should be labelled as training data"
     )
