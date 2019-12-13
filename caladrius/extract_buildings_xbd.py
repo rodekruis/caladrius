@@ -479,6 +479,8 @@ def main():
         help="Fraction of data that should be labelled as training data"
     )
 
+    args = parser.parse_args()
+
     if args.create_image_stamps or args.run_all:
         logger.info("Creating training dataset.")
         BEFORE_FOLDER, AFTER_FOLDER, JSON_FOLDER, TEMP_DATA_FOLDER = create_folders(args.input, args.output)
