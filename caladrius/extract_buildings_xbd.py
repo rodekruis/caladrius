@@ -380,6 +380,14 @@ def create_folders(input_folder, output_folder):
     return BEFORE_FOLDER,AFTER_FOLDER,JSON_FOLDER,TEMP_DATA_FOLDER
 
 def main():
+    class Range(object):
+        def __init__(self, start, end):
+            self.start = start
+            self.end = end
+
+        def __eq__(self, other):
+            return self.start <= other <= self.end
+
     logging.basicConfig(
         handlers=[
             logging.FileHandler(os.path.join(".", "run.log")),
