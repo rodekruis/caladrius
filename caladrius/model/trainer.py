@@ -104,6 +104,13 @@ class QuasiSiameseNetwork(object):
         prediction_file = open(prediction_file_path, "w+")
         prediction_file.write("filename label prediction\n")
 
+        if model_type == "average":
+            sum_of_labels = 0
+            for _, _, _, label in loader.dataset:
+                sum_of_labels = sum_of_labels + label
+            number_of_labels = len(loader.dataset)
+            average_label = sum_of_labels / number_of_labels
+
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(device)
             image2 = image2.to(device)
@@ -120,7 +127,10 @@ class QuasiSiameseNetwork(object):
                 if model_type == "quasi-siamese":
                     outputs = self.model(image1, image2).squeeze()
                 elif model_type == "random":
-                    outputs = torch.rand(labels.shape).to(device)
+                    outputs = torch.rand(labels.shape)
+                elif model_type == "average":
+                    outputs = torch.ones(labels.shape) * average_label
+                outputs = outputs.to(device)
                 loss = self.criterion(outputs, labels)
 
                 if self.output_type == "classification":

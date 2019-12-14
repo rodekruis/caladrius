@@ -1,7 +1,7 @@
 0.6.3 (YYYY-MM-DD)
 ------------------
 - [x] evaluate random model
-- [ ] evaluate label average model
+- [x] evaluate label average model
 
 0.6.2 (2019-11-30)
 ------------------
