@@ -135,16 +135,25 @@ def configuration():
         default=False,
         help="test the model on the test set instead of training",
     )
+
     parser.add_argument(
         "--max-data-points",
         default=None,
         type=int,
         help="limit the total number of data points used, for debugging on GPU-less laptops",
     )
+
     parser.add_argument(
-        "--accuracy-threshold",
+        "--training-accuracy-threshold",
         type=float,
         default=0.1,
+        help="window size to calculate regression accuracy",
+    )
+
+    parser.add_argument(
+        "--testing-accuracy-threshold",
+        type=float,
+        default=0.3,
         help="window size to calculate regression accuracy",
     )
 
@@ -152,8 +161,8 @@ def configuration():
         "--output-type",
         type=str,
         default="regression",
-        choices=["regression","classification"],
-        help="choose if want regression or classification model"
+        choices=["regression", "classification"],
+        help="choose if want regression or classification model",
     )
 
     args = parser.parse_args()

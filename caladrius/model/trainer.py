@@ -23,7 +23,8 @@ class QuasiSiameseNetwork(object):
         self.run_name = args.run_name
         self.input_size = input_size
         self.lr = args.learning_rate
-        self.accuracy_threshold = args.accuracy_threshold
+        self.training_accuracy_threshold = args.training_accuracy_threshold
+        self.testing_accuracy_threshold = args.testing_accuracy_threshold
         self.output_type = args.output_type
 
         # define the loss measure
@@ -33,7 +34,9 @@ class QuasiSiameseNetwork(object):
         elif self.output_type == "classification":
             self.criterion = nnloss.CrossEntropyLoss()
             self.n_classes = 4  # replace by args
-            self.model = SiameseNetwork(output_type=self.output_type, n_classes=self.n_classes)
+            self.model = SiameseNetwork(
+                output_type=self.output_type, n_classes=self.n_classes
+            )
 
         self.transforms = {}
 
@@ -111,7 +114,7 @@ class QuasiSiameseNetwork(object):
                 if self.output_type == "classification":
                     _, preds = torch.max(outputs, 1)
                 else:
-                    preds=outputs.clamp(0,1)
+                    preds = outputs.clamp(0, 1)
 
                 if phase == "train":
                     loss.backward()
@@ -122,14 +125,10 @@ class QuasiSiameseNetwork(object):
                     [
                         "{} {} {}\n".format(*line)
                         for line in zip(
-                        filename,
-                        labels.view(-1).tolist(),
-                        preds.view(-1).tolist(),
-                    )
+                            filename, labels.view(-1).tolist(), preds.view(-1).tolist()
+                        )
                     ]
                 )
-
-
 
                 # if self.output_type == "classification":
                 rolling_eval.add(labels, preds)
@@ -140,7 +139,14 @@ class QuasiSiameseNetwork(object):
             running_n += image1.size(0)
             if self.output_type == "regression":
                 running_corrects += (
-                    (outputs - labels.data).abs().le(self.accuracy_threshold).sum()
+                    (outputs - labels.data)
+                    .abs()
+                    .le(
+                        self.training_accuracy_threshold
+                        if phase == "train"
+                        else self.testing_accuracy_threshold
+                    )
+                    .sum()
                 )
 
             if self.output_type == "regression":
@@ -162,7 +168,7 @@ class QuasiSiameseNetwork(object):
                 )
 
         epoch_loss = running_loss / running_n
-        epoch_error_meas = running_error_meas #running_corrects.double() / running_n
+        epoch_error_meas = running_error_meas  # running_corrects.double() / running_n
 
         if not (phase == "train"):
             prediction_file.write(
@@ -195,14 +201,6 @@ class QuasiSiameseNetwork(object):
 
         start_time = time.time()
 
-        for phase in ["train","validation"]:
-            performance_file_name = "{}_{}_epoch_{:03d}_performance.txt".format(
-                self.run_name, phase, epoch
-            )
-            performance_file_path = os.path.join(performance_path, performance_file_name)
-            performance_file = open(performance_file_path, "w+")
-            performance_file.write("epoch loss error_measure\n")
-
         for epoch in range(1, n_epochs + 1):
             # train network
             train_loss, train_accuracy = self.run_epoch(
@@ -214,21 +212,10 @@ class QuasiSiameseNetwork(object):
                 epoch, validation_loader, device, predictions_path, phase="validation"
             )
 
-            performance_file.writelines(
-                [
-                    "{} {} {}\n".format(*line)
-                    for line in zip(
-                    filename,
-                    labels.view(-1).tolist(),
-                    preds.view(-1).tolist(),
-                )
-                ]
-            )
-
-            self.writer.add_scalar('Train/Loss', train_loss, epoch)
-            self.writer.add_scalar('Train/Accuracy', train_accuracy, epoch)
-            self.writer.add_scalar('Validation/Loss', validation_loss, epoch)
-            self.writer.add_scalar('Validation/Accuracy', validation_accuracy, epoch)
+            self.writer.add_scalar("Train/Loss", train_loss, epoch)
+            self.writer.add_scalar("Train/Accuracy", train_accuracy, epoch)
+            self.writer.add_scalar("Validation/Loss", validation_loss, epoch)
+            self.writer.add_scalar("Validation/Accuracy", validation_accuracy, epoch)
 
             self.lr_scheduler.step(validation_loss)
 
