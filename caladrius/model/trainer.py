@@ -57,7 +57,15 @@ class QuasiSiameseNetwork(object):
         # creates tracking file for tensorboard
         self.writer = SummaryWriter(args.checkpoint_path)
 
-    def run_epoch(self, epoch, loader, device, predictions_path, phase="train"):
+    def run_epoch(
+        self,
+        epoch,
+        loader,
+        device,
+        predictions_path,
+        phase="train",
+        model_type="quasi-siamese",
+    ):
         """
         Run one epoch of the model
         Args:
@@ -66,6 +74,7 @@ class QuasiSiameseNetwork(object):
             device (str): which device it is being run on. 'cpu' or 'cuda'
             predictions_path (str): path to write predictions to
             phase (str): which phase to run epoch for. 'train', 'validation' or 'test'
+            model_type: type of model
 
         Returns:
             epoch_loss (float): loss of this epoch
@@ -108,7 +117,10 @@ class QuasiSiameseNetwork(object):
                 self.optimizer.zero_grad()
 
             with torch.set_grad_enabled(phase == "train"):
-                outputs = self.model(image1, image2).squeeze()
+                if model_type == "quasi-siamese":
+                    outputs = self.model(image1, image2).squeeze()
+                elif model_type == "random":
+                    outputs = torch.rand(labels.shape).to(device)
                 loss = self.criterion(outputs, labels)
 
                 if self.output_type == "classification":
@@ -237,7 +249,7 @@ class QuasiSiameseNetwork(object):
 
         logger.info("Best validation Accuracy: {:4f}.".format(best_accuracy))
 
-    def test(self, datasets, device, model_path, predictions_path):
+    def test(self, datasets, device, model_path, predictions_path, model_type):
         """
         Test the model
         Args:
@@ -245,7 +257,16 @@ class QuasiSiameseNetwork(object):
             device (str): which device it is being run on. 'cpu' or 'cuda'
             model_path (str): path to retrieve the saved model weights from
             predictions_path (str): path to write predictions to
+            model_type: type of model
         """
-        self.model.load_state_dict(torch.load(model_path, map_location=device))
+        if model_type == "quasi-siamese":
+            self.model.load_state_dict(torch.load(model_path, map_location=device))
         test_set, test_loader = datasets.load("test")
-        self.run_epoch(1, test_loader, device, predictions_path, phase="test")
+        self.run_epoch(
+            1,
+            test_loader,
+            device,
+            predictions_path,
+            phase="test",
+            model_type=model_type,
+        )

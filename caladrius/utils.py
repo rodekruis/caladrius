@@ -101,6 +101,13 @@ def configuration():
         default=8,
         help="number of threads used by data loader",
     )
+    parser.add_argument(
+        "--model-type",
+        type=str,
+        default="quasi-siamese",
+        choices=["quasi-siamese", "random"],
+        help="type of model",
+    )
 
     parser.add_argument(
         "--disable-cuda", action="store_true", help="disable the use of CUDA"
@@ -135,28 +142,24 @@ def configuration():
         default=False,
         help="test the model on the test set instead of training",
     )
-
     parser.add_argument(
         "--max-data-points",
         default=None,
         type=int,
         help="limit the total number of data points used, for debugging on GPU-less laptops",
     )
-
     parser.add_argument(
         "--training-accuracy-threshold",
         type=float,
         default=0.1,
         help="window size to calculate regression accuracy",
     )
-
     parser.add_argument(
         "--testing-accuracy-threshold",
         type=float,
         default=0.3,
         help="window size to calculate regression accuracy",
     )
-
     parser.add_argument(
         "--output-type",
         type=str,
