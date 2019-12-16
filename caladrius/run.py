@@ -25,10 +25,11 @@ def main():
             args.device,
             args.model_path,
             args.prediction_path,
+            args.performance_path
         )
     logger.info("Evaluation on test dataset")
     qsn.test(
-        datasets, args.device, args.model_path, args.prediction_path, args.model_type
+        datasets, args.device, args.model_path, args.prediction_path, args.performance_path, args.model_type
     )
 
     logger.info("END")

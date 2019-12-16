@@ -63,6 +63,7 @@ class QuasiSiameseNetwork(object):
         loader,
         device,
         predictions_path,
+        performance_path,
         phase="train",
         model_type="quasi-siamese",
     ):
@@ -103,6 +104,13 @@ class QuasiSiameseNetwork(object):
         prediction_file_path = os.path.join(predictions_path, prediction_file_name)
         prediction_file = open(prediction_file_path, "w+")
         prediction_file.write("filename label prediction\n")
+
+        performance_file_name = "{}_{}_epoch_{:03d}_performance.txt".format(
+            self.run_name, phase, epoch
+        )
+        performance_file_path = os.path.join(performance_path, performance_file_name)
+        performance_file = open(performance_file_path, "w+")
+        performance_file.write("epoch loss error_measure\n")
 
         if model_type == "average":
             sum_of_labels = 0
@@ -192,11 +200,12 @@ class QuasiSiameseNetwork(object):
         epoch_loss = running_loss / running_n
         epoch_error_meas = running_error_meas  # running_corrects.double() / running_n
 
-        if not (phase == "train"):
-            prediction_file.write(
-                "Epoch {:03d} Accuracy: {:.4f}\n".format(epoch, epoch_error_meas)
-            )
-            prediction_file.close()
+        # if not (phase == "train"):
+        performance_file.write(
+            "{} {} {}\n".format(epoch, epoch_loss, epoch_error_meas)
+        )
+        performance_file.close()
+        prediction_file.close()
 
         logger.info(
             "Epoch {:03d} Phase: {:10s} Loss: {:.4f} Accuracy: {:.4f}".format(
@@ -206,7 +215,7 @@ class QuasiSiameseNetwork(object):
 
         return epoch_loss, epoch_error_meas
 
-    def train(self, n_epochs, datasets, device, model_path, predictions_path):
+    def train(self, n_epochs, datasets, device, model_path, predictions_path, performance_path):
         """
         Train the model
         Args:
@@ -226,12 +235,12 @@ class QuasiSiameseNetwork(object):
         for epoch in range(1, n_epochs + 1):
             # train network
             train_loss, train_accuracy = self.run_epoch(
-                epoch, train_loader, device, predictions_path, phase="train"
+                epoch, train_loader, device, predictions_path, performance_path, phase="train"
             )
 
             # eval on validation
             validation_loss, validation_accuracy = self.run_epoch(
-                epoch, validation_loader, device, predictions_path, phase="validation"
+                epoch, validation_loader, device, predictions_path, performance_path, "validation"
             )
 
             self.writer.add_scalar("Train/Loss", train_loss, epoch)
@@ -259,7 +268,7 @@ class QuasiSiameseNetwork(object):
 
         logger.info("Best validation Accuracy: {:4f}.".format(best_accuracy))
 
-    def test(self, datasets, device, model_path, predictions_path, model_type):
+    def test(self, datasets, device, model_path, predictions_path, performance_path, model_type):
         """
         Test the model
         Args:
@@ -277,6 +286,7 @@ class QuasiSiameseNetwork(object):
             test_loader,
             device,
             predictions_path,
+            performance_path,
             phase="test",
             model_type=model_type,
         )

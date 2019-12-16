@@ -195,6 +195,9 @@ def configuration():
     arg_vars["prediction_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], "predictions")
     )
+    arg_vars["performance_path"] = make_directory(
+        os.path.join(arg_vars["checkpoint_path"], "performance")
+    )
     arg_vars["model_path"] = os.path.join(
         arg_vars["checkpoint_path"], "best_model_wts.pkl"
     )
