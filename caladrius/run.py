@@ -18,7 +18,7 @@ def main():
 
     qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
-    if not args.test:
+    if not args.test and args.model_type == "quasi-siamese":
         qsn.train(
             args.number_of_epochs,
             datasets,
@@ -27,7 +27,9 @@ def main():
             args.prediction_path,
         )
     logger.info("Evaluation on test dataset")
-    qsn.test(datasets, args.device, args.model_path, args.prediction_path)
+    qsn.test(
+        datasets, args.device, args.model_path, args.prediction_path, args.model_type
+    )
 
     logger.info("END")
 
