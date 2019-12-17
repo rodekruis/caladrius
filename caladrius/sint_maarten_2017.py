@@ -70,23 +70,29 @@ ADMIN_REGIONS_FILE = os.path.join(
 )
 
 
-def damage_quantifier(category):
-    stats = {
-        "none": {"mean": 0.2, "std": 0.2},
-        "partial": {"mean": 0.55, "std": 0.15},
-        "significant": {"mean": 0.85, "std": 0.15},
-    }
+def damage_quantifier(category, label_type):
 
-    if category == "none":
-        value = np.random.normal(stats["none"]["mean"], stats["none"]["std"])
-    elif category == "partial":
-        value = np.random.normal(stats["partial"]["mean"], stats["partial"]["std"])
-    else:
-        value = np.random.normal(
-            stats["significant"]["mean"], stats["significant"]["std"]
-        )
+    if label_type=="classification":
+        damage_dict={"none":0,"partial":1,"significant":2,"destroyed":3}
+        return damage_dict[category]
 
-    return np.clip(value, 0.0, 1.0)
+    elif label_type=="regression":
+        stats = {
+            "none": {"mean": 0.2, "std": 0.2},
+            "partial": {"mean": 0.55, "std": 0.15},
+            "significant": {"mean": 0.85, "std": 0.15},
+        }
+
+        if category == "none":
+            value = np.random.normal(stats["none"]["mean"], stats["none"]["std"])
+        elif category == "partial":
+            value = np.random.normal(stats["partial"]["mean"], stats["partial"]["std"])
+        else:
+            value = np.random.normal(
+                stats["significant"]["mean"], stats["significant"]["std"]
+            )
+
+        return np.clip(value, 0.0, 1.0)
 
 
 def makesquare(minx, miny, maxx, maxy):
@@ -197,7 +203,7 @@ def getAfterImage(geometry, name):
     )
 
 
-def createDatapoints(df):
+def createDatapoints(df,label_type):
 
     logger.info("Feature Size {}".format(len(df)))
 
@@ -234,7 +240,7 @@ def createDatapoints(df):
                     ):
                         labels_file.write(
                             "{0}.png {1:.4f}\n".format(
-                                objectID, damage_quantifier(damage)
+                                objectID, damage_quantifier(damage,label_type)
                             )
                         )
                         count += 1
@@ -436,6 +442,16 @@ def main():
         "shapes of the buildings, their respective administrative "
         "regions and addresses (if --query-address-api has been run)",
     )
+
+    parser.add_argument(
+        "--label-type",
+        default="regression",
+        type=str,
+        choices=["regression","classification"],
+        metavar="label_type",
+        help="How the damage label should be produced, on a continuous scale or in classes."
+    )
+
     args = parser.parse_args()
 
     logger.info("Reading source file: {}".format(GEOJSON_FILE))
@@ -456,7 +472,7 @@ def main():
 
     if args.create_image_stamps or args.run_all:
         logger.info("Creating training dataset.")
-        createDatapoints(df)
+        createDatapoints(df,args.label_type)
         splitDatapoints(LABELS_FILE)
     else:
         logger.info("Skipping creation of training dataset.")
