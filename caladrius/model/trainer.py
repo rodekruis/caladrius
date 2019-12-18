@@ -57,11 +57,11 @@ class QuasiSiameseNetwork(object):
         # creates tracking file for tensorboard
         self.writer = SummaryWriter(args.checkpoint_path)
 
-    def get_random_outputs(self, labels):
+    def get_random_output_values(self, labels):
         if self.output_type == "regression":
-            output_shape = (labels.shape[0], self.n_classes)
-        elif self.output_type == "classification":
             output_shape = labels.shape
+        elif self.output_type == "classification":
+            output_shape = (labels.shape[0], self.n_classes)
         return torch.rand(output_shape)
 
     def get_average_output_values(self, labels, average_label):
