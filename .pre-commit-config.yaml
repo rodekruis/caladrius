@@ -11,4 +11,4 @@ repos:
       rev: 1.19.1
       hooks:
           - id: prettier
-            exclude: "CHANGES.md"
+            exclude: "CHANGES.md|caladriusenv.yml|DATASET.md|README.md"
