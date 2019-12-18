@@ -43,7 +43,7 @@ DAMAGE_TYPES = ["destroyed", "significant", "partial", "none"]
 NONZERO_PIXEL_THRESHOLD = 0.90
 
 # input
-ROOT_DIRECTORY = os.path.join("data", "RC Challenge 1", "1")
+ROOT_DIRECTORY = os.path.join("../../data","RC Challenge 1", "1")
 
 BEFORE_FOLDER = os.path.join(ROOT_DIRECTORY, "Before")
 AFTER_FOLDER = os.path.join(ROOT_DIRECTORY, "After")
@@ -54,7 +54,7 @@ ALL_BUILDINGS_GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, "AllBuildingOutline.ge
 GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, "TrainingDataset.geojson")
 
 # output
-TARGET_DATA_FOLDER = os.path.join("data", "Sint-Maarten-2017")
+TARGET_DATA_FOLDER = os.path.join("../../data", "Sint-Maarten-2017")
 os.makedirs(TARGET_DATA_FOLDER, exist_ok=True)
 
 # cache
