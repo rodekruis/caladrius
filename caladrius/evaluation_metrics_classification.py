@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
+
 import argparse
 
 def tp_fn_fp_perclass(preds, labels, c):
@@ -42,6 +44,17 @@ def harmonic_score(scores):
 #     print(sum((c+1e-6)**-1 for c in scores))
     return len(scores)/sum((c+1e-6)**-1 for c in scores)
 
+def harmonic_scores2(scores):
+    print(scores)
+    print(sum(c**-1 for c in scores))
+    print(sum(c for c in scores))
+    print(sum(c for c in scores)/len(scores))
+    return len(scores)/(sum(c**-1 for c in scores))
+
+def df1(self):
+    """ damage f1. Computed using harmonic mean of damage f1s """
+    harmonic_mean = lambda xs: len(xs) / sum((x+1e-6)**-1 for x in xs)
+    return harmonic_mean(self.df1s)
 
 
 def cm_analysis(y_true, y_pred, filename, labels, ymap=None, figsize=(10,10)):
@@ -86,7 +99,8 @@ def cm_analysis(y_true, y_pred, filename, labels, ymap=None, figsize=(10,10)):
     cm.columns.name = 'Predicted'
     fig, ax = plt.subplots(figsize=figsize)
     sns.heatmap(cm, annot=annot, fmt='', ax=ax)
-    plt.savefig(filename)
+    # plt.show()
+    plt.savefig(filename,bbox_inches="tight")
 
 
 def main():
@@ -131,19 +145,34 @@ def main():
 
     preds = np.array(df_pred.pred)
     labels = np.array(df_pred.label)
-    scores_classes = {"recall": {}, "precision": {}, "f1": {}}
-    for c in damage_mapping.keys():
-        tp, fn, fp = tp_fn_fp_perclass(preds, labels, c)
-        scores_classes["recall"][c] = recall(tp, fn)
-        scores_classes["precision"][c] = precision(tp, fp)
-        scores_classes["f1"][c] = f1_score(scores_classes["precision"][c], scores_classes["recall"][c])
+    # scores_classes = {"recall": {}, "precision": {}, "f1": {}}
+    # for c in damage_mapping.keys():
+    #     tp, fn, fp = tp_fn_fp_perclass(preds, labels, c)
+    #     scores_classes["recall"][c] = recall(tp, fn)
+    #     scores_classes["precision"][c] = precision(tp, fp)
+    #     scores_classes["f1"][c] = f1_score(scores_classes["precision"][c], scores_classes["recall"][c])
+    #
+    # score_overview = pd.DataFrame(scores_classes).T
+    # score_overview.rename(columns=damage_mapping, inplace=True)
+    # score_overview["Total"] = [harmonic_score(r) for i, r in score_overview.iterrows()]
 
-    score_overview = pd.DataFrame(scores_classes).T
-    score_overview.rename(columns=damage_mapping, inplace=True)
-    score_overview["Total"] = [harmonic_score(r) for i, r in score_overview.iterrows()]
+    report = classification_report(preds, labels, digits=3,output_dict=True)
+    score_overview = pd.DataFrame(report).transpose()
+    print(score_overview.index)
+    damage_mapping = {'0': "No damage", '1': "Minor damage", '2': "Major damage", '3': "Destroyed"}
+    score_overview.rename(index=damage_mapping,inplace=True)
+
+
     score_overview.to_csv("{}score_overview.csv".format(output_path))
 
-    cm_analysis(df_pred.label, df_pred.pred, "{}confusion_matrix".format(output_path), [0, 1, 2, 3])
+    # energy.rename(index={'Republic of Korea': 'South Korea'}, inplace=True)
 
+    cm_analysis(df_pred.label, df_pred.pred, "{}confusion_matrix".format(output_path), [0, 1, 2, 3],figsize=(9,12))
+
+
+
+    # print(score_overview)
+    # print(harmonic_scores2(np.array(score_overview.loc["f1",["No damage","Minor damage","Major damage","Destroyed"]])))
+    # print(harmonic_scores2(np.array([0.5,0.25])))
 if __name__ == '__main__':
     main()
