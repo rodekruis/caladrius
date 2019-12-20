@@ -98,9 +98,15 @@ class QuasiSiameseNetwork(object):
 
         # I also want the predictions saved during training, such that we can retrieve and plot those results later if needed
         # if not (phase == "train"):
-        prediction_file_name = "{}_{}_epoch_{:03d}_predictions.txt".format(
-            self.run_name, phase, epoch
-        )
+        if model_type in ["average","random"]:
+            print("blub")
+            prediction_file_name = "{}_{}_epoch_{:03d}_predictions_{}.txt".format(
+                self.run_name, phase, epoch, model_type
+            )
+        else:
+            prediction_file_name = "{}_{}_epoch_{:03d}_predictions.txt".format(
+                self.run_name, phase, epoch
+            )
         prediction_file_path = os.path.join(predictions_path, prediction_file_name)
         prediction_file = open(prediction_file_path, "w+")
         prediction_file.write("filename label prediction\n")
@@ -118,6 +124,8 @@ class QuasiSiameseNetwork(object):
                 sum_of_labels = sum_of_labels + label
             number_of_labels = len(loader.dataset)
             average_label = sum_of_labels / number_of_labels
+            if self.output_type=="classification":
+                average_label=round(average_label)
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(device)
@@ -135,9 +143,17 @@ class QuasiSiameseNetwork(object):
                 if model_type == "quasi-siamese":
                     outputs = self.model(image1, image2).squeeze()
                 elif model_type == "random":
-                    outputs = torch.rand(labels.shape)
+                    if self.output_type=="regression":
+                        outputs = torch.rand(labels.shape)
+                    elif self.output_type=="classification":
+                        outputs=torch.rand((labels.shape[0],self.n_classes))
                 elif model_type == "average":
-                    outputs = torch.ones(labels.shape) * average_label
+                    if self.output_type=="regression":
+                        outputs = torch.ones(labels.shape) * average_label
+                    elif self.output_type=="classification":
+                        average_label_tensor = torch.zeros(self.n_classes)
+                        average_label_tensor[average_label] = 1
+                        outputs=average_label_tensor.repeat(labels.shape[0],1)
                 outputs = outputs.to(device)
                 loss = self.criterion(outputs, labels)
 
