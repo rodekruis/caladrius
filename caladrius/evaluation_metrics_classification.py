@@ -158,10 +158,10 @@ def main():
 
     report = classification_report(preds, labels, digits=3,output_dict=True)
     score_overview = pd.DataFrame(report).transpose()
-    print(score_overview.index)
     damage_mapping = {'0': "No damage", '1': "Minor damage", '2': "Major damage", '3': "Destroyed"}
     score_overview.rename(index=damage_mapping,inplace=True)
-
+    print("macro f1",score_overview.loc["macro avg","f1-score"])
+    print("weighted f1", score_overview.loc["weighted avg", "f1-score"])
 
     score_overview.to_csv("{}score_overview.csv".format(output_path))
 
