@@ -7,8 +7,8 @@
         "backend": "nodemon index.js",
         "frontendstart": "cd client && npm run-script start",
         "frontendbuild": "cd client && npm run-script build",
-        "dev": "run-s frontendstart backend",
-        "start": "run-s frontendbuild backend",
+        "dev": "run-p backend frontendstart",
+        "start": "run-p backend frontendbuild",
         "test": "echo \"Error: no test specified\" && exit 1",
         "prettier": "prettier --write \"**/*.{js,css,html,json}\" --ignore-path ../../.prettierignore"
     },

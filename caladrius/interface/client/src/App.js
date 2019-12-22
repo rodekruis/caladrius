@@ -175,10 +175,23 @@ export class App extends React.Component {
                 admin_regions={this.state.admin_regions}
                 set_datum={this.set_datum}
                 render_model_selector={this.render_model_selector}
-                selected_model={this.state.selected_model}
                 set_datum_priority={this.set_datum_priority}
                 get_datum_priority={this.state.get_datum_priority}
             />
+        );
+    };
+
+    render_model_list = () => {
+        return (
+            <section className="hero is-large">
+                <div className="hero-body">
+                    <div className="container">
+                        <h2 className="title">
+                            {this.render_model_selector()}
+                        </h2>
+                    </div>
+                </div>
+            </section>
         );
     };
 
@@ -203,7 +216,9 @@ export class App extends React.Component {
                 {this.state.loading
                     ? this.render_loader()
                     : this.state.is_authenticated
-                    ? this.render_dashboard()
+                    ? this.state.selected_model
+                        ? this.render_dashboard()
+                        : this.render_model_list()
                     : this.render_login()}
                 {this.render_footer()}
             </div>
