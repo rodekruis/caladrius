@@ -136,7 +136,7 @@ python caladrius/run.py --run-name caladrius_2019
 python caladrius/run.py --run-name caladrius_2019 --test
 ```
 
-[Click here to download the trained model.](https://drive.google.com/open?id=1zdWhefcjWto8CxWAR75xO_yMBEiq1QLx)
+[Click here to download the trained model.](https://rodekruis.sharepoint.com/sites/510-Team/Gedeelde%20%20documenten/%5BPRJ%5D%20Automated%20Damage%20Assessment/MODEL/Sint-Maarten-2017/Sint-Maarten-2017v0.4.tgz)
 
 ## Configuration
 
@@ -145,12 +145,15 @@ python caladrius/run.py --run-name caladrius_2019 --test
 ```
 usage: run.py [-h] [--checkpoint-path CHECKPOINT_PATH] [--data-path DATA_PATH]
               [--run-name RUN_NAME] [--log-step LOG_STEP]
-              [--number-of-workers NUMBER_OF_WORKERS] [--disable-cuda]
+              [--number-of-workers NUMBER_OF_WORKERS]
+              [--model-type {quasi-siamese,random,average}] [--disable-cuda]
               [--cuda-device CUDA_DEVICE] [--torch-seed TORCH_SEED]
               [--input-size INPUT_SIZE] [--number-of-epochs NUMBER_OF_EPOCHS]
               [--batch-size BATCH_SIZE] [--learning-rate LEARNING_RATE]
               [--test] [--max-data-points MAX_DATA_POINTS]
-              [--accuracy-threshold ACCURACY_THRESHOLD]
+              [--training-accuracy-threshold TRAINING_ACCURACY_THRESHOLD]
+              [--testing-accuracy-threshold TESTING_ACCURACY_THRESHOLD]
+              [--output-type {regression,classification}]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -162,6 +165,8 @@ optional arguments:
   --log-step LOG_STEP   batch step size for logging information (default: 100)
   --number-of-workers NUMBER_OF_WORKERS
                         number of threads used by data loader (default: 8)
+  --model-type {quasi-siamese,random,average}
+                        type of model (default: quasi-siamese)
   --disable-cuda        disable the use of CUDA (default: False)
   --cuda-device CUDA_DEVICE
                         specify which GPU to use (default: 0)
@@ -180,19 +185,26 @@ optional arguments:
   --max-data-points MAX_DATA_POINTS
                         limit the total number of data points used, for
                         debugging on GPU-less laptops (default: None)
-  --accuracy-threshold ACCURACY_THRESHOLD
+  --training-accuracy-threshold TRAINING_ACCURACY_THRESHOLD
                         window size to calculate regression accuracy (default:
                         0.1)
+  --testing-accuracy-threshold TESTING_ACCURACY_THRESHOLD
+                        window size to calculate regression accuracy (default:
+                        0.3)
+  --output-type {regression,classification}
+                        choose if want regression or classification model
+                        (default: regression)
 ```
 
 ## Development
 
-When making changes, increment `VERSION` according to
-[PEP 440](https://www.python.org/dev/peps/pep-0440/) and update `CHANGES.md`.
+After cloning the repo, run `pre-commit install` to enable format checking when committing changes.
+
+When making changes, increment version number in [VERSION](VERSION), [package.json](caladrius/interface/package.json) and [package.json](caladrius/interface/client/package.json) according to [PEP 440](https://www.python.org/dev/peps/pep-0440/) and update [CHANGES.md](CHANGES.md).
 
 ## Docker image
 
-To build and tag the Docker image with `VERSION`,
+To build and tag the Docker image with [VERSION](VERSION),
 
 ```bash
 make build_production

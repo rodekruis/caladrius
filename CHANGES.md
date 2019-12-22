@@ -1,7 +1,7 @@
-0.6.3 (YYYY-MM-DD)
+0.6.3 (2019-12-22)
 ------------------
-- [x] evaluate random model
-- [x] evaluate label average model
+- evaluate random model
+- evaluate label average model
 
 0.6.2 (2019-11-30)
 ------------------
