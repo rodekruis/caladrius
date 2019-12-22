@@ -33,7 +33,7 @@ export class AddressList extends React.Component {
         });
     }
 
-    createAddressTable(data) {
+    createAddressTable() {
         return (
             <table className="table is-hoverable is-fullwidth">
                 <thead>
@@ -52,7 +52,7 @@ export class AddressList extends React.Component {
         return this.props.data.length > 0 ? (
             <section className="section">
                 <h1 className="title">Address List</h1>
-                {this.createAddressTable(this.props.data)}
+                {this.createAddressTable()}
             </section>
         ) : null;
     }

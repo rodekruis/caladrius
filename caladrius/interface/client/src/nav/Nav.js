@@ -58,9 +58,6 @@ export class Nav extends React.Component {
                     {this.props.is_authenticated ? (
                         <div className="navbar-end">
                             <div className="navbar-item">
-                                {this.props.render_model_selector()}
-                            </div>
-                            <div className="navbar-item">
                                 <Report
                                     data={this.props.data}
                                     selected_model={this.props.selected_model}
@@ -73,9 +70,12 @@ export class Nav extends React.Component {
                             <div className="navbar-item">
                                 <button
                                     className="button is-danger"
-                                    onClick={this.props.on_logout}
+                                    onClick={this.props.on_exit}
+                                    disabled={this.props.loading}
                                 >
-                                    Exit
+                                    {this.props.selected_model
+                                        ? "Back"
+                                        : "Exit"}
                                 </button>
                             </div>
                         </div>

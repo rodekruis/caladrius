@@ -2,10 +2,11 @@ import * as React from "react";
 import { Auth } from "./auth/Auth";
 import { Login } from "./auth/Login";
 import { fetch_csv_data, fetch_admin_regions } from "./data.js";
-import { ModelSelector } from "./nav/ModelSelector";
 import { Nav } from "./nav/Nav";
+import { ModelList } from "./model-list/ModelList";
 import { Dashboard } from "./dashboard/Dashboard";
 import { Footer } from "./footer/Footer";
+import "./app.css";
 
 export class App extends React.Component {
     constructor(props) {
@@ -15,7 +16,7 @@ export class App extends React.Component {
             login_attempted: false,
             username: null,
             models: [],
-            selected_model: "",
+            selected_model: null,
             data: [],
             selected_datum: null,
             admin_regions: [],
@@ -76,10 +77,14 @@ export class App extends React.Component {
         });
     };
 
-    on_logout = () => {
-        Auth.logout(() => {
-            this.setState({ is_authenticated: false, username: null });
-        });
+    on_exit = () => {
+        if (this.state.selected_model) {
+            this.setState({ selected_model: null });
+        } else {
+            Auth.logout(() => {
+                this.setState({ is_authenticated: false, username: null });
+            });
+        }
     };
 
     load_model = model => {
@@ -126,17 +131,6 @@ export class App extends React.Component {
         });
     };
 
-    render_model_selector = () => {
-        return (
-            <ModelSelector
-                models={this.state.models}
-                selected_model={this.state.selected_model}
-                load_model={this.load_model}
-                loading={this.state.loading}
-            />
-        );
-    };
-
     render_loader = () => {
         return (
             <section className="hero is-large">
@@ -156,12 +150,11 @@ export class App extends React.Component {
     render_nav = () => {
         return (
             <Nav
-                render_model_selector={this.render_model_selector}
                 data={this.state.data}
                 selected_model={this.state.selected_model}
                 get_datum_priority={this.state.get_datum_priority}
                 loading={this.state.loading}
-                on_logout={this.on_logout}
+                on_exit={this.on_exit}
                 is_authenticated={this.state.is_authenticated}
             />
         );
@@ -174,7 +167,6 @@ export class App extends React.Component {
                 selected_datum={this.state.selected_datum}
                 admin_regions={this.state.admin_regions}
                 set_datum={this.set_datum}
-                render_model_selector={this.render_model_selector}
                 set_datum_priority={this.set_datum_priority}
                 get_datum_priority={this.state.get_datum_priority}
             />
@@ -183,15 +175,10 @@ export class App extends React.Component {
 
     render_model_list = () => {
         return (
-            <section className="hero is-large">
-                <div className="hero-body">
-                    <div className="container">
-                        <h2 className="title">
-                            {this.render_model_selector()}
-                        </h2>
-                    </div>
-                </div>
-            </section>
+            <ModelList
+                models={this.state.models}
+                load_model={this.load_model}
+            />
         );
     };
 
