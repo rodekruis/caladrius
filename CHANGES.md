@@ -1,3 +1,9 @@
+0.6.4 (YYYY-MM-DD)
+------------------
+- [ ] Show table of models instead of dropdown
+- [ ] Visualize val performance
+- [ ] Create predict dataset set if possible
+
 0.6.3 (2019-12-22)
 ------------------
 - evaluate random model
