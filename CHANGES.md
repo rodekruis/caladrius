@@ -1,3 +1,8 @@
+0.6.3 (YYYY-MM-DD)
+------------------
+- [x] evaluate random model
+- [x] evaluate label average model
+
 0.6.2 (2019-11-30)
 ------------------
 - use [bulma](https://bulma.io/) ui

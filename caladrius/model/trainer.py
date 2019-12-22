@@ -23,7 +23,8 @@ class QuasiSiameseNetwork(object):
         self.run_name = args.run_name
         self.input_size = input_size
         self.lr = args.learning_rate
-        self.accuracy_threshold = args.accuracy_threshold
+        self.training_accuracy_threshold = args.training_accuracy_threshold
+        self.testing_accuracy_threshold = args.testing_accuracy_threshold
         self.output_type = args.output_type
 
         # define the loss measure
@@ -33,7 +34,9 @@ class QuasiSiameseNetwork(object):
         elif self.output_type == "classification":
             self.criterion = nnloss.CrossEntropyLoss()
             self.n_classes = 4  # replace by args
-            self.model = SiameseNetwork(output_type=self.output_type, n_classes=self.n_classes)
+            self.model = SiameseNetwork(
+                output_type=self.output_type, n_classes=self.n_classes
+            )
 
         self.transforms = {}
 
@@ -54,7 +57,31 @@ class QuasiSiameseNetwork(object):
         # creates tracking file for tensorboard
         self.writer = SummaryWriter(args.checkpoint_path)
 
-    def run_epoch(self, epoch, loader, device, predictions_path, phase="train"):
+    def get_random_output_values(self, labels):
+        if self.output_type == "regression":
+            output_shape = labels.shape
+        elif self.output_type == "classification":
+            output_shape = (labels.shape[0], self.n_classes)
+        return torch.rand(output_shape)
+
+    def get_average_output_values(self, labels, average_label):
+        if self.output_type == "regression":
+            outputs = torch.ones(labels.shape) * average_label
+        elif self.output_type == "classification":
+            average_label_tensor = torch.zeros(self.n_classes)
+            average_label_tensor[average_label] = 1
+            outputs = average_label_tensor.repeat(labels.shape[0], 1)
+        return outputs
+
+    def run_epoch(
+        self,
+        epoch,
+        loader,
+        device,
+        predictions_path,
+        phase="train",
+        model_type="quasi-siamese",
+    ):
         """
         Run one epoch of the model
         Args:
@@ -63,6 +90,7 @@ class QuasiSiameseNetwork(object):
             device (str): which device it is being run on. 'cpu' or 'cuda'
             predictions_path (str): path to write predictions to
             phase (str): which phase to run epoch for. 'train', 'validation' or 'test'
+            model_type: type of model
 
         Returns:
             epoch_loss (float): loss of this epoch
@@ -92,6 +120,15 @@ class QuasiSiameseNetwork(object):
         prediction_file = open(prediction_file_path, "w+")
         prediction_file.write("filename label prediction\n")
 
+        if model_type == "average":
+            sum_of_labels = 0
+            for _, _, _, label in loader.dataset:
+                sum_of_labels = sum_of_labels + label
+            number_of_labels = len(loader.dataset)
+            average_label = sum_of_labels / number_of_labels
+            if self.output_type == "classification":
+                average_label = round(average_label)
+
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(device)
             image2 = image2.to(device)
@@ -105,13 +142,19 @@ class QuasiSiameseNetwork(object):
                 self.optimizer.zero_grad()
 
             with torch.set_grad_enabled(phase == "train"):
-                outputs = self.model(image1, image2).squeeze()
+                if model_type == "quasi-siamese":
+                    outputs = self.model(image1, image2).squeeze()
+                elif model_type == "random":
+                    outputs = self.get_random_output_values(labels)
+                elif model_type == "average":
+                    outputs = self.get_average_output_values(labels, average_label)
+                outputs = outputs.to(device)
                 loss = self.criterion(outputs, labels)
 
                 if self.output_type == "classification":
                     _, preds = torch.max(outputs, 1)
                 else:
-                    preds=outputs.clamp(0,1)
+                    preds = outputs.clamp(0, 1)
 
                 if phase == "train":
                     loss.backward()
@@ -122,14 +165,10 @@ class QuasiSiameseNetwork(object):
                     [
                         "{} {} {}\n".format(*line)
                         for line in zip(
-                        filename,
-                        labels.view(-1).tolist(),
-                        preds.view(-1).tolist(),
-                    )
+                            filename, labels.view(-1).tolist(), preds.view(-1).tolist()
+                        )
                     ]
                 )
-
-
 
                 # if self.output_type == "classification":
                 rolling_eval.add(labels, preds)
@@ -140,7 +179,14 @@ class QuasiSiameseNetwork(object):
             running_n += image1.size(0)
             if self.output_type == "regression":
                 running_corrects += (
-                    (outputs - labels.data).abs().le(self.accuracy_threshold).sum()
+                    (outputs - labels.data)
+                    .abs()
+                    .le(
+                        self.training_accuracy_threshold
+                        if phase == "train"
+                        else self.testing_accuracy_threshold
+                    )
+                    .sum()
                 )
 
             if self.output_type == "regression":
@@ -162,7 +208,7 @@ class QuasiSiameseNetwork(object):
                 )
 
         epoch_loss = running_loss / running_n
-        epoch_error_meas = running_error_meas #running_corrects.double() / running_n
+        epoch_error_meas = running_error_meas  # running_corrects.double() / running_n
 
         if not (phase == "train"):
             prediction_file.write(
@@ -195,14 +241,6 @@ class QuasiSiameseNetwork(object):
 
         start_time = time.time()
 
-        for phase in ["train","validation"]:
-            performance_file_name = "{}_{}_epoch_{:03d}_performance.txt".format(
-                self.run_name, phase, epoch
-            )
-            performance_file_path = os.path.join(performance_path, performance_file_name)
-            performance_file = open(performance_file_path, "w+")
-            performance_file.write("epoch loss error_measure\n")
-
         for epoch in range(1, n_epochs + 1):
             # train network
             train_loss, train_accuracy = self.run_epoch(
@@ -214,21 +252,10 @@ class QuasiSiameseNetwork(object):
                 epoch, validation_loader, device, predictions_path, phase="validation"
             )
 
-            performance_file.writelines(
-                [
-                    "{} {} {}\n".format(*line)
-                    for line in zip(
-                    filename,
-                    labels.view(-1).tolist(),
-                    preds.view(-1).tolist(),
-                )
-                ]
-            )
-
-            self.writer.add_scalar('Train/Loss', train_loss, epoch)
-            self.writer.add_scalar('Train/Accuracy', train_accuracy, epoch)
-            self.writer.add_scalar('Validation/Loss', validation_loss, epoch)
-            self.writer.add_scalar('Validation/Accuracy', validation_accuracy, epoch)
+            self.writer.add_scalar("Train/Loss", train_loss, epoch)
+            self.writer.add_scalar("Train/Accuracy", train_accuracy, epoch)
+            self.writer.add_scalar("Validation/Loss", validation_loss, epoch)
+            self.writer.add_scalar("Validation/Accuracy", validation_accuracy, epoch)
 
             self.lr_scheduler.step(validation_loss)
 
@@ -250,7 +277,7 @@ class QuasiSiameseNetwork(object):
 
         logger.info("Best validation Accuracy: {:4f}.".format(best_accuracy))
 
-    def test(self, datasets, device, model_path, predictions_path):
+    def test(self, datasets, device, model_path, predictions_path, model_type):
         """
         Test the model
         Args:
@@ -258,7 +285,16 @@ class QuasiSiameseNetwork(object):
             device (str): which device it is being run on. 'cpu' or 'cuda'
             model_path (str): path to retrieve the saved model weights from
             predictions_path (str): path to write predictions to
+            model_type: type of model
         """
-        self.model.load_state_dict(torch.load(model_path, map_location=device))
+        if model_type == "quasi-siamese":
+            self.model.load_state_dict(torch.load(model_path, map_location=device))
         test_set, test_loader = datasets.load("test")
-        self.run_epoch(1, test_loader, device, predictions_path, phase="test")
+        self.run_epoch(
+            1,
+            test_loader,
+            device,
+            predictions_path,
+            phase="test",
+            model_type=model_type,
+        )

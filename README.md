@@ -1,19 +1,22 @@
-[![version: 0.6.2](https://img.shields.io/badge/version-0.6.2-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
+[![version: 0.6.3](https://img.shields.io/badge/version-0.6.3-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
 # [Caladrius](https://en.wikipedia.org/wiki/Caladrius) - Assessing Building Damage caused by Natural Disasters using Satellite Images
+
 ## Created by: Artificial Incompetence for the Red Cross #1 Challenge in the 2018 Hackathon for Peace, Justice and Security
 
 ## Network Architecture
 
-The network architecture is a pseudo-siamese network with two ImageNet pre-trained Inception_v3 models.
+The network architecture is a pseudo-siamese network with two ImageNet
+pre-trained Inception_v3 models.
 
 ## Using Docker
 
 Install [Docker](https://www.docker.com/get-started).
 
-Download the [Caladrius Docker Image](https://hub.docker.com/r/gulfaraz/caladrius) using,
+Download the
+[Caladrius Docker Image](https://hub.docker.com/r/gulfaraz/caladrius) using,
 
 ```
 docker pull gulfaraz/caladrius
@@ -37,10 +40,10 @@ docker exec -it caladrius bash
 
 #### Requirements:
 
-- [Python 3.6.5 or higher](https://www.python.org/downloads/)
-- [Anaconda or Miniconda 2019.07 or higher](https://www.anaconda.com/distribution/#download-section)
-- [NodeJS v10 or higher](https://nodejs.org/en/download/)
-- Run the following script,
+-   [Python 3.6.5 or higher](https://www.python.org/downloads/)
+-   [Anaconda or Miniconda 2019.07 or higher](https://www.anaconda.com/distribution/#download-section)
+-   [NodeJS v10 or higher](https://nodejs.org/en/download/)
+-   Run the following script,
 
 ```bash
 ./caladrius_install.sh
@@ -49,7 +52,9 @@ docker exec -it caladrius bash
 ## Dataset - Sint Maarten 2017 Hurricane Irma
 
 ##### 1. Download Raw Dataset:
-The Sint Maarten 2017 dataset can be downloaded from [here](https://rodekruis.sharepoint.com/sites/510-Team/Gedeelde%20%20documenten/%5BPRJ%5D%20Automated%20Damage%20Assessment/DATASET/Sint-Maarten-2017/rc.tgz "RC Challenge 1 Raw Dataset").
+
+The Sint Maarten 2017 dataset can be downloaded from
+[here](https://rodekruis.sharepoint.com/sites/510-Team/Gedeelde%20%20documenten/%5BPRJ%5D%20Automated%20Damage%20Assessment/DATASET/Sint-Maarten-2017/rc.tgz "RC Challenge 1 Raw Dataset").
 
 ##### 2. Extract Raw Dataset:
 
@@ -67,7 +72,8 @@ Transform the raw dataset to a training dataset using,
 python caladrius/sint_maarten_2017.py --run-all
 ```
 
-The above command will create the dataset as per the [specifications](DATASET.md).
+The above command will create the dataset as per the
+[specifications](DATASET.md).
 
 ##### Configuration:
 
@@ -132,7 +138,6 @@ python caladrius/run.py --run-name caladrius_2019 --test
 
 [Click here to download the trained model.](https://drive.google.com/open?id=1zdWhefcjWto8CxWAR75xO_yMBEiq1QLx)
 
-
 ## Configuration
 
 `run.py` accepts the command line arguments described below,
@@ -182,8 +187,8 @@ optional arguments:
 
 ## Development
 
-When making changes, increment `VERSION` according to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
-and update `CHANGES.md`.
+When making changes, increment `VERSION` according to
+[PEP 440](https://www.python.org/dev/peps/pep-0440/) and update `CHANGES.md`.
 
 ## Docker image
 
