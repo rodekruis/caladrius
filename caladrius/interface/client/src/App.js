@@ -42,20 +42,23 @@ export class App extends React.Component {
 
     load_admin_regions_and_models = () => {
         if (this.state.is_authenticated) {
-            this.setState({ loading: true }, () => {
-                fetch_admin_regions(admin_regions => {
-                    this.fetch_models(models => {
-                        if ("errno" in models) {
-                            models = [];
-                        }
-                        this.setState({
-                            admin_regions: admin_regions,
-                            models: models,
-                            loading: false,
+            this.setState(
+                { admin_regions: [], models: [], loading: true },
+                () => {
+                    fetch_admin_regions(admin_regions => {
+                        this.fetch_models(models => {
+                            if ("errno" in models) {
+                                models = [];
+                            }
+                            this.setState({
+                                admin_regions: admin_regions,
+                                models: models,
+                                loading: false,
+                            });
                         });
                     });
-                });
-            });
+                }
+            );
         }
     };
 
@@ -72,33 +75,46 @@ export class App extends React.Component {
             );
         };
 
-        this.setState({ loading: true, login_attempted: true }, () => {
+        this.setState({ login_attempted: true, loading: true }, () => {
             Auth.login(username, password, login_handler);
         });
     };
 
     on_exit = () => {
         if (this.state.selected_model) {
-            this.setState({ selected_model: null });
+            this.setState({ selected_model: null, selected_datum: null });
         } else {
             Auth.logout(() => {
-                this.setState({ is_authenticated: false, username: null });
+                this.setState({
+                    is_authenticated: false,
+                    username: null,
+                    login_attempted: false,
+                });
             });
         }
     };
 
     load_model = model => {
-        this.setState({ loading: true }, () => {
-            const model_name = model.model_directory;
-            const prediction_filename = model.test_prediction_file_name;
-            fetch_csv_data(model_name, prediction_filename, data => {
-                this.setState({
-                    selected_model: model,
-                    data: data,
-                    loading: false,
+        this.setState(
+            {
+                selected_model: null,
+                selected_datum: null,
+                data: [],
+                loading: true,
+            },
+            () => {
+                const model_name = model.model_directory;
+                const prediction_filename = model.test_prediction_file_name;
+                fetch_csv_data(model_name, prediction_filename, data => {
+                    this.setState({
+                        selected_model: model,
+                        selected_datum: null,
+                        data: data,
+                        loading: false,
+                    });
                 });
-            });
-        });
+            }
+        );
     };
 
     set_datum = datum => {
