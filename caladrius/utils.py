@@ -58,6 +58,10 @@ def readable_float(number):
     return round(float(number), 4)
 
 
+def dynamic_report_key(label, prefix, condition):
+    return "{}{}".format((prefix + "_model_") if condition else "", label)
+
+
 def run_name_type(run_name):
     run_name = str(run_name)
     pattern = re.compile(r"^[a-zA-Z0-9_\.]{3,30}$")
@@ -176,6 +180,7 @@ def configuration():
     args = parser.parse_args()
 
     arg_vars = vars(args)
+    arg_vars["model_name"] = arg_vars["run_name"]
 
     if args.torch_seed is not None:
         torch.manual_seed(arg_vars["torch_seed"])
@@ -187,7 +192,9 @@ def configuration():
             arg_vars["run_name"], arg_vars["max_data_points"]
         )
 
-    checkpointFolderName = "{}-input_size_{}-learning_rate_{}-batch_size_{}".format(
+    arg_vars[
+        "model_directory"
+    ] = "{}-input_size_{}-learning_rate_{}-batch_size_{}".format(
         arg_vars["run_name"],
         arg_vars["input_size"],
         arg_vars["learning_rate"],
@@ -195,7 +202,7 @@ def configuration():
     )
 
     arg_vars["checkpoint_path"] = make_directory(
-        os.path.join(arg_vars["checkpoint_path"], checkpointFolderName)
+        os.path.join(arg_vars["checkpoint_path"], arg_vars["model_directory"])
     )
     arg_vars["prediction_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], "predictions")

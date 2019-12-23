@@ -10,6 +10,11 @@ export class ModelList extends React.Component {
                     className="caladrius-clickable"
                 >
                     <td>{model.model_name}</td>
+                    <td>{model.test_accuracy}</td>
+                    <td>{model.validation_accuracy.slice(-1)[0]}</td>
+                    <td>{model.output_type}</td>
+                    <td>{model.model_type}</td>
+                    <td>{model.train_duration}</td>
                 </tr>
             );
         });
@@ -21,6 +26,11 @@ export class ModelList extends React.Component {
                 <thead>
                     <tr>
                         <th>Model Name</th>
+                        <th>Test</th>
+                        <th>Validation</th>
+                        <th>Output Type</th>
+                        <th>Model Type</th>
+                        <th>Training Time</th>
                     </tr>
                 </thead>
                 <tbody>{this.createModelsRows()}</tbody>

@@ -3,6 +3,27 @@ const path = require("path");
 const Config = require("./config");
 
 class ModelManager {
+    read_model_report(model_report_path) {
+        return new Promise((resolve, reject) => {
+            fs.exists(model_report_path, exists => {
+                if (exists) {
+                    fs.readFile(
+                        model_report_path,
+                        (error, model_report_raw) => {
+                            if (error) resolve(null);
+                            const model_report_json = JSON.parse(
+                                model_report_raw
+                            );
+                            resolve(model_report_json);
+                        }
+                    );
+                } else {
+                    resolve(null);
+                }
+            });
+        });
+    }
+
     get_models() {
         return new Promise((resolve, reject) => {
             fs.readdir(Config.MODEL_DIRECTORY, (error, models) => {
@@ -10,71 +31,25 @@ class ModelManager {
                     reject(error);
                 } else {
                     const promises = [];
-                    models.forEach(model => {
-                        const model_path = path.join(
+                    models.forEach(model_name => {
+                        const model_report_path = path.join(
                             Config.MODEL_DIRECTORY,
-                            model,
-                            "predictions"
+                            model_name,
+                            Config.MODEL_REPORT_FILENAME
                         );
                         promises.push(
-                            new Promise((resolve_, reject_) => {
-                                return fs.readdir(
-                                    model_path,
-                                    (err, filenames) => {
-                                        if (!err && filenames.length > 0) {
-                                            const model_split = model.split(
-                                                "-"
-                                            );
-                                            const test_predictions_filenames = filenames.filter(
-                                                filename =>
-                                                    filename.includes("test")
-                                            );
-                                            const validation_predictions_filenames = filenames.filter(
-                                                filename =>
-                                                    filename.includes(
-                                                        "validation"
-                                                    )
-                                            );
-                                            resolve_({
-                                                model_name: model_split[0],
-                                                model_directory: model,
-                                                input_size: parseInt(
-                                                    model_split[1]
-                                                        .split("_")
-                                                        .slice(-1)
-                                                        .pop()
-                                                ),
-                                                learning_rate: parseFloat(
-                                                    model_split[2]
-                                                        .split("_")
-                                                        .slice(-1)
-                                                        .pop()
-                                                ),
-                                                batch_size: parseInt(
-                                                    model_split[3]
-                                                        .split("_")
-                                                        .slice(-1)
-                                                        .pop()
-                                                ),
-                                                predictions: {
-                                                    test: test_predictions_filenames,
-                                                    validation: validation_predictions_filenames,
-                                                },
-                                            });
-                                        } else {
-                                            resolve_(null);
-                                        }
-                                    }
-                                );
-                            })
+                            this.read_model_report(model_report_path)
                         );
                     });
                     Promise.all(promises).then(models => {
                         resolve(
-                            models.filter(
-                                model =>
-                                    model && model.predictions.test.length > 0
-                            )
+                            models
+                                .filter(model => model && model.test)
+                                .sort(
+                                    (model_a, model_b) =>
+                                        new Date(model_b.test_end_time) -
+                                        new Date(model_a.test_end_time)
+                                )
                         );
                     });
                 }

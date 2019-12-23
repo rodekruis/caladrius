@@ -11,7 +11,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
 
 from model.network import get_pretrained_iv3_transforms, SiameseNetwork
-from utils import create_logger, readable_float
+from utils import create_logger, readable_float, dynamic_report_key
 from model.evaluate import RollingEval
 
 logger = create_logger(__name__)
@@ -82,6 +82,7 @@ class QuasiSiameseNetwork(object):
         predictions_path,
         phase="train",
         model_type="quasi-siamese",
+        train_set=None,
     ):
         """
         Run one epoch of the model
@@ -114,8 +115,8 @@ class QuasiSiameseNetwork(object):
 
         # I also want the predictions saved during training, such that we can retrieve and plot those results later if needed
         # if not (phase == "train"):
-        prediction_file_name = "{}_{}_epoch_{:03d}_predictions.txt".format(
-            self.run_name, phase, epoch
+        prediction_file_name = "{}_{}_epoch_{:03d}_{}_predictions.txt".format(
+            self.run_name, phase, epoch, model_type
         )
         prediction_file_path = os.path.join(predictions_path, prediction_file_name)
         prediction_file = open(prediction_file_path, "w+")
@@ -123,9 +124,9 @@ class QuasiSiameseNetwork(object):
 
         if model_type == "average":
             sum_of_labels = 0
-            for _, _, _, label in loader.dataset:
+            for _, _, _, label in train_set:
                 sum_of_labels = sum_of_labels + label
-            number_of_labels = len(loader.dataset)
+            number_of_labels = len(train_set)
             average_label = sum_of_labels / number_of_labels
             if self.output_type == "classification":
                 average_label = round(average_label)
@@ -223,13 +224,26 @@ class QuasiSiameseNetwork(object):
             )
         )
 
-        return epoch_loss, epoch_error_meas
+        return epoch_loss, epoch_error_meas, prediction_file_name
 
-    def train(self, run_report, datasets):
+    def train(
+        self,
+        run_report,
+        datasets,
+        number_of_epochs,
+        device,
+        model_path,
+        prediction_path,
+    ):
         """
         Train the model
         Args:
-            run_report (dict): configuration parameters for training
+            run_report (dict): configuration parameters for reporting training statistics
+            datasets: DataSet object with datasets loaded
+            number_of_epochs (int): number of epochs to be run
+            device (str): which device it is being run on. 'cpu' or 'cuda'
+            model_path (str): path the save model weights to
+            predictions_path (str): path to write predictions to
 
         Returns:
             run_report (dict): configuration parameters for training with training statistics
@@ -245,31 +259,29 @@ class QuasiSiameseNetwork(object):
         )
         run_report.train_loss = []
         run_report.train_accuracy = []
+        run_report.train_prediction_file_name = []
         run_report.validation_loss = []
         run_report.validation_accuracy = []
+        run_report.validation_prediction_file_name = []
 
-        for epoch in range(1, run_report.number_of_epochs + 1):
+        for epoch in range(1, number_of_epochs + 1):
             # train network
-            train_loss, train_accuracy = self.run_epoch(
-                epoch,
-                train_loader,
-                run_report.device,
-                run_report.prediction_path,
-                phase="train",
+            train_loss, train_accuracy, train_prediction_file_name = self.run_epoch(
+                epoch, train_loader, device, prediction_path, phase="train"
             )
             run_report.train_loss.append(readable_float(train_loss))
             run_report.train_accuracy.append(readable_float(train_accuracy))
+            run_report.train_prediction_file_name.append(train_prediction_file_name)
 
             # eval on validation
-            validation_loss, validation_accuracy = self.run_epoch(
-                epoch,
-                validation_loader,
-                run_report.device,
-                run_report.prediction_path,
-                phase="validation",
+            validation_loss, validation_accuracy, validation_prediction_file_name = self.run_epoch(
+                epoch, validation_loader, device, prediction_path, phase="validation"
             )
             run_report.validation_loss.append(readable_float(validation_loss))
             run_report.validation_accuracy.append(readable_float(validation_accuracy))
+            run_report.validation_prediction_file_name.append(
+                validation_prediction_file_name
+            )
 
             self.writer.add_scalar("Train/Loss", train_loss, epoch)
             self.writer.add_scalar("Train/Accuracy", train_accuracy, epoch)
@@ -283,11 +295,9 @@ class QuasiSiameseNetwork(object):
                 best_model_wts = copy.deepcopy(self.model.state_dict())
 
                 logger.info(
-                    "Epoch {:03d} Checkpoint: Saving to {}".format(
-                        epoch, run_report.model_path
-                    )
+                    "Epoch {:03d} Checkpoint: Saving to {}".format(epoch, model_path)
                 )
-                torch.save(best_model_wts, run_report.model_path)
+                torch.save(best_model_wts, model_path)
 
         time_elapsed = time.time() - start_time
         run_report.train_end_time = datetime.utcnow().replace(microsecond=0).isoformat()
@@ -301,40 +311,70 @@ class QuasiSiameseNetwork(object):
         logger.info("Best validation Accuracy: {:4f}.".format(best_accuracy))
         return run_report
 
-    def test(self, run_report, datasets):
+    def test(
+        self, run_report, datasets, device, model_path, prediction_path, model_type
+    ):
         """
         Test the model
         Args:
-            run_report (dict): configuration parameters for testing
+            run_report (dict): configuration parameters for reporting testing statistics
+            datasets: DataSet object with datasets loaded
+            device (str): which device it is being run on. 'cpu' or 'cuda'
+            model_path (str): path to retrieve the saved model weights from
+            predictions_path (str): path to write predictions to
+            model_type: type of model
 
         Returns:
             run_report (dict): configuration parameters for testing with testing statistics
         """
-        if run_report.model_type == "quasi-siamese":
-            self.model.load_state_dict(
-                torch.load(run_report.model_path, map_location=run_report.device)
-            )
+        is_statistical_model = model_type != "quasi-siamese"
+        if is_statistical_model:
+            train_set, _ = datasets.load("train")
+        else:
+            self.model.load_state_dict(torch.load(model_path, map_location=device))
         test_set, test_loader = datasets.load("test")
         start_time = time.time()
-        run_report.test_start_time = (
-            datetime.utcnow().replace(microsecond=0).isoformat()
-        )
-        test_loss, test_accuracy = self.run_epoch(
+        run_report[
+            dynamic_report_key("test_start_time", model_type, is_statistical_model)
+        ] = (datetime.utcnow().replace(microsecond=0).isoformat())
+        test_loss, test_accuracy, test_prediction_file_name = self.run_epoch(
             1,
             test_loader,
-            run_report.device,
-            run_report.prediction_path,
+            device,
+            prediction_path,
             phase="test",
-            model_type=run_report.model_type,
+            model_type=model_type,
+            train_set=train_set if is_statistical_model else None,
         )
-        run_report.test_loss = readable_float(test_loss)
-        run_report.test_accuracy = readable_float(test_accuracy)
+        run_report[
+            dynamic_report_key("test_loss", model_type, is_statistical_model)
+        ] = readable_float(test_loss)
+        run_report[
+            dynamic_report_key("test_accuracy", model_type, is_statistical_model)
+        ] = readable_float(test_accuracy)
+        run_report[
+            dynamic_report_key(
+                "test_prediction_file_name", model_type, is_statistical_model
+            )
+        ] = test_prediction_file_name
         time_elapsed = time.time() - start_time
-        run_report.test_end_time = datetime.utcnow().replace(microsecond=0).isoformat()
+        run_report[
+            dynamic_report_key("test_end_time", model_type, is_statistical_model)
+        ] = (datetime.utcnow().replace(microsecond=0).isoformat())
 
-        run_report.test_duration = "{:.0f}m {:.0f}s".format(
-            time_elapsed // 60, time_elapsed % 60
+        run_report[
+            dynamic_report_key("test_duration", model_type, is_statistical_model)
+        ] = "{:.0f}m {:.0f}s".format(time_elapsed // 60, time_elapsed % 60)
+
+        run_report[dynamic_report_key("test", model_type, is_statistical_model)] = True
+
+        logger.info(
+            "Testing complete in {}".format(
+                run_report[
+                    dynamic_report_key(
+                        "test_duration", model_type, is_statistical_model
+                    )
+                ]
+            )
         )
-
-        logger.info("Testing complete in {}".format(run_report.test_duration))
         return run_report

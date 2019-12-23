@@ -23,14 +23,30 @@ def main():
     logger.info("START with Configuration:")
     for k, v in sorted(vars(args).items()):
         logger.info("{0}: {1}".format(k, v))
+        if (k == "model_type") and (v != "quasi-siamese"):
+            continue
         run_report[k] = v
 
     qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
     if not args.test and args.model_type == "quasi-siamese":
-        run_report = qsn.train(run_report, datasets)
+        run_report = qsn.train(
+            run_report,
+            datasets,
+            args.number_of_epochs,
+            args.device,
+            args.model_path,
+            args.prediction_path,
+        )
     logger.info("Evaluation on test dataset")
-    run_report = qsn.test(run_report, datasets)
+    run_report = qsn.test(
+        run_report,
+        datasets,
+        args.device,
+        args.model_path,
+        args.prediction_path,
+        args.model_type,
+    )
 
     save_run_report(run_report)
     logger.info("END")

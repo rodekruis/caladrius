@@ -90,7 +90,7 @@ export class App extends React.Component {
     load_model = model => {
         this.setState({ loading: true }, () => {
             const model_name = model.model_directory;
-            const prediction_filename = model.predictions.test[0];
+            const prediction_filename = model.test_prediction_file_name;
             fetch_csv_data(model_name, prediction_filename, data => {
                 this.setState({
                     selected_model: model,
