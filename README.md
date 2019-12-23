@@ -1,4 +1,4 @@
-[![version: 0.6.3](https://img.shields.io/badge/version-0.6.3-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
+[![stable: 0.6.4](https://img.shields.io/badge/stable-0.6.4-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
