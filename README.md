@@ -40,9 +40,9 @@ docker exec -it caladrius bash
 
 #### Requirements:
 
--   [Python 3.6.5 or higher](https://www.python.org/downloads/)
--   [Anaconda or Miniconda 2019.07 or higher](https://www.anaconda.com/distribution/#download-section)
--   [NodeJS v10 or higher](https://nodejs.org/en/download/)
+-   [Python 3.6.5](https://www.python.org/downloads/)
+-   [Anaconda or Miniconda 2019.07](https://www.anaconda.com/distribution/#download-section)
+-   [NodeJS v10](https://nodejs.org/en/download/)
 -   Run the following script,
 
 ```bash
