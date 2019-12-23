@@ -56,7 +56,7 @@ export class Dashboard extends React.Component {
                                         />
                                     </article>
                                 </div>
-                                <div className="tile is-vertical">
+                                <div className="tile is-vertical is-parent">
                                     <h4 id="map" className="title">
                                         Inspect Data
                                     </h4>
