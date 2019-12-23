@@ -1,6 +1,7 @@
 import os
 import copy
 import time
+from datetime import datetime
 import torch
 
 from torch.optim import Adam
@@ -10,7 +11,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
 
 from model.network import get_pretrained_iv3_transforms, SiameseNetwork
-from utils import create_logger
+from utils import create_logger, readable_float
 from model.evaluate import RollingEval
 
 logger = create_logger(__name__)
@@ -23,8 +24,8 @@ class QuasiSiameseNetwork(object):
         self.run_name = args.run_name
         self.input_size = input_size
         self.lr = args.learning_rate
-        self.training_accuracy_threshold = args.training_accuracy_threshold
-        self.testing_accuracy_threshold = args.testing_accuracy_threshold
+        self.train_accuracy_threshold = args.train_accuracy_threshold
+        self.test_accuracy_threshold = args.test_accuracy_threshold
         self.output_type = args.output_type
 
         # define the loss measure
@@ -182,9 +183,9 @@ class QuasiSiameseNetwork(object):
                     (outputs - labels.data)
                     .abs()
                     .le(
-                        self.training_accuracy_threshold
+                        self.train_accuracy_threshold
                         if phase == "train"
-                        else self.testing_accuracy_threshold
+                        else self.test_accuracy_threshold
                     )
                     .sum()
                 )
@@ -224,15 +225,14 @@ class QuasiSiameseNetwork(object):
 
         return epoch_loss, epoch_error_meas
 
-    def train(self, n_epochs, datasets, device, model_path, predictions_path):
+    def train(self, run_report, datasets):
         """
         Train the model
         Args:
-            n_epochs (int): number of epochs to be run
-            datasets: DataSet object with datasets loaded
-            device (str): which device it is being run on. 'cpu' or 'cuda'
-            model_path (str): path the save model weights to
-            predictions_path (str): path to write predictions to
+            run_report (dict): configuration parameters for training
+
+        Returns:
+            run_report (dict): configuration parameters for training with training statistics
         """
         train_set, train_loader = datasets.load("train")
         validation_set, validation_loader = datasets.load("validation")
@@ -240,17 +240,36 @@ class QuasiSiameseNetwork(object):
         best_accuracy, best_model_wts = 0.0, copy.deepcopy(self.model.state_dict())
 
         start_time = time.time()
+        run_report.train_start_time = (
+            datetime.utcnow().replace(microsecond=0).isoformat()
+        )
+        run_report.train_loss = []
+        run_report.train_accuracy = []
+        run_report.validation_loss = []
+        run_report.validation_accuracy = []
 
-        for epoch in range(1, n_epochs + 1):
+        for epoch in range(1, run_report.number_of_epochs + 1):
             # train network
             train_loss, train_accuracy = self.run_epoch(
-                epoch, train_loader, device, predictions_path, phase="train"
+                epoch,
+                train_loader,
+                run_report.device,
+                run_report.prediction_path,
+                phase="train",
             )
+            run_report.train_loss.append(readable_float(train_loss))
+            run_report.train_accuracy.append(readable_float(train_accuracy))
 
             # eval on validation
             validation_loss, validation_accuracy = self.run_epoch(
-                epoch, validation_loader, device, predictions_path, phase="validation"
+                epoch,
+                validation_loader,
+                run_report.device,
+                run_report.prediction_path,
+                phase="validation",
             )
+            run_report.validation_loss.append(readable_float(validation_loss))
+            run_report.validation_accuracy.append(readable_float(validation_accuracy))
 
             self.writer.add_scalar("Train/Loss", train_loss, epoch)
             self.writer.add_scalar("Train/Accuracy", train_accuracy, epoch)
@@ -264,37 +283,58 @@ class QuasiSiameseNetwork(object):
                 best_model_wts = copy.deepcopy(self.model.state_dict())
 
                 logger.info(
-                    "Epoch {:03d} Checkpoint: Saving to {}".format(epoch, model_path)
+                    "Epoch {:03d} Checkpoint: Saving to {}".format(
+                        epoch, run_report.model_path
+                    )
                 )
-                torch.save(best_model_wts, model_path)
+                torch.save(best_model_wts, run_report.model_path)
 
         time_elapsed = time.time() - start_time
-        logger.info(
-            "Training complete in {:.0f}m {:.0f}s".format(
-                time_elapsed // 60, time_elapsed % 60
-            )
+        run_report.train_end_time = datetime.utcnow().replace(microsecond=0).isoformat()
+
+        run_report.train_duration = "{:.0f}m {:.0f}s".format(
+            time_elapsed // 60, time_elapsed % 60
         )
 
-        logger.info("Best validation Accuracy: {:4f}.".format(best_accuracy))
+        logger.info("Training complete in {}".format(run_report.train_duration))
 
-    def test(self, datasets, device, model_path, predictions_path, model_type):
+        logger.info("Best validation Accuracy: {:4f}.".format(best_accuracy))
+        return run_report
+
+    def test(self, run_report, datasets):
         """
         Test the model
         Args:
-            datasets: DataSet object with datasets loaded
-            device (str): which device it is being run on. 'cpu' or 'cuda'
-            model_path (str): path to retrieve the saved model weights from
-            predictions_path (str): path to write predictions to
-            model_type: type of model
+            run_report (dict): configuration parameters for testing
+
+        Returns:
+            run_report (dict): configuration parameters for testing with testing statistics
         """
-        if model_type == "quasi-siamese":
-            self.model.load_state_dict(torch.load(model_path, map_location=device))
+        if run_report.model_type == "quasi-siamese":
+            self.model.load_state_dict(
+                torch.load(run_report.model_path, map_location=run_report.device)
+            )
         test_set, test_loader = datasets.load("test")
-        self.run_epoch(
+        start_time = time.time()
+        run_report.test_start_time = (
+            datetime.utcnow().replace(microsecond=0).isoformat()
+        )
+        test_loss, test_accuracy = self.run_epoch(
             1,
             test_loader,
-            device,
-            predictions_path,
+            run_report.device,
+            run_report.prediction_path,
             phase="test",
-            model_type=model_type,
+            model_type=run_report.model_type,
         )
+        run_report.test_loss = readable_float(test_loss)
+        run_report.test_accuracy = readable_float(test_accuracy)
+        time_elapsed = time.time() - start_time
+        run_report.test_end_time = datetime.utcnow().replace(microsecond=0).isoformat()
+
+        run_report.test_duration = "{:.0f}m {:.0f}s".format(
+            time_elapsed // 60, time_elapsed % 60
+        )
+
+        logger.info("Testing complete in {}".format(run_report.test_duration))
+        return run_report

@@ -5,6 +5,7 @@ import argparse
 import pickle
 import logging
 import re
+import json
 
 import torch
 
@@ -51,6 +52,10 @@ def save_obj(obj, path):
 def load_obj(path):
     with open(path, "rb") as f:
         return pickle.load(f)
+
+
+def readable_float(number):
+    return round(float(number), 4)
 
 
 def run_name_type(run_name):
@@ -149,13 +154,13 @@ def configuration():
         help="limit the total number of data points used, for debugging on GPU-less laptops",
     )
     parser.add_argument(
-        "--training-accuracy-threshold",
+        "--train-accuracy-threshold",
         type=float,
         default=0.1,
         help="window size to calculate regression accuracy",
     )
     parser.add_argument(
-        "--testing-accuracy-threshold",
+        "--test-accuracy-threshold",
         type=float,
         default=0.3,
         help="window size to calculate regression accuracy",
@@ -198,6 +203,9 @@ def configuration():
     arg_vars["model_path"] = os.path.join(
         arg_vars["checkpoint_path"], "best_model_wts.pkl"
     )
+    arg_vars["run_report_path"] = os.path.join(
+        arg_vars["checkpoint_path"], "run_report.json"
+    )
 
     if torch.cuda.is_available() and not arg_vars["disable_cuda"]:
         arg_vars["device"] = torch.device("cuda:{}".format(arg_vars["cuda_device"]))
@@ -205,6 +213,22 @@ def configuration():
         arg_vars["device"] = torch.device("cpu")
 
     return args
+
+
+def load_run_report(run_report_path):
+    run_report_json = dotdict({})
+    if os.path.exists(run_report_path):
+        with open(run_report_path, "r") as run_report_file:
+            run_report_json = json.load(run_report_file)
+            run_report_json = dotdict(run_report_json)
+            run_report_json.device = torch.device(run_report_json.device)
+    return run_report_json
+
+
+def save_run_report(run_report_json):
+    run_report_json.device = str(run_report_json.device)
+    with open(run_report_json.run_report_path, "w") as run_report_file:
+        json.dump(run_report_json, run_report_file, indent=4)
 
 
 def attach_exception_hook(logger):

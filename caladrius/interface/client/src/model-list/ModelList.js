@@ -1,10 +1,6 @@
 import * as React from "react";
 
 export class ModelList extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
     createModelsRows() {
         return this.props.models.map(model => {
             return (

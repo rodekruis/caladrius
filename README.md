@@ -151,8 +151,8 @@ usage: run.py [-h] [--checkpoint-path CHECKPOINT_PATH] [--data-path DATA_PATH]
               [--input-size INPUT_SIZE] [--number-of-epochs NUMBER_OF_EPOCHS]
               [--batch-size BATCH_SIZE] [--learning-rate LEARNING_RATE]
               [--test] [--max-data-points MAX_DATA_POINTS]
-              [--training-accuracy-threshold TRAINING_ACCURACY_THRESHOLD]
-              [--testing-accuracy-threshold TESTING_ACCURACY_THRESHOLD]
+              [--train-accuracy-threshold TRAINING_ACCURACY_THRESHOLD]
+              [--test-accuracy-threshold TESTING_ACCURACY_THRESHOLD]
               [--output-type {regression,classification}]
 
 optional arguments:
@@ -185,10 +185,10 @@ optional arguments:
   --max-data-points MAX_DATA_POINTS
                         limit the total number of data points used, for
                         debugging on GPU-less laptops (default: None)
-  --training-accuracy-threshold TRAINING_ACCURACY_THRESHOLD
+  --train-accuracy-threshold TRAINING_ACCURACY_THRESHOLD
                         window size to calculate regression accuracy (default:
                         0.1)
-  --testing-accuracy-threshold TESTING_ACCURACY_THRESHOLD
+  --test-accuracy-threshold TESTING_ACCURACY_THRESHOLD
                         window size to calculate regression accuracy (default:
                         0.3)
   --output-type {regression,classification}
