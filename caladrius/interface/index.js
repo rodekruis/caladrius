@@ -50,6 +50,7 @@ app.get("/api/logout", Auth.logout);
 
 // static
 app.use(express.static("../../data/Sint-Maarten-2017/test"));
+app.use(express.static("../../data/Sint-Maarten-2017/validation"));
 
 // backend API
 app.get("/api/dataset", server.get_dataset_file);

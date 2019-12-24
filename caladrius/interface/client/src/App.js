@@ -3,6 +3,7 @@ import { Auth } from "./auth/Auth";
 import { Login } from "./auth/Login";
 import { fetch_csv_data, fetch_admin_regions } from "./data.js";
 import { Nav } from "./nav/Nav";
+import { Breadcrumb } from "./breadcrumb/Breadcrumb";
 import { ModelList } from "./model-list/ModelList";
 import { Dashboard } from "./dashboard/Dashboard";
 import { Footer } from "./footer/Footer";
@@ -22,6 +23,7 @@ export class App extends React.Component {
             admin_regions: [],
             loading: false,
             get_datum_priority: this.get_datum_priority_function(),
+            selected_dataset_split: "test",
         };
     }
 
@@ -80,9 +82,19 @@ export class App extends React.Component {
         });
     };
 
+    unselect_model = () => {
+        this.setState({ selected_model: null, selected_datum: null });
+    };
+
+    set_dataset_split = split_name => {
+        this.setState({ selected_dataset_split: split_name }, () =>
+            this.load_model(this.state.selected_model, split_name)
+        );
+    };
+
     on_exit = () => {
         if (this.state.selected_model) {
-            this.setState({ selected_model: null, selected_datum: null });
+            this.unselect_model();
         } else {
             Auth.logout(() => {
                 this.setState({
@@ -94,20 +106,25 @@ export class App extends React.Component {
         }
     };
 
-    load_model = model => {
+    load_model = (model, split = "test") => {
         this.setState(
             {
                 selected_model: null,
+                selected_dataset_split: split,
                 selected_datum: null,
                 data: [],
                 loading: true,
             },
             () => {
                 const model_name = model.model_directory;
-                const prediction_filename = model.test_prediction_file_name;
+                const prediction_filename =
+                    this.state.selected_dataset_split === "test"
+                        ? model.test_prediction_file_name
+                        : model.validation_prediction_file_name.slice(-1)[0];
                 fetch_csv_data(model_name, prediction_filename, data => {
                     this.setState({
                         selected_model: model,
+                        selected_dataset_split: split,
                         selected_datum: null,
                         data: data,
                         loading: false,
@@ -212,10 +229,25 @@ export class App extends React.Component {
         );
     };
 
+    render_breadcrumb = () => {
+        return (
+            <Breadcrumb
+                loading={this.state.loading}
+                selected_model={this.state.selected_model}
+                unselect_model={this.unselect_model}
+                selected_datum={this.state.selected_datum}
+                set_datum={this.set_datum}
+                selected_dataset_split={this.state.selected_dataset_split}
+                set_dataset_split={this.set_dataset_split}
+            />
+        );
+    };
+
     render() {
         return (
             <div>
                 {this.render_nav(this.state.is_authenticated)}
+                {this.render_breadcrumb()}
                 {this.state.loading
                     ? this.render_loader()
                     : this.state.is_authenticated
