@@ -1,4 +1,5 @@
 import * as React from "react";
+import "./model-list.css";
 
 export class ModelList extends React.Component {
     createModelsRows() {
@@ -40,12 +41,14 @@ export class ModelList extends React.Component {
 
     render() {
         return (
-            <section className="section">
+            <section className="section model-list-section">
                 <h1 className="title">Model List</h1>
                 {this.props.models.length > 0 ? (
                     this.createModelsTable(this.props.models)
                 ) : (
-                    <span>No Models Found</span>
+                    <div className="notification model-list-notification">
+                        No models available.
+                    </div>
                 )}
             </section>
         );
