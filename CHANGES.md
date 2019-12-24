@@ -1,7 +1,7 @@
 0.6.4 (YYYY-MM-DD)
 ------------------
 - [x] Show table of models instead of dropdown
-- [ ] Visualize val performance
+- [x] Visualize val performance
 - [ ] Create predict dataset set if possible
 
 0.6.3 (2019-12-22)
