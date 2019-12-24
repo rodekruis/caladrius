@@ -1,4 +1,4 @@
-[![version: 0.6.3](https://img.shields.io/badge/version-0.6.3-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
+[![stable: 0.6.4](https://img.shields.io/badge/stable-0.6.4-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
@@ -40,9 +40,9 @@ docker exec -it caladrius bash
 
 #### Requirements:
 
--   [Python 3.6.5 or higher](https://www.python.org/downloads/)
--   [Anaconda or Miniconda 2019.07 or higher](https://www.anaconda.com/distribution/#download-section)
--   [NodeJS v10 or higher](https://nodejs.org/en/download/)
+-   [Python 3.6.5](https://www.python.org/downloads/)
+-   [Anaconda or Miniconda 2019.07](https://www.anaconda.com/distribution/#download-section)
+-   [NodeJS v10](https://nodejs.org/en/download/)
 -   Run the following script,
 
 ```bash
@@ -151,8 +151,8 @@ usage: run.py [-h] [--checkpoint-path CHECKPOINT_PATH] [--data-path DATA_PATH]
               [--input-size INPUT_SIZE] [--number-of-epochs NUMBER_OF_EPOCHS]
               [--batch-size BATCH_SIZE] [--learning-rate LEARNING_RATE]
               [--test] [--max-data-points MAX_DATA_POINTS]
-              [--training-accuracy-threshold TRAINING_ACCURACY_THRESHOLD]
-              [--testing-accuracy-threshold TESTING_ACCURACY_THRESHOLD]
+              [--train-accuracy-threshold TRAIN_ACCURACY_THRESHOLD]
+              [--test-accuracy-threshold TEST_ACCURACY_THRESHOLD]
               [--output-type {regression,classification}]
 
 optional arguments:
@@ -185,10 +185,10 @@ optional arguments:
   --max-data-points MAX_DATA_POINTS
                         limit the total number of data points used, for
                         debugging on GPU-less laptops (default: None)
-  --training-accuracy-threshold TRAINING_ACCURACY_THRESHOLD
+  --train-accuracy-threshold TRAIN_ACCURACY_THRESHOLD
                         window size to calculate regression accuracy (default:
                         0.1)
-  --testing-accuracy-threshold TESTING_ACCURACY_THRESHOLD
+  --test-accuracy-threshold TEST_ACCURACY_THRESHOLD
                         window size to calculate regression accuracy (default:
                         0.3)
   --output-type {regression,classification}

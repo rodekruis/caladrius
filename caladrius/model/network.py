@@ -22,23 +22,23 @@ def get_pretrained_iv3(output_size):
     Returns:
         model_conv: Model with Inception_v3 as base
     """
-    #fetch pretrained inception_v3 model
+    # fetch pretrained inception_v3 model
     model_conv = torchvision.models.inception_v3(pretrained=True)
 
-    #requires_grad indicates if parameter is learnable
-    #so here set all parameters to non-learnable
+    # requires_grad indicates if parameter is learnable
+    # so here set all parameters to non-learnable
     for i, param in model_conv.named_parameters():
         param.requires_grad = False
 
-    #want to create own fully connected layer instead of using pretrained layer
-    #get number of input features to fully connected layer
+    # want to create own fully connected layer instead of using pretrained layer
+    # get number of input features to fully connected layer
     num_ftrs = model_conv.fc.in_features
-    #creaty fully connected layer
+    # creaty fully connected layer
     model_conv.fc = nn.Linear(num_ftrs, output_size)
 
-    #want almost all parameters learnable except for first few layers
-    #so here set most parameters to learnable
-    #idea is that first few layers learn types of features that are the same in all types of images --> don't have to retrain
+    # want almost all parameters learnable except for first few layers
+    # so here set most parameters to learnable
+    # idea is that first few layers learn types of features that are the same in all types of images --> don't have to retrain
     ct = []
     for name, child in model_conv.named_children():
         if "Conv2d_4a_3x3" in ct:
@@ -47,9 +47,9 @@ def get_pretrained_iv3(output_size):
         ct.append(name)
 
     # To view which layers are freeze and which layers are not freezed:
-    for name, child in model_conv.named_children():
-        for name_2, params in child.named_parameters():
-            logger.debug("{}, {}".format(name_2, params.requires_grad))
+    # for name, child in model_conv.named_children():
+    #     for name_2, params in child.named_parameters():
+    #         logger.debug("{}, {}".format(name_2, params.requires_grad))
 
     return model_conv
 
@@ -69,24 +69,24 @@ def get_pretrained_iv3_transforms(set_name):
     input_shape = 299
     train_transform = transforms.Compose(
         [
-            #resize every image to scale x scale pixels
+            # resize every image to scale x scale pixels
             transforms.Resize(scale),
-            #crop every image to input_shape x input_shape pixels.
-            #This is needed for the inception model.
+            # crop every image to input_shape x input_shape pixels.
+            # This is needed for the inception model.
             transforms.RandomResizedCrop(input_shape),
             transforms.RandomHorizontalFlip(),
             transforms.RandomVerticalFlip(),
             transforms.RandomRotation(degrees=90),
-            #converts image to type Torch and normalizes [0,1]
+            # converts image to type Torch and normalizes [0,1]
             transforms.ToTensor(),
-            #normalizes [-1,1]
+            # normalizes [-1,1]
             transforms.Normalize(mean, std),
         ]
     )
 
     test_transform = transforms.Compose(
         [
-            #for testing and validation we don't want any permutations of the image, solely cropping and normalizing
+            # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
             transforms.Resize(scale),
             transforms.CenterCrop(input_shape),
             transforms.ToTensor(),
@@ -103,7 +103,12 @@ def get_pretrained_iv3_transforms(set_name):
 
 class SiameseNetwork(nn.Module):
     def __init__(
-        self, output_size=512, similarity_layers_sizes=[512, 512], dropout=0.5,output_type="regression",n_classes=None
+        self,
+        output_size=512,
+        similarity_layers_sizes=[512, 512],
+        dropout=0.5,
+        output_type="regression",
+        n_classes=None,
     ):
         """
         Construct the Siamese network
@@ -118,7 +123,7 @@ class SiameseNetwork(nn.Module):
         self.right_network = get_pretrained_iv3(output_size)
 
         similarity_layers = OrderedDict()
-        #fully connected layer where input is concatenated features of the two inception models
+        # fully connected layer where input is concatenated features of the two inception models
         similarity_layers["layer_0"] = nn.Linear(
             output_size * 2, similarity_layers_sizes[0]
         )
@@ -127,7 +132,7 @@ class SiameseNetwork(nn.Module):
         if dropout:
             similarity_layers["dropout_0"] = nn.Dropout(dropout, inplace=True)
         prev_hidden_size = similarity_layers_sizes[0]
-        #make a hidden layer for each entry in similarity_layers_sizes
+        # make a hidden layer for each entry in similarity_layers_sizes
         for idx, hidden in enumerate(similarity_layers_sizes[1:], 1):
             similarity_layers["layer_{}".format(idx)] = nn.Linear(
                 prev_hidden_size, hidden
@@ -140,11 +145,11 @@ class SiameseNetwork(nn.Module):
                 )
 
         self.similarity = nn.Sequential(similarity_layers)
-        if output_type=="regression":
-            #final layer with one output which is the amount of damage from 0 to 1
+        if output_type == "regression":
+            # final layer with one output which is the amount of damage from 0 to 1
             self.output = nn.Linear(hidden, 1)
-        elif output_type=="classification":
-            self.output=self.output = nn.Linear(hidden, n_classes)
+        elif output_type == "classification":
+            self.output = self.output = nn.Linear(hidden, n_classes)
 
     def forward(self, image_1, image_2):
         """
