@@ -210,10 +210,7 @@ def createDatapoints(df):
 
             for index, row in tqdm(df.iterrows(), total=df.shape[0]):
 
-                # filter based on damage
                 damage = row["_damage"]
-                if damage not in DAMAGE_TYPES:
-                    continue
 
                 bounds = row["geometry"].bounds
                 geoms = makesquare(*bounds)
@@ -231,6 +228,7 @@ def createDatapoints(df):
                         and os.path.isfile(before_file)
                         and (after_file is not None)
                         and os.path.isfile(after_file)
+                        and damage in DAMAGE_TYPES
                     ):
                         labels_file.write(
                             "{0}.png {1:.4f}\n".format(
@@ -301,6 +299,39 @@ def splitDatapoints(filepath):
                 split_file.write(datapoint)
 
     return split_mappings
+
+
+def createPredictDataset():
+    temp_before_directory = os.path.join(TEMP_DATA_FOLDER, "before")
+    temp_after_directory = os.path.join(TEMP_DATA_FOLDER, "after")
+    images_in_before_directory = [
+        x for x in os.listdir(temp_before_directory) if x.endswith(".png")
+    ]
+    images_in_after_directory = [
+        x for x in os.listdir(temp_after_directory) if x.endswith(".png")
+    ]
+    intersection = list(
+        set(images_in_before_directory) & set(images_in_after_directory)
+    )
+
+    predict_directory = os.path.join(TARGET_DATA_FOLDER, "predict")
+    os.makedirs(predict_directory, exist_ok=True)
+
+    predict_before_directory = os.path.join(predict_directory, "before")
+    os.makedirs(predict_before_directory, exist_ok=True)
+
+    predict_after_directory = os.path.join(predict_directory, "after")
+    os.makedirs(predict_after_directory, exist_ok=True)
+
+    for datapoint_name in intersection:
+        before_image_src = os.path.join(temp_before_directory, datapoint_name)
+        after_image_src = os.path.join(temp_after_directory, datapoint_name)
+
+        before_image_dst = os.path.join(predict_before_directory, datapoint_name)
+        after_image_dst = os.path.join(predict_after_directory, datapoint_name)
+
+        move(before_image_src, before_image_dst)
+        move(after_image_src, after_image_dst)
 
 
 def query_address_api(df, address_api="openmapquest", address_api_key=None):
@@ -458,6 +489,7 @@ def main():
         logger.info("Creating training dataset.")
         createDatapoints(df)
         splitDatapoints(LABELS_FILE)
+        createPredictDataset()
     else:
         logger.info("Skipping creation of training dataset.")
 
