@@ -3,7 +3,7 @@ import jQuery from "jquery";
 import proj4 from "proj4";
 
 export function fetch_admin_regions(callback) {
-    fetch("/api/dataset?name=Sint-Maarten-2017&filename=admin_regions.geojson")
+    fetch("/api/Sint-Maarten-2017/admin-regions")
         .then(res => res.json())
         .then(region_boundaries => {
             if ("features" in region_boundaries) {
@@ -17,27 +17,32 @@ export function fetch_admin_regions(callback) {
         });
 }
 
-export function fetch_csv_data(model_name, prediction_filename, callback) {
-    const csv_path =
-        "/api/model/predictions?directory=" +
-        model_name +
-        "&filename=" +
-        prediction_filename;
+export function fetch_csv_data(model_name, callback) {
+    const csv_path = "/api/" + model_name + "/predictions";
     fetch(csv_path)
-        .then(res => res.text())
+        .then(res => res.json())
         .then(predictions => {
-            render_predictions(predictions, callback);
+            fetch("/api/Sint-Maarten-2017")
+                .then(res => res.json())
+                .then(geoData => {
+                    predictions = parse_predictions(predictions, geoData);
+                    callback(predictions);
+                });
         });
 }
 
-function render_predictions(predictions, callback) {
-    fetch("/api/dataset?name=Sint-Maarten-2017&filename=coordinates.geojson")
-        .then(res => res.json())
-        .then(geoData => {
+function parse_predictions(predictions, geoData) {
+    let parsed_predictions = {
+        validation: [[]],
+        test: [[]],
+        predict: [[]],
+    };
+    Object.keys(predictions).forEach(split => {
+        predictions[split].forEach((epoch_predictions, epoch_index) => {
             const ssv = d3.dsvFormat(" ");
-            predictions = ssv.parse(predictions);
-            predictions.pop();
-            predictions.forEach(function(d) {
+            epoch_predictions = ssv.parse(epoch_predictions);
+            epoch_predictions.pop();
+            epoch_predictions.forEach(function(d) {
                 d.object_id = parseInt(d.filename.replace(".png", ""));
                 d.label = parseFloat(d.label);
                 d.prediction = parseFloat(d.prediction);
@@ -48,11 +53,13 @@ function render_predictions(predictions, callback) {
                     d.address = get_address(feature);
                 }
             });
-            predictions = predictions.sort((a, b) => {
+            epoch_predictions = epoch_predictions.sort((a, b) => {
                 return b.prediction - a.prediction;
             });
-            callback(predictions);
+            parsed_predictions[split][epoch_index] = epoch_predictions;
         });
+    });
+    return parsed_predictions;
 }
 
 function get_feature(gdata, object_id) {

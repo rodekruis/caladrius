@@ -1,4 +1,5 @@
 import * as React from "react";
+import { EpochSelector } from "./EpochSelector";
 import { ScatterPlot } from "../scatter-plot/ScatterPlot";
 import { ImageViewer } from "../datapoint-viewer/ImageViewer";
 import { Scoreboard } from "../scoreboard/Scoreboard";
@@ -11,8 +12,21 @@ export class Dashboard extends React.Component {
         this.state = {
             damage_boundary_a: 0.3,
             damage_boundary_b: 0.7,
+            selected_dataset_split: "test",
+            epoch: this.props.data["test"].length,
         };
     }
+
+    set_dataset_split = split => {
+        this.setState({
+            selected_dataset_split: split,
+            epoch: this.props.data[split].length,
+        });
+    };
+
+    set_epoch = epoch => {
+        this.setState({ epoch: epoch });
+    };
 
     drag_threshold(key) {
         return value => {
@@ -31,6 +45,47 @@ export class Dashboard extends React.Component {
             <section>
                 <section className="section">
                     <div className="tile is-ancestor is-vertical">
+                        <div className="tabs is-fullwidth is-toggle">
+                            <ul>
+                                <li
+                                    className={
+                                        this.state.selected_dataset_split ===
+                                        "validation"
+                                            ? "is-active"
+                                            : ""
+                                    }
+                                    onClick={() =>
+                                        this.set_dataset_split("validation")
+                                    }
+                                    title="Click to view validation set"
+                                >
+                                    <a href="/#">Validation Set</a>
+                                </li>
+                                <li
+                                    className={
+                                        this.state.selected_dataset_split ===
+                                        "test"
+                                            ? "is-active"
+                                            : ""
+                                    }
+                                    onClick={() =>
+                                        this.set_dataset_split("test")
+                                    }
+                                    title="Click to view test set"
+                                >
+                                    <a href="/#">Test Set</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <EpochSelector
+                            epoch={this.state.epoch}
+                            number_of_epochs={
+                                this.props.data[
+                                    this.state.selected_dataset_split
+                                ].length
+                            }
+                            set_epoch={this.set_epoch}
+                        />
                         <div className="tile">
                             <div className="tile is-parent is-6">
                                 <article className="tile is-child">
@@ -42,7 +97,12 @@ export class Dashboard extends React.Component {
                                         onDragB={this.drag_threshold(
                                             "damage_boundary_b"
                                         )}
-                                        data={this.props.data}
+                                        data={
+                                            this.props.data[
+                                                this.state
+                                                    .selected_dataset_split
+                                            ][this.state.epoch - 1]
+                                        }
                                         selected_datum={
                                             this.props.selected_datum
                                         }
@@ -67,7 +127,12 @@ export class Dashboard extends React.Component {
                                         selected_datum={
                                             this.props.selected_datum
                                         }
-                                        data={this.props.data}
+                                        data={
+                                            this.props.data[
+                                                this.state
+                                                    .selected_dataset_split
+                                            ][this.state.epoch - 1]
+                                        }
                                         damage_boundary_a={
                                             this.state.damage_boundary_a
                                         }

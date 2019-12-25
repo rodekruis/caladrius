@@ -57,14 +57,82 @@ class ModelManager {
         });
     }
 
-    get_predictions(model_directory, filename) {
-        const prediction_file_path = path.join(
+    read_predictions(prediction_file_path, split, epoch) {
+        return new Promise((resolve, reject) => {
+            if (split === "train") {
+                resolve(null);
+            } else {
+                fs.exists(prediction_file_path, exists => {
+                    if (exists) {
+                        fs.readFile(
+                            prediction_file_path,
+                            "utf8",
+                            (error, prediction_file_raw) => {
+                                if (error) resolve(null);
+                                resolve({
+                                    split: split,
+                                    epoch: epoch,
+                                    predictions: prediction_file_raw,
+                                });
+                            }
+                        );
+                    } else {
+                        resolve(null);
+                    }
+                });
+            }
+        });
+    }
+
+    get_predictions(model_name) {
+        const predictions_directory = path.join(
             Config.MODEL_DIRECTORY,
-            model_directory,
-            "predictions",
-            filename
+            model_name,
+            Config.PREDICTIONS_DIRECTORY
         );
-        return fs.promises.readFile(prediction_file_path, "utf8");
+        return new Promise((resolve, reject) => {
+            fs.readdir(predictions_directory, (error, prediction_filenames) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    const promises = [];
+                    prediction_filenames.forEach(prediction_filename => {
+                        const prediction_file_path = path.join(
+                            predictions_directory,
+                            prediction_filename
+                        );
+                        const prediction_filename_parts = prediction_filename.split(
+                            "_"
+                        );
+                        const split = prediction_filename_parts[2];
+                        const epoch = parseInt(prediction_filename_parts[4]);
+                        promises.push(
+                            this.read_predictions(
+                                prediction_file_path,
+                                split,
+                                epoch
+                            )
+                        );
+                    });
+                    Promise.all(promises).then(predictions => {
+                        predictions = predictions.filter(
+                            prediction => prediction
+                        );
+                        let prediction_object = {
+                            validation: [],
+                            test: [],
+                            predict: [],
+                        };
+                        predictions.forEach(prediction => {
+                            prediction_object[prediction["split"]][
+                                prediction["epoch"] - 1
+                            ] = prediction["predictions"];
+                        });
+                        resolve(prediction_object);
+                    });
+                }
+            });
+        });
     }
 }
 
