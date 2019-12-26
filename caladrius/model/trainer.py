@@ -86,7 +86,7 @@ class QuasiSiameseNetwork(object):
         return average_label
 
     def create_prediction_file(self, phase, epoch):
-        prediction_file_name = "{}_{}_epoch_{:03d}_{}_predictions.txt".format(
+        prediction_file_name = "{}-split_{}-epoch_{:03d}-model_{}-predictions.txt".format(
             self.run_name, phase, epoch, self.model_type
         )
         prediction_file_path = os.path.join(self.prediction_path, prediction_file_name)
@@ -95,7 +95,7 @@ class QuasiSiameseNetwork(object):
     def get_outputs_preds(
         self, image1, image2, random_target_shape, average_target_size
     ):
-        if self.model_type == "quasi-siamese":
+        if self.model_type == "siamese":
             outputs = self.model(image1, image2).squeeze()
         elif self.model_type == "random":
             output_shape = (
@@ -318,7 +318,7 @@ class QuasiSiameseNetwork(object):
         Returns:
             run_report (dict): configuration parameters for testing with testing statistics
         """
-        is_statistical_model = self.model_type != "quasi-siamese"
+        is_statistical_model = self.model_type != "siamese"
         if is_statistical_model:
             train_set, _ = datasets.load("train")
         else:
@@ -372,7 +372,7 @@ class QuasiSiameseNetwork(object):
         Args:
             datasets: DataSet object with datasets loaded
         """
-        is_statistical_model = self.model_type != "quasi-siamese"
+        is_statistical_model = self.model_type != "siamese"
         if is_statistical_model:
             train_set, _ = datasets.load("train")
         else:
