@@ -81,7 +81,9 @@ export class EpochSelector extends React.Component {
                             aria-label={"Epoch " + this.props.epoch}
                             aria-current="page"
                         >
-                            {this.props.epoch_playing ? ">" : this.props.epoch}
+                            {this.props.epoch_playing
+                                ? "\u00bb"
+                                : this.props.epoch}
                         </a>
                     </li>
                     <li
