@@ -98,6 +98,7 @@ def get_pretrained_iv3_transforms(set_name):
         "train": train_transform,
         "validation": test_transform,
         "test": test_transform,
+        "predict": test_transform,
     }[set_name]
 
 
