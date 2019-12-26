@@ -33,30 +33,32 @@ export function fetch_csv_data(model_name, callback) {
 
 function parse_predictions(predictions, geoData) {
     let parsed_predictions = {
-        validation: [[]],
-        test: [[]],
-        inference: [[]],
+        validation: [],
+        test: [],
+        inference: [],
     };
     Object.keys(predictions).forEach(split => {
         predictions[split].forEach((epoch_predictions, epoch_index) => {
-            const ssv = d3.dsvFormat(" ");
-            epoch_predictions = ssv.parse(epoch_predictions);
-            epoch_predictions.pop();
-            epoch_predictions.forEach(function(d) {
-                d.object_id = parseInt(d.filename.replace(".png", ""));
-                d.label = parseFloat(d.label);
-                d.prediction = parseFloat(d.prediction);
-                // feature properties
-                const feature = get_feature(geoData, d.object_id);
-                if (feature) {
-                    d.coordinates = get_coordinates(feature);
-                    d.address = get_address(feature);
-                }
-            });
-            epoch_predictions = epoch_predictions.sort((a, b) => {
-                return b.prediction - a.prediction;
-            });
-            parsed_predictions[split][epoch_index] = epoch_predictions;
+            if (epoch_predictions) {
+                const ssv = d3.dsvFormat(" ");
+                epoch_predictions = ssv.parse(epoch_predictions);
+                epoch_predictions.pop();
+                epoch_predictions.forEach(function(d) {
+                    d.object_id = parseInt(d.filename.replace(".png", ""));
+                    d.label = parseFloat(d.label);
+                    d.prediction = parseFloat(d.prediction);
+                    // feature properties
+                    const feature = get_feature(geoData, d.object_id);
+                    if (feature) {
+                        d.coordinates = get_coordinates(feature);
+                        d.address = get_address(feature);
+                    }
+                });
+                epoch_predictions = epoch_predictions.sort((a, b) => {
+                    return b.prediction - a.prediction;
+                });
+                parsed_predictions[split][epoch_index] = epoch_predictions;
+            }
         });
     });
     return parsed_predictions;

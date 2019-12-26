@@ -1,6 +1,34 @@
 import * as React from "react";
 
 export class EpochSelector extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            timeout_id: null,
+            playing: false,
+        };
+    }
+
+    play = () => {
+        const that = this;
+        this.setState({
+            playing: true,
+            timeout_id: setTimeout(() => {
+                clearTimeout(that.state.timeout_id);
+                if (that.props.epoch < that.props.number_of_epochs) {
+                    that.props.set_epoch(that.props.epoch + 1);
+                    that.play();
+                }
+            }, 200),
+        });
+    };
+
+    pause = () => {
+        this.setState({ playing: false }, () =>
+            clearTimeout(this.state.timeout_id)
+        );
+    };
+
     render() {
         return (
             <nav
@@ -11,9 +39,10 @@ export class EpochSelector extends React.Component {
                 <a
                     href="#/"
                     className="pagination-previous"
-                    onClick={() =>
-                        this.props.set_epoch(Math.max(this.props.epoch - 1, 1))
-                    }
+                    onClick={() => {
+                        this.pause();
+                        this.props.set_epoch(Math.max(this.props.epoch - 1, 1));
+                    }}
                     disabled={this.props.epoch === 1}
                 >
                     Previous Epoch
@@ -21,14 +50,15 @@ export class EpochSelector extends React.Component {
                 <a
                     href="#/"
                     className="pagination-next"
-                    onClick={() =>
+                    onClick={() => {
+                        this.pause();
                         this.props.set_epoch(
                             Math.min(
                                 this.props.epoch + 1,
                                 this.props.number_of_epochs
                             )
-                        )
-                    }
+                        );
+                    }}
                     disabled={this.props.epoch === this.props.number_of_epochs}
                 >
                     Next Epoch
@@ -36,7 +66,10 @@ export class EpochSelector extends React.Component {
                 <ul className="pagination-list">
                     <li
                         className={this.props.epoch <= 2 ? "is-hidden" : ""}
-                        onClick={() => this.props.set_epoch(1)}
+                        onClick={() => {
+                            this.pause();
+                            this.props.set_epoch(1);
+                        }}
                     >
                         <a
                             href="#/"
@@ -51,9 +84,10 @@ export class EpochSelector extends React.Component {
                     </li>
                     <li
                         className={this.props.epoch === 1 ? "is-hidden" : ""}
-                        onClick={() =>
-                            this.props.set_epoch(this.props.epoch - 1)
-                        }
+                        onClick={() => {
+                            this.pause();
+                            this.props.set_epoch(this.props.epoch - 1);
+                        }}
                     >
                         <a
                             href="#/"
@@ -67,6 +101,9 @@ export class EpochSelector extends React.Component {
                         <a
                             href="#/"
                             className="pagination-link is-current"
+                            onClick={
+                                this.state.playing ? this.pause : this.play
+                            }
                             aria-label={"Epoch " + this.props.epoch}
                             aria-current="page"
                         >
@@ -79,9 +116,10 @@ export class EpochSelector extends React.Component {
                                 ? "is-hidden"
                                 : ""
                         }
-                        onClick={() =>
-                            this.props.set_epoch(this.props.epoch + 1)
-                        }
+                        onClick={() => {
+                            this.pause();
+                            this.props.set_epoch(this.props.epoch + 1);
+                        }}
                     >
                         <a
                             href="#/"
@@ -106,9 +144,10 @@ export class EpochSelector extends React.Component {
                                 ? "is-hidden"
                                 : ""
                         }
-                        onClick={() =>
-                            this.props.set_epoch(this.props.number_of_epochs)
-                        }
+                        onClick={() => {
+                            this.pause();
+                            this.props.set_epoch(this.props.number_of_epochs);
+                        }}
                     >
                         <a
                             href="#/"

@@ -46,7 +46,7 @@ export class AddressList extends React.Component {
         const address_rows = this.props.data[
             this.state.selected_dataset_split
         ].slice(-1)[0];
-        return address_rows.length ? (
+        return (address_rows || []).length ? (
             <table className="table is-hoverable is-fullwidth">
                 <thead>
                     <tr>

@@ -21,45 +21,37 @@ const INTERACTION_ZOOM_LEVEL = 18;
 let DEFAULT_CENTER_COORDINATES = [18.035, -63.07];
 
 export class Map extends React.Component {
-    constructor(props) {
-        super(props);
-        this.get_building_shape_array = this.get_building_shape_array.bind(
-            this
-        );
-        this.get_admin_regions = this.get_admin_regions.bind(this);
-    }
-
     get_building_shape_array(key, label) {
-        let building_shape_array = this.props.data[key]
-            .slice(-1)[0]
-            .map(datum => {
-                const colour = get_prediction_colour(
-                    datum.prediction,
-                    this.props.damage_boundary_a,
-                    this.props.damage_boundary_b
-                );
+        let building_shape_array = (
+            this.props.data[key].slice(-1)[0] || []
+        ).map(datum => {
+            const colour = get_prediction_colour(
+                datum.prediction,
+                this.props.damage_boundary_a,
+                this.props.damage_boundary_b
+            );
 
-                let fill_opacity = 1;
-                let dash_array = 0;
-                if (
-                    this.props.selected_datum &&
-                    this.props.selected_datum.object_id === datum.object_id
-                ) {
-                    fill_opacity = 0.2;
-                    dash_array = 4;
-                }
-                return (
-                    <Polygon
-                        color={colour}
-                        weight="2"
-                        positions={datum.coordinates}
-                        key={datum.object_id}
-                        fillOpacity={fill_opacity}
-                        dashArray={dash_array}
-                        onClick={() => this.props.set_datum(datum)}
-                    />
-                );
-            });
+            let fill_opacity = 1;
+            let dash_array = 0;
+            if (
+                this.props.selected_datum &&
+                this.props.selected_datum.object_id === datum.object_id
+            ) {
+                fill_opacity = 0.2;
+                dash_array = 4;
+            }
+            return (
+                <Polygon
+                    color={colour}
+                    weight="2"
+                    positions={datum.coordinates}
+                    key={datum.object_id}
+                    fillOpacity={fill_opacity}
+                    dashArray={dash_array}
+                    onClick={() => this.props.set_datum(datum)}
+                />
+            );
+        });
         return (
             <LayersControl.Overlay name={label} checked={true}>
                 <LayerGroup>{building_shape_array}</LayerGroup>
