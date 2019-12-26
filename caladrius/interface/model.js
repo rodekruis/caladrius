@@ -101,11 +101,9 @@ class ModelManager {
                             predictions_directory,
                             prediction_filename
                         );
-                        console.log(prediction_filename);
                         const prediction_filename_parts = prediction_filename.split(
                             "-"
                         );
-                        console.log(prediction_filename_parts);
                         const split = prediction_filename_parts[1].split(
                             "_"
                         )[1];
