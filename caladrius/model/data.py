@@ -9,7 +9,7 @@ class CaladriusDataset(Dataset):
     def __init__(self, directory, set_name, transforms=None, max_data_points=None):
         self.set_name = set_name
         self.directory = os.path.join(directory, set_name)
-        if self.set_name == "predict":
+        if self.set_name == "inference":
             self.datapoints = [
                 filename
                 for filename in tqdm(os.listdir(os.path.join(self.directory, "before")))
@@ -35,13 +35,13 @@ class CaladriusDataset(Dataset):
 
     def load_datapoint(self, idx):
         line = self.datapoints[idx]
-        if self.set_name == "predict":
+        if self.set_name == "inference":
             filename = line
         else:
             filename, damage = line.split(" ")
         before_image = Image.open(os.path.join(self.directory, "before", filename))
         after_image = Image.open(os.path.join(self.directory, "after", filename))
-        if self.set_name == "predict":
+        if self.set_name == "inference":
             datapoint = [filename, before_image, after_image]
         else:
             datapoint = [filename, before_image, after_image, float(damage)]
@@ -58,7 +58,7 @@ class Datasets(object):
         self.max_data_points = args.max_data_points
 
     def load(self, set_name):
-        assert set_name in {"train", "validation", "test", "predict"}
+        assert set_name in {"train", "validation", "test", "inference"}
         dataset = CaladriusDataset(
             self.data_path,
             set_name,
