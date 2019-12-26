@@ -9,7 +9,7 @@ export class EpochSelector extends React.Component {
                 aria-label="pagination"
             >
                 <a
-                    href="/#"
+                    href="#/"
                     className="pagination-previous"
                     onClick={() =>
                         this.props.set_epoch(Math.max(this.props.epoch - 1, 1))
@@ -19,7 +19,7 @@ export class EpochSelector extends React.Component {
                     Previous Epoch
                 </a>
                 <a
-                    href="/#"
+                    href="#/"
                     className="pagination-next"
                     onClick={() =>
                         this.props.set_epoch(
@@ -39,7 +39,7 @@ export class EpochSelector extends React.Component {
                         onClick={() => this.props.set_epoch(1)}
                     >
                         <a
-                            href="/#"
+                            href="#/"
                             className="pagination-link"
                             aria-label="Goto epoch 1"
                         >
@@ -56,7 +56,7 @@ export class EpochSelector extends React.Component {
                         }
                     >
                         <a
-                            href="/#"
+                            href="#/"
                             className="pagination-link"
                             aria-label={"Goto epoch " + (this.props.epoch - 1)}
                         >
@@ -65,7 +65,7 @@ export class EpochSelector extends React.Component {
                     </li>
                     <li>
                         <a
-                            href="/#"
+                            href="#/"
                             className="pagination-link is-current"
                             aria-label={"Epoch " + this.props.epoch}
                             aria-current="page"
@@ -84,7 +84,7 @@ export class EpochSelector extends React.Component {
                         }
                     >
                         <a
-                            href="/#"
+                            href="#/"
                             className="pagination-link"
                             aria-label={"Goto epoch " + (this.props.epoch + 1)}
                         >
@@ -111,7 +111,7 @@ export class EpochSelector extends React.Component {
                         }
                     >
                         <a
-                            href="/#"
+                            href="#/"
                             className="pagination-link"
                             aria-label={
                                 "Goto epoch " + this.props.number_of_epochs

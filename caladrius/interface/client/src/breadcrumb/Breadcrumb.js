@@ -5,7 +5,7 @@ export class Breadcrumb extends React.Component {
     loading_crumb() {
         return (
             <li>
-                <a href="/#">Loading...</a>
+                <a href="#/">Loading...</a>
             </li>
         );
     }
@@ -14,7 +14,7 @@ export class Breadcrumb extends React.Component {
         return (
             <li>
                 <a
-                    href="/#"
+                    href="#/"
                     onClick={this.props.unselect_model}
                     title="Click to view available models"
                 >
@@ -28,7 +28,7 @@ export class Breadcrumb extends React.Component {
         return this.props.selected_model ? (
             <li>
                 <a
-                    href="/#"
+                    href="#/"
                     onClick={this.props.unselect_model}
                     title="Click to change model"
                 >
@@ -38,7 +38,7 @@ export class Breadcrumb extends React.Component {
         ) : (
             <li>
                 <a
-                    href="/#"
+                    href="#/"
                     onClick={this.props.unselect_model}
                     title="Click on a row in the model list table"
                 >
@@ -52,7 +52,7 @@ export class Breadcrumb extends React.Component {
         return this.props.selected_model && this.props.selected_datum ? (
             <li>
                 <a
-                    href="/#"
+                    href="#/"
                     onClick={() =>
                         this.props.set_datum(this.props.selected_datum)
                     }
