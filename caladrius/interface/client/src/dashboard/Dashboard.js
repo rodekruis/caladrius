@@ -45,7 +45,7 @@ export class Dashboard extends React.Component {
             <section>
                 <section className="section">
                     <div className="tile is-ancestor is-vertical">
-                        <div className="tabs is-fullwidth is-toggle">
+                        <div className="tabs is-fullwidth is-boxed">
                             <ul>
                                 <li
                                     className={

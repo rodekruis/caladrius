@@ -101,11 +101,17 @@ class ModelManager {
                             predictions_directory,
                             prediction_filename
                         );
+                        console.log(prediction_filename);
                         const prediction_filename_parts = prediction_filename.split(
-                            "_"
+                            "-"
                         );
-                        const split = prediction_filename_parts[2];
-                        const epoch = parseInt(prediction_filename_parts[4]);
+                        console.log(prediction_filename_parts);
+                        const split = prediction_filename_parts[1].split(
+                            "_"
+                        )[1];
+                        const epoch = parseInt(
+                            prediction_filename_parts[2].split("_")[1]
+                        );
                         promises.push(
                             this.read_predictions(
                                 prediction_file_path,

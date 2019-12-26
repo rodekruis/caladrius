@@ -194,7 +194,7 @@ def configuration():
         arg_vars["torch_seed"] = torch.initial_seed()
 
     if args.max_data_points is not None:
-        arg_vars["run_name"] = "{}-max-data-points-{}".format(
+        arg_vars["run_name"] = "{}_max_data_points_{}".format(
             arg_vars["run_name"], arg_vars["max_data_points"]
         )
 
