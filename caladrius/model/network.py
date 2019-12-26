@@ -58,7 +58,7 @@ def get_pretrained_iv3_transforms(set_name):
     """
     Compose a series of image transformations to be performed on the input data
     Args:
-        set_name (str): the dataset you want the transformations for. Can be "train","validation", and/or "test"
+        set_name (str): the dataset you want the transformations for. Can be "train", "validation", "test", "inference"
 
     Returns:
         Composition of transformations for given set name

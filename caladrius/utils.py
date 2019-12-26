@@ -152,6 +152,12 @@ def configuration():
         help="test the model on the test set instead of training",
     )
     parser.add_argument(
+        "--inference",
+        action="store_true",
+        default=False,
+        help="test and use the model on the inference set instead of training",
+    )
+    parser.add_argument(
         "--max-data-points",
         default=None,
         type=int,

@@ -45,7 +45,7 @@ class QuasiSiameseNetwork(object):
             logger.info("Using {} GPUs".format(torch.cuda.device_count()))
             self.model = torch.nn.DataParallel(self.model)
 
-        for s in ("train", "validation", "test"):
+        for s in ("train", "validation", "test", "inference"):
             self.transforms[s] = get_pretrained_iv3_transforms(s)
 
         logger.debug("Num params: {}".format(len([_ for _ in self.model.parameters()])))
@@ -58,20 +58,16 @@ class QuasiSiameseNetwork(object):
         # creates tracking file for tensorboard
         self.writer = SummaryWriter(args.checkpoint_path)
 
-    def get_random_output_values(self, labels):
-        if self.output_type == "regression":
-            output_shape = labels.shape
-        elif self.output_type == "classification":
-            output_shape = (labels.shape[0], self.n_classes)
+    def get_random_output_values(self, output_shape):
         return torch.rand(output_shape)
 
-    def get_average_output_values(self, labels, average_label):
+    def get_average_output_values(self, output_size, average_label):
         if self.output_type == "regression":
-            outputs = torch.ones(labels.shape) * average_label
+            outputs = torch.ones(output_size) * average_label
         elif self.output_type == "classification":
             average_label_tensor = torch.zeros(self.n_classes)
             average_label_tensor[average_label] = 1
-            outputs = average_label_tensor.repeat(labels.shape[0], 1)
+            outputs = average_label_tensor.repeat(output_size[0], 1)
         return outputs
 
     def run_epoch(
@@ -147,9 +143,16 @@ class QuasiSiameseNetwork(object):
                 if model_type == "quasi-siamese":
                     outputs = self.model(image1, image2).squeeze()
                 elif model_type == "random":
-                    outputs = self.get_random_output_values(labels)
+                    output_shape = (
+                        labels.shape
+                        if self.output_type == "regression"
+                        else (labels.shape[0], self.n_classes)
+                    )
+                    outputs = self.get_random_output_values(output_shape)
                 elif model_type == "average":
-                    outputs = self.get_average_output_values(labels, average_label)
+                    outputs = self.get_average_output_values(
+                        labels.shape, average_label
+                    )
                 outputs = outputs.to(device)
                 loss = self.criterion(outputs, labels)
 
@@ -378,3 +381,73 @@ class QuasiSiameseNetwork(object):
             )
         )
         return run_report
+
+    def inference(self, datasets, device, model_path, prediction_path, model_type):
+        """
+        Uses the model for inference
+        Args:
+            datasets: DataSet object with datasets loaded
+            device (str): which device it is being run on. 'cpu' or 'cuda'
+            model_path (str): path to retrieve the saved model weights from
+            predictions_path (str): path to write predictions to
+            model_type: type of model
+        """
+        is_statistical_model = model_type != "quasi-siamese"
+        if is_statistical_model:
+            train_set, _ = datasets.load("train")
+        else:
+            self.model.load_state_dict(torch.load(model_path, map_location=device))
+        inference_set, inference_loader = datasets.load("inference")
+        start_time = time.time()
+
+        self.model = self.model.to(device)
+
+        self.model.eval()
+
+        prediction_file_name = "{}_{}_epoch_{:03d}_{}_predictions.txt".format(
+            self.run_name, "inference", 1, model_type
+        )
+        prediction_file_path = os.path.join(prediction_path, prediction_file_name)
+        prediction_file = open(prediction_file_path, "w+")
+        prediction_file.write("filename prediction\n")
+
+        if model_type == "average":
+            sum_of_labels = 0
+            for _, _, _, label in train_set:
+                sum_of_labels = sum_of_labels + label
+            number_of_labels = len(train_set)
+            average_label = sum_of_labels / number_of_labels
+            if self.output_type == "classification":
+                average_label = round(average_label)
+
+        for idx, (filename, image1, image2) in enumerate(inference_loader, 1):
+            image1 = image1.to(device)
+            image2 = image2.to(device)
+
+            if model_type == "quasi-siamese":
+                outputs = self.model(image1, image2).squeeze()
+            elif model_type == "random":
+                outputs = self.get_random_output_values(image1.shape[0])
+            elif model_type == "average":
+                outputs = self.get_average_output_values(image1.shape[0], average_label)
+            outputs = outputs.to(device)
+
+            if self.output_type == "classification":
+                _, preds = torch.max(outputs, 1)
+            else:
+                preds = outputs.clamp(0, 1)
+
+            prediction_file.writelines(
+                [
+                    "{} {}\n".format(*line)
+                    for line in zip(filename, preds.view(-1).tolist())
+                ]
+            )
+
+        time_elapsed = time.time() - start_time
+
+        logger.info(
+            "Inference complete in {:.0f}m {:.0f}s".format(
+                time_elapsed // 60, time_elapsed % 60
+            )
+        )

@@ -29,7 +29,7 @@ def main():
 
     qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
-    if not args.test and args.model_type == "quasi-siamese":
+    if not (args.test or args.inference) and args.model_type == "quasi-siamese":
         run_report = qsn.train(
             run_report,
             datasets,
@@ -47,6 +47,14 @@ def main():
         args.prediction_path,
         args.model_type,
     )
+    if args.inference:
+        qsn.inference(
+            datasets,
+            args.device,
+            args.model_path,
+            args.prediction_path,
+            args.model_type,
+        )
 
     save_run_report(run_report)
     logger.info("END")

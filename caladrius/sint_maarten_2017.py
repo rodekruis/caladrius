@@ -301,7 +301,7 @@ def splitDatapoints(filepath):
     return split_mappings
 
 
-def createPredictDataset():
+def createInferenceDataset():
     temp_before_directory = os.path.join(TEMP_DATA_FOLDER, "before")
     temp_after_directory = os.path.join(TEMP_DATA_FOLDER, "after")
     images_in_before_directory = [
@@ -314,21 +314,21 @@ def createPredictDataset():
         set(images_in_before_directory) & set(images_in_after_directory)
     )
 
-    predict_directory = os.path.join(TARGET_DATA_FOLDER, "predict")
-    os.makedirs(predict_directory, exist_ok=True)
+    inference_directory = os.path.join(TARGET_DATA_FOLDER, "inference")
+    os.makedirs(inference_directory, exist_ok=True)
 
-    predict_before_directory = os.path.join(predict_directory, "before")
-    os.makedirs(predict_before_directory, exist_ok=True)
+    inference_before_directory = os.path.join(inference_directory, "before")
+    os.makedirs(inference_before_directory, exist_ok=True)
 
-    predict_after_directory = os.path.join(predict_directory, "after")
-    os.makedirs(predict_after_directory, exist_ok=True)
+    inference_after_directory = os.path.join(inference_directory, "after")
+    os.makedirs(inference_after_directory, exist_ok=True)
 
     for datapoint_name in intersection:
         before_image_src = os.path.join(temp_before_directory, datapoint_name)
         after_image_src = os.path.join(temp_after_directory, datapoint_name)
 
-        before_image_dst = os.path.join(predict_before_directory, datapoint_name)
-        after_image_dst = os.path.join(predict_after_directory, datapoint_name)
+        before_image_dst = os.path.join(inference_before_directory, datapoint_name)
+        after_image_dst = os.path.join(inference_after_directory, datapoint_name)
 
         move(before_image_src, before_image_dst)
         move(after_image_src, after_image_dst)
@@ -489,7 +489,7 @@ def main():
         logger.info("Creating training dataset.")
         createDatapoints(df)
         splitDatapoints(LABELS_FILE)
-        createPredictDataset()
+        createInferenceDataset()
     else:
         logger.info("Skipping creation of training dataset.")
 
