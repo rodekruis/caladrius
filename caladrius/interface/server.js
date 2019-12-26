@@ -34,7 +34,10 @@ class Server {
     }
 
     get_model_predictions(req, res) {
-        ModelManager.get_predictions(req.params.model)
+        ModelManager.get_predictions(
+            req.params.model,
+            req.params.epoch ? parseInt(req.params.epoch) : req.params.epoch
+        )
             .then(file => res.send(file))
             .catch(error => {
                 res.status(500).send(error);

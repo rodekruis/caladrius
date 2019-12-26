@@ -17,26 +17,31 @@ export function fetch_admin_regions(callback) {
         });
 }
 
-export function fetch_csv_data(model_name, callback) {
-    const csv_path = "/api/" + model_name + "/predictions";
+export function fetch_csv_data(
+    parsed_predictions,
+    model_name,
+    callback,
+    epoch
+) {
+    const csv_path =
+        "/api/" + model_name + "/predictions" + (epoch ? "/" + epoch : "");
     fetch(csv_path)
         .then(res => res.json())
         .then(predictions => {
             fetch("/api/Sint-Maarten-2017")
                 .then(res => res.json())
                 .then(geoData => {
-                    predictions = parse_predictions(predictions, geoData);
+                    predictions = parse_predictions(
+                        parsed_predictions,
+                        predictions,
+                        geoData
+                    );
                     callback(predictions);
                 });
         });
 }
 
-function parse_predictions(predictions, geoData) {
-    let parsed_predictions = {
-        validation: [],
-        test: [],
-        inference: [],
-    };
+function parse_predictions(parsed_predictions, predictions, geoData) {
     Object.keys(predictions).forEach(split => {
         predictions[split].forEach((epoch_predictions, epoch_index) => {
             if (epoch_predictions) {

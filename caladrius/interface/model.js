@@ -84,7 +84,45 @@ class ModelManager {
         });
     }
 
-    get_predictions(model_name) {
+    parse_prediction_file_handler(promises, predictions_directory, epoch) {
+        return (prediction_filename, index, array) => {
+            const prediction_file_path = path.join(
+                predictions_directory,
+                prediction_filename
+            );
+            const prediction_filename_parts = prediction_filename.split("-");
+            const filename_dataset_split = prediction_filename_parts[1].split(
+                "_"
+            )[1];
+            const filename_epoch = parseInt(
+                prediction_filename_parts[2].split("_")[1]
+            );
+            if (
+                (epoch === undefined && index === array.length - 1) ||
+                (epoch && epoch === filename_epoch)
+            ) {
+                promises.push(
+                    this.read_predictions(
+                        prediction_file_path,
+                        filename_dataset_split,
+                        filename_epoch
+                    )
+                );
+            }
+        };
+    }
+
+    dataset_split_filter(split) {
+        return prediction_filename => {
+            const prediction_filename_parts = prediction_filename.split("-");
+            const filename_dataset_split = prediction_filename_parts[1].split(
+                "_"
+            )[1];
+            return filename_dataset_split === split;
+        };
+    }
+
+    get_predictions(model_name, epoch) {
         const predictions_directory = path.join(
             Config.MODEL_DIRECTORY,
             model_name,
@@ -96,28 +134,25 @@ class ModelManager {
                     reject(error);
                 } else {
                     const promises = [];
-                    prediction_filenames.forEach(prediction_filename => {
-                        const prediction_file_path = path.join(
-                            predictions_directory,
-                            prediction_filename
-                        );
-                        const prediction_filename_parts = prediction_filename.split(
-                            "-"
-                        );
-                        const split = prediction_filename_parts[1].split(
-                            "_"
-                        )[1];
-                        const epoch = parseInt(
-                            prediction_filename_parts[2].split("_")[1]
-                        );
-                        promises.push(
-                            this.read_predictions(
-                                prediction_file_path,
-                                split,
+                    [
+                        prediction_filenames.filter(
+                            this.dataset_split_filter("validation")
+                        ),
+                        prediction_filenames.filter(
+                            this.dataset_split_filter("test")
+                        ),
+                        prediction_filenames.filter(
+                            this.dataset_split_filter("inference")
+                        ),
+                    ].forEach(dataset_split =>
+                        dataset_split.forEach(
+                            this.parse_prediction_file_handler(
+                                promises,
+                                predictions_directory,
                                 epoch
                             )
-                        );
-                    });
+                        )
+                    );
                     Promise.all(promises).then(predictions => {
                         predictions = predictions.filter(
                             prediction => prediction

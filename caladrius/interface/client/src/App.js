@@ -109,16 +109,43 @@ export class App extends React.Component {
             },
             () => {
                 const model_name = model.model_directory;
-                fetch_csv_data(model_name, data => {
-                    this.setState({
-                        selected_model: model,
-                        selected_datum: null,
-                        data: data,
-                        loading: false,
-                    });
-                });
+                fetch_csv_data(
+                    {
+                        validation: [],
+                        test: [],
+                        inference: [],
+                    },
+                    model_name,
+                    data => {
+                        this.setState({
+                            selected_model: model,
+                            selected_datum: null,
+                            data: data,
+                            loading: false,
+                        });
+                    }
+                );
             }
         );
+    };
+
+    fetch_epoch_predictions = (epoch, callback) => {
+        this.setState({ loading: false }, () => {
+            fetch_csv_data(
+                this.state.data,
+                this.state.selected_model.model_directory,
+                data => {
+                    this.setState(
+                        {
+                            data: data,
+                            loading: false,
+                        },
+                        callback
+                    );
+                },
+                epoch
+            );
+        });
     };
 
     set_datum = datum => {
@@ -189,6 +216,7 @@ export class App extends React.Component {
                 set_datum={this.set_datum}
                 set_datum_priority={this.set_datum_priority}
                 get_datum_priority={this.state.get_datum_priority}
+                fetch_epoch_predictions={this.fetch_epoch_predictions}
             />
         );
     };

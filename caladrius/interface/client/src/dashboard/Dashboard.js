@@ -13,19 +13,64 @@ export class Dashboard extends React.Component {
             damage_boundary_a: 0.3,
             damage_boundary_b: 0.7,
             selected_dataset_split: "test",
+            number_of_epochs: this.props.data["test"].length,
             epoch: this.props.data["test"].length,
+            epoch_playing: false,
         };
     }
 
     set_dataset_split = split => {
-        this.setState({
-            selected_dataset_split: split,
-            epoch: this.props.data[split].length,
-        });
+        const waiting_time = this.state.epoch_playing ? 3000 : 0;
+        this.setState(
+            {
+                epoch_playing: false,
+            },
+            () => {
+                setTimeout(() => {
+                    this.setState({
+                        selected_dataset_split: split,
+                        number_of_epochs: this.props.data[split].length,
+                        epoch: this.props.data[split].length,
+                    });
+                }, waiting_time);
+            }
+        );
     };
 
-    set_epoch = epoch => {
-        this.setState({ epoch: epoch });
+    set_epoch = (epoch, callback) => {
+        if (this.props.data[this.state.selected_dataset_split][epoch - 1]) {
+            setTimeout(() => {
+                this.setState({ epoch: epoch }, callback);
+            }, 200);
+        } else {
+            this.props.fetch_epoch_predictions(epoch, () =>
+                this.setState({ epoch: epoch }, callback)
+            );
+        }
+    };
+
+    call_epoch = epoch => {
+        if (epoch > this.state.number_of_epochs) {
+            this.pause_epoch();
+        } else {
+            this.set_epoch(epoch, () => {
+                if (this.state.epoch_playing) {
+                    this.call_epoch(epoch + 1);
+                }
+            });
+        }
+    };
+
+    play_epoch = () => {
+        if (this.state.epoch < this.state.number_of_epochs) {
+            this.setState({ epoch_playing: true }, () =>
+                this.call_epoch(this.state.epoch + 1)
+            );
+        }
+    };
+
+    pause_epoch = () => {
+        this.setState({ epoch_playing: false });
     };
 
     drag_threshold(key) {
@@ -75,10 +120,11 @@ export class Dashboard extends React.Component {
         return (
             <EpochSelector
                 epoch={this.state.epoch}
-                number_of_epochs={
-                    this.props.data[this.state.selected_dataset_split].length
-                }
+                number_of_epochs={this.state.number_of_epochs}
                 set_epoch={this.set_epoch}
+                epoch_playing={this.state.epoch_playing}
+                play_epoch={this.play_epoch}
+                pause_epoch={this.pause_epoch}
             />
         );
     }

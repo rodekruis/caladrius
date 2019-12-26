@@ -57,7 +57,7 @@ app.use(express.static("../../data/Sint-Maarten-2017/inference"));
 app.get("/api/models", server.get_models);
 app.get("/api/datasets", server.get_datasets);
 
-app.get("/api/:model/predictions", server.get_model_predictions);
+app.get("/api/:model/predictions/:epoch?", server.get_model_predictions);
 
 app.get("/api/:dataset/:filename?", server.get_dataset_file);
 

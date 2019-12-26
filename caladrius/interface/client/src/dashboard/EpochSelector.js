@@ -1,34 +1,6 @@
 import * as React from "react";
 
 export class EpochSelector extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            timeout_id: null,
-            playing: false,
-        };
-    }
-
-    play = () => {
-        const that = this;
-        this.setState({
-            playing: true,
-            timeout_id: setTimeout(() => {
-                clearTimeout(that.state.timeout_id);
-                if (that.props.epoch < that.props.number_of_epochs) {
-                    that.props.set_epoch(that.props.epoch + 1);
-                    that.play();
-                }
-            }, 200),
-        });
-    };
-
-    pause = () => {
-        this.setState({ playing: false }, () =>
-            clearTimeout(this.state.timeout_id)
-        );
-    };
-
     render() {
         return (
             <nav
@@ -40,7 +12,7 @@ export class EpochSelector extends React.Component {
                     href="#/"
                     className="pagination-previous"
                     onClick={() => {
-                        this.pause();
+                        this.props.pause_epoch();
                         this.props.set_epoch(Math.max(this.props.epoch - 1, 1));
                     }}
                     disabled={this.props.epoch === 1}
@@ -51,7 +23,7 @@ export class EpochSelector extends React.Component {
                     href="#/"
                     className="pagination-next"
                     onClick={() => {
-                        this.pause();
+                        this.props.pause_epoch();
                         this.props.set_epoch(
                             Math.min(
                                 this.props.epoch + 1,
@@ -67,7 +39,7 @@ export class EpochSelector extends React.Component {
                     <li
                         className={this.props.epoch <= 2 ? "is-hidden" : ""}
                         onClick={() => {
-                            this.pause();
+                            this.props.pause_epoch();
                             this.props.set_epoch(1);
                         }}
                     >
@@ -85,7 +57,7 @@ export class EpochSelector extends React.Component {
                     <li
                         className={this.props.epoch === 1 ? "is-hidden" : ""}
                         onClick={() => {
-                            this.pause();
+                            this.props.pause_epoch();
                             this.props.set_epoch(this.props.epoch - 1);
                         }}
                     >
@@ -102,12 +74,14 @@ export class EpochSelector extends React.Component {
                             href="#/"
                             className="pagination-link is-current"
                             onClick={
-                                this.state.playing ? this.pause : this.play
+                                this.props.epoch_playing
+                                    ? this.props.pause_epoch
+                                    : this.props.play_epoch
                             }
                             aria-label={"Epoch " + this.props.epoch}
                             aria-current="page"
                         >
-                            {this.props.epoch}
+                            {this.props.epoch_playing ? ">" : this.props.epoch}
                         </a>
                     </li>
                     <li
@@ -117,7 +91,7 @@ export class EpochSelector extends React.Component {
                                 : ""
                         }
                         onClick={() => {
-                            this.pause();
+                            this.props.pause_epoch();
                             this.props.set_epoch(this.props.epoch + 1);
                         }}
                     >
@@ -145,7 +119,7 @@ export class EpochSelector extends React.Component {
                                 : ""
                         }
                         onClick={() => {
-                            this.pause();
+                            this.props.pause_epoch();
                             this.props.set_epoch(this.props.number_of_epochs);
                         }}
                     >
