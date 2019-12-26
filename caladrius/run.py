@@ -30,31 +30,12 @@ def main():
     qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
     if not (args.test or args.inference) and args.model_type == "quasi-siamese":
-        run_report = qsn.train(
-            run_report,
-            datasets,
-            args.number_of_epochs,
-            args.device,
-            args.model_path,
-            args.prediction_path,
-        )
-    logger.info("Evaluation on test dataset")
-    run_report = qsn.test(
-        run_report,
-        datasets,
-        args.device,
-        args.model_path,
-        args.prediction_path,
-        args.model_type,
-    )
+        run_report = qsn.train(run_report, datasets, args.number_of_epochs)
+    logger.info("Evaluating on test dataset")
+    run_report = qsn.test(run_report, datasets)
     if args.inference:
-        qsn.inference(
-            datasets,
-            args.device,
-            args.model_path,
-            args.prediction_path,
-            args.model_type,
-        )
+        logger.info("Inference started")
+        qsn.inference(datasets)
 
     save_run_report(run_report)
     logger.info("END")
