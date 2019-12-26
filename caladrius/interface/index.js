@@ -51,7 +51,7 @@ app.get("/api/logout", Auth.logout);
 // static
 app.use(express.static("../../data/Sint-Maarten-2017/validation"));
 app.use(express.static("../../data/Sint-Maarten-2017/test"));
-app.use(express.static("../../data/Sint-Maarten-2017/predict"));
+app.use(express.static("../../data/Sint-Maarten-2017/inference"));
 
 // backend API
 app.get("/api/models", server.get_models);

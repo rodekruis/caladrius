@@ -121,7 +121,7 @@ class ModelManager {
                         let prediction_object = {
                             validation: [],
                             test: [],
-                            predict: [],
+                            inference: [],
                         };
                         predictions.forEach(prediction => {
                             prediction_object[prediction["split"]][

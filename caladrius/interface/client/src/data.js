@@ -35,7 +35,7 @@ function parse_predictions(predictions, geoData) {
     let parsed_predictions = {
         validation: [[]],
         test: [[]],
-        predict: [[]],
+        inference: [[]],
     };
     Object.keys(predictions).forEach(split => {
         predictions[split].forEach((epoch_predictions, epoch_index) => {

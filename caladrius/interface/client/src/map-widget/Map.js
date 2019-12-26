@@ -139,7 +139,10 @@ export class Map extends React.Component {
                         "Validation Set"
                     )}
                     {this.get_building_shape_array("test", "Test Set")}
-                    {this.get_building_shape_array("predict", "Prediction Set")}
+                    {this.get_building_shape_array(
+                        "inference",
+                        "Inference Set"
+                    )}
                 </LayersControl>
             </LeafletMap>
         );
