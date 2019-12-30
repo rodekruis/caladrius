@@ -419,7 +419,7 @@ def create_version_file(version_number):
 def main():
     logging.basicConfig(
         handlers=[
-            logging.FileHandler(os.path.join(".", "run-dg.log")),
+            logging.FileHandler(os.path.join(".", "run.log")),
             logging.StreamHandler(sys.stdout),
         ],
         level=logging.DEBUG,
