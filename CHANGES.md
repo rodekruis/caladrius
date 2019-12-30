@@ -1,4 +1,4 @@
-0.6.4 (YYYY-MM-DD)
+0.6.4 (2019-12-30)
 ------------------
 - Show table of models instead of dropdown
 - Visualize val performance
