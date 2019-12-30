@@ -52,6 +52,11 @@ app.get("/api/logout", Auth.logout);
 app.use(express.static("../../data/Sint-Maarten-2017/validation"));
 app.use(express.static("../../data/Sint-Maarten-2017/test"));
 app.use(express.static("../../data/Sint-Maarten-2017/inference"));
+app.use(
+    express.static("../../data/Sint-Maarten-Digital-Globe-2017/validation")
+);
+app.use(express.static("../../data/Sint-Maarten-Digital-Globe-2017/test"));
+app.use(express.static("../../data/Sint-Maarten-Digital-Globe-2017/inference"));
 
 // backend API
 app.get("/api/models", server.get_models);

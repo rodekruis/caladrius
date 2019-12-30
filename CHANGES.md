@@ -1,9 +1,9 @@
 0.6.4 (YYYY-MM-DD)
 ------------------
-- [x] Show table of models instead of dropdown
-- [x] Visualize val performance
-- [x] Create predict dataset set if possible
-- [x] Create Caladrius Dataset using Digital Globe images for Sint Maarten
+- Show table of models instead of dropdown
+- Visualize val performance
+- Create predict dataset set if possible
+- Create Caladrius Dataset using Digital Globe images for Sint Maarten
 
 0.6.3 (2019-12-22)
 ------------------
