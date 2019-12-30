@@ -113,8 +113,8 @@ def configuration():
     parser.add_argument(
         "--model-type",
         type=str,
-        default="quasi-siamese",
-        choices=["quasi-siamese", "random", "average"],
+        default="siamese",
+        choices=["siamese", "random", "average"],
         help="type of model",
     )
 
@@ -150,6 +150,12 @@ def configuration():
         action="store_true",
         default=False,
         help="test the model on the test set instead of training",
+    )
+    parser.add_argument(
+        "--inference",
+        action="store_true",
+        default=False,
+        help="test and use the model on the inference set instead of training",
     )
     parser.add_argument(
         "--max-data-points",
@@ -188,7 +194,7 @@ def configuration():
         arg_vars["torch_seed"] = torch.initial_seed()
 
     if args.max_data_points is not None:
-        arg_vars["run_name"] = "{}-max_data_points_{}".format(
+        arg_vars["run_name"] = "{}_max_data_points_{}".format(
             arg_vars["run_name"], arg_vars["max_data_points"]
         )
 

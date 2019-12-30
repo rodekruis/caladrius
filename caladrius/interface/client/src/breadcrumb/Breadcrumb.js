@@ -5,7 +5,7 @@ export class Breadcrumb extends React.Component {
     loading_crumb() {
         return (
             <li>
-                <a href="/#">Loading...</a>
+                <a href="#/">Loading...</a>
             </li>
         );
     }
@@ -14,7 +14,7 @@ export class Breadcrumb extends React.Component {
         return (
             <li>
                 <a
-                    href="/#"
+                    href="#/"
                     onClick={this.props.unselect_model}
                     title="Click to view available models"
                 >
@@ -28,7 +28,7 @@ export class Breadcrumb extends React.Component {
         return this.props.selected_model ? (
             <li>
                 <a
-                    href="/#"
+                    href="#/"
                     onClick={this.props.unselect_model}
                     title="Click to change model"
                 >
@@ -38,7 +38,7 @@ export class Breadcrumb extends React.Component {
         ) : (
             <li>
                 <a
-                    href="/#"
+                    href="#/"
                     onClick={this.props.unselect_model}
                     title="Click on a row in the model list table"
                 >
@@ -48,31 +48,11 @@ export class Breadcrumb extends React.Component {
         );
     }
 
-    dataset_split_crumb() {
-        const other_dataset_split =
-            this.props.selected_dataset_split === "test"
-                ? "validation"
-                : "test";
-        return this.props.selected_model ? (
-            <li>
-                <a
-                    href="/#"
-                    onClick={() =>
-                        this.props.set_dataset_split(other_dataset_split)
-                    }
-                    title={`Click to view ${other_dataset_split} dataset`}
-                >
-                    {this.props.selected_dataset_split}
-                </a>
-            </li>
-        ) : null;
-    }
-
     datapoint_crumb() {
         return this.props.selected_model && this.props.selected_datum ? (
             <li>
                 <a
-                    href="/#"
+                    href="#/"
                     onClick={() =>
                         this.props.set_datum(this.props.selected_datum)
                     }
@@ -89,7 +69,6 @@ export class Breadcrumb extends React.Component {
             <ul>
                 {this.root_crumb()}
                 {this.model_crumb()}
-                {this.dataset_split_crumb()}
                 {this.datapoint_crumb()}
             </ul>
         );

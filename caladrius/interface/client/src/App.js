@@ -23,7 +23,6 @@ export class App extends React.Component {
             admin_regions: [],
             loading: false,
             get_datum_priority: this.get_datum_priority_function(),
-            selected_dataset_split: "test",
         };
     }
 
@@ -86,12 +85,6 @@ export class App extends React.Component {
         this.setState({ selected_model: null, selected_datum: null });
     };
 
-    set_dataset_split = split_name => {
-        this.setState({ selected_dataset_split: split_name }, () =>
-            this.load_model(this.state.selected_model, split_name)
-        );
-    };
-
     on_exit = () => {
         if (this.state.selected_model) {
             this.unselect_model();
@@ -106,32 +99,53 @@ export class App extends React.Component {
         }
     };
 
-    load_model = (model, split = "test") => {
+    load_model = model => {
         this.setState(
             {
                 selected_model: null,
-                selected_dataset_split: split,
                 selected_datum: null,
                 data: [],
                 loading: true,
             },
             () => {
                 const model_name = model.model_directory;
-                const prediction_filename =
-                    this.state.selected_dataset_split === "test"
-                        ? model.test_prediction_file_name
-                        : model.validation_prediction_file_name.slice(-1)[0];
-                fetch_csv_data(model_name, prediction_filename, data => {
-                    this.setState({
-                        selected_model: model,
-                        selected_dataset_split: split,
-                        selected_datum: null,
-                        data: data,
-                        loading: false,
-                    });
-                });
+                fetch_csv_data(
+                    {
+                        validation: [],
+                        test: [],
+                        inference: [],
+                    },
+                    model_name,
+                    data => {
+                        this.setState({
+                            selected_model: model,
+                            selected_datum: null,
+                            data: data,
+                            loading: false,
+                        });
+                    }
+                );
             }
         );
+    };
+
+    fetch_epoch_predictions = (epoch, callback) => {
+        this.setState({ loading: false }, () => {
+            fetch_csv_data(
+                this.state.data,
+                this.state.selected_model.model_directory,
+                data => {
+                    this.setState(
+                        {
+                            data: data,
+                            loading: false,
+                        },
+                        callback
+                    );
+                },
+                epoch
+            );
+        });
     };
 
     set_datum = datum => {
@@ -202,6 +216,7 @@ export class App extends React.Component {
                 set_datum={this.set_datum}
                 set_datum_priority={this.set_datum_priority}
                 get_datum_priority={this.state.get_datum_priority}
+                fetch_epoch_predictions={this.fetch_epoch_predictions}
             />
         );
     };
@@ -237,8 +252,6 @@ export class App extends React.Component {
                 unselect_model={this.unselect_model}
                 selected_datum={this.state.selected_datum}
                 set_datum={this.set_datum}
-                selected_dataset_split={this.state.selected_dataset_split}
-                set_dataset_split={this.set_dataset_split}
             />
         );
     };

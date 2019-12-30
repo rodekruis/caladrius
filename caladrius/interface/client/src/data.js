@@ -3,7 +3,7 @@ import jQuery from "jquery";
 import proj4 from "proj4";
 
 export function fetch_admin_regions(callback) {
-    fetch("/api/dataset?name=Sint-Maarten-2017&filename=admin_regions.geojson")
+    fetch("/api/Sint-Maarten-2017/admin-regions")
         .then(res => res.json())
         .then(region_boundaries => {
             if ("features" in region_boundaries) {
@@ -17,42 +17,56 @@ export function fetch_admin_regions(callback) {
         });
 }
 
-export function fetch_csv_data(model_name, prediction_filename, callback) {
+export function fetch_csv_data(
+    parsed_predictions,
+    model_name,
+    callback,
+    epoch
+) {
     const csv_path =
-        "/api/model/predictions?directory=" +
-        model_name +
-        "&filename=" +
-        prediction_filename;
+        "/api/" + model_name + "/predictions" + (epoch ? "/" + epoch : "");
     fetch(csv_path)
-        .then(res => res.text())
+        .then(res => res.json())
         .then(predictions => {
-            render_predictions(predictions, callback);
+            fetch("/api/Sint-Maarten-2017")
+                .then(res => res.json())
+                .then(geoData => {
+                    predictions = parse_predictions(
+                        parsed_predictions,
+                        predictions,
+                        geoData
+                    );
+                    callback(predictions);
+                });
         });
 }
 
-function render_predictions(predictions, callback) {
-    fetch("/api/dataset?name=Sint-Maarten-2017&filename=coordinates.geojson")
-        .then(res => res.json())
-        .then(geoData => {
-            const ssv = d3.dsvFormat(" ");
-            predictions = ssv.parse(predictions);
-            predictions.pop();
-            predictions.forEach(function(d) {
-                d.object_id = parseInt(d.filename.replace(".png", ""));
-                d.label = parseFloat(d.label);
-                d.prediction = parseFloat(d.prediction);
-                // feature properties
-                const feature = get_feature(geoData, d.object_id);
-                if (feature) {
-                    d.coordinates = get_coordinates(feature);
-                    d.address = get_address(feature);
-                }
-            });
-            predictions = predictions.sort((a, b) => {
-                return b.prediction - a.prediction;
-            });
-            callback(predictions);
+function parse_predictions(parsed_predictions, predictions, geoData) {
+    Object.keys(predictions).forEach(split => {
+        predictions[split].forEach((epoch_predictions, epoch_index) => {
+            if (epoch_predictions) {
+                const ssv = d3.dsvFormat(" ");
+                epoch_predictions = ssv.parse(epoch_predictions);
+                epoch_predictions.pop();
+                epoch_predictions.forEach(function(d) {
+                    d.object_id = parseInt(d.filename.replace(".png", ""));
+                    d.label = parseFloat(d.label);
+                    d.prediction = parseFloat(d.prediction);
+                    // feature properties
+                    const feature = get_feature(geoData, d.object_id);
+                    if (feature) {
+                        d.coordinates = get_coordinates(feature);
+                        d.address = get_address(feature);
+                    }
+                });
+                epoch_predictions = epoch_predictions.sort((a, b) => {
+                    return b.prediction - a.prediction;
+                });
+                parsed_predictions[split][epoch_index] = epoch_predictions;
+            }
         });
+    });
+    return parsed_predictions;
 }
 
 function get_feature(gdata, object_id) {

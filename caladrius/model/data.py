@@ -6,10 +6,17 @@ from torch.utils.data import Dataset, DataLoader
 
 
 class CaladriusDataset(Dataset):
-    def __init__(self, directory, transforms=None, max_data_points=None):
-        self.directory = directory
-        with open(os.path.join(directory, "labels.txt")) as labels_file:
-            self.datapoints = [x.strip() for x in tqdm(labels_file.readlines())]
+    def __init__(self, directory, set_name, transforms=None, max_data_points=None):
+        self.set_name = set_name
+        self.directory = os.path.join(directory, set_name)
+        if self.set_name == "inference":
+            self.datapoints = [
+                filename
+                for filename in tqdm(os.listdir(os.path.join(self.directory, "before")))
+            ]
+        else:
+            with open(os.path.join(self.directory, "labels.txt")) as labels_file:
+                self.datapoints = [x.strip() for x in tqdm(labels_file.readlines())]
         if max_data_points is not None:
             self.datapoints = self.datapoints[:max_data_points]
         self.transforms = transforms
@@ -18,20 +25,27 @@ class CaladriusDataset(Dataset):
         return len(self.datapoints)
 
     def __getitem__(self, idx):
-        filename, before_image, after_image, damage = self.load_datapoint(idx)
+        datapoint = self.load_datapoint(idx)
 
         if self.transforms:
-            before_image = self.transforms(before_image)
-            after_image = self.transforms(after_image)
+            datapoint[1] = self.transforms(datapoint[1])
+            datapoint[2] = self.transforms(datapoint[2])
 
-        return (filename, before_image, after_image, damage)
+        return tuple(datapoint)
 
     def load_datapoint(self, idx):
         line = self.datapoints[idx]
-        filename, damage = line.split(" ")
+        if self.set_name == "inference":
+            filename = line
+        else:
+            filename, damage = line.split(" ")
         before_image = Image.open(os.path.join(self.directory, "before", filename))
         after_image = Image.open(os.path.join(self.directory, "after", filename))
-        return filename, before_image, after_image, float(damage)
+        if self.set_name == "inference":
+            datapoint = [filename, before_image, after_image]
+        else:
+            datapoint = [filename, before_image, after_image, float(damage)]
+        return datapoint
 
 
 class Datasets(object):
@@ -44,9 +58,10 @@ class Datasets(object):
         self.max_data_points = args.max_data_points
 
     def load(self, set_name):
-        assert set_name in {"train", "validation", "test"}
+        assert set_name in {"train", "validation", "test", "inference"}
         dataset = CaladriusDataset(
-            os.path.join(self.data_path, set_name),
+            self.data_path,
+            set_name,
             transforms=self.transforms[set_name],
             max_data_points=self.max_data_points,
         )

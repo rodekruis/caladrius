@@ -21,16 +21,10 @@ const INTERACTION_ZOOM_LEVEL = 18;
 let DEFAULT_CENTER_COORDINATES = [18.035, -63.07];
 
 export class Map extends React.Component {
-    constructor(props) {
-        super(props);
-        this.get_building_shape_array = this.get_building_shape_array.bind(
-            this
-        );
-        this.get_admin_regions = this.get_admin_regions.bind(this);
-    }
-
-    get_building_shape_array() {
-        let building_shape_array = this.props.data.map(datum => {
+    get_building_shape_array(key, label) {
+        let building_shape_array = (
+            this.props.data[key].slice(-1)[0] || []
+        ).map(datum => {
             const colour = get_prediction_colour(
                 datum.prediction,
                 this.props.damage_boundary_a,
@@ -59,7 +53,7 @@ export class Map extends React.Component {
             );
         });
         return (
-            <LayersControl.Overlay name={"Buildings"} checked={true}>
+            <LayersControl.Overlay name={label} checked={true}>
                 <LayerGroup>{building_shape_array}</LayerGroup>
             </LayersControl.Overlay>
         );
@@ -132,7 +126,15 @@ export class Map extends React.Component {
                         MAPBOX_ACCESS_TOKEN
                     )}
                     {this.get_admin_regions()}
-                    {this.get_building_shape_array()}
+                    {this.get_building_shape_array(
+                        "validation",
+                        "Validation Set"
+                    )}
+                    {this.get_building_shape_array("test", "Test Set")}
+                    {this.get_building_shape_array(
+                        "inference",
+                        "Inference Set"
+                    )}
                 </LayersControl>
             </LeafletMap>
         );

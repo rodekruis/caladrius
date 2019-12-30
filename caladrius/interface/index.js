@@ -49,15 +49,17 @@ app.post("/api/login", Auth.login);
 app.get("/api/logout", Auth.logout);
 
 // static
-app.use(express.static("../../data/Sint-Maarten-2017/test"));
 app.use(express.static("../../data/Sint-Maarten-2017/validation"));
+app.use(express.static("../../data/Sint-Maarten-2017/test"));
+app.use(express.static("../../data/Sint-Maarten-2017/inference"));
 
 // backend API
-app.get("/api/dataset", server.get_dataset_file);
-
 app.get("/api/models", server.get_models);
+app.get("/api/datasets", server.get_datasets);
 
-app.get("/api/model/predictions", server.get_predictions);
+app.get("/api/:model/predictions/:epoch?", server.get_model_predictions);
+
+app.get("/api/:dataset/:filename?", server.get_dataset_file);
 
 // Handles any requests that don't match the ones above
 app.get("*", (req, res) => {
