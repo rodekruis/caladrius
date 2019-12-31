@@ -101,7 +101,7 @@ def configuration():
     parser.add_argument(
         "--log-step",
         type=int,
-        default=100,
+        default=10,
         help="batch step size for logging information",
     )
     parser.add_argument(
@@ -162,18 +162,6 @@ def configuration():
         default=None,
         type=int,
         help="limit the total number of data points used, for debugging on GPU-less laptops",
-    )
-    parser.add_argument(
-        "--train-accuracy-threshold",
-        type=float,
-        default=0.1,
-        help="window size to calculate regression accuracy",
-    )
-    parser.add_argument(
-        "--test-accuracy-threshold",
-        type=float,
-        default=0.3,
-        help="window size to calculate regression accuracy",
     )
     parser.add_argument(
         "--output-type",

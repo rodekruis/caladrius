@@ -24,8 +24,6 @@ class QuasiSiameseNetwork(object):
         self.run_name = args.run_name
         self.input_size = input_size
         self.lr = args.learning_rate
-        self.train_accuracy_threshold = args.train_accuracy_threshold
-        self.test_accuracy_threshold = args.test_accuracy_threshold
         self.output_type = args.output_type
 
         # define the loss measure
@@ -62,6 +60,7 @@ class QuasiSiameseNetwork(object):
         self.model_path = args.model_path
         self.prediction_path = args.prediction_path
         self.model_type = args.model_type
+        self.log_step = args.log_step
 
     def get_random_output_values(self, output_shape):
         return torch.rand(output_shape)
@@ -137,15 +136,8 @@ class QuasiSiameseNetwork(object):
         if phase == "train":
             self.model.train()  # Set model to training mode
 
-        running_loss = 0.0
-        running_corrects = 0
-        running_n = 0.0
+        rolling_eval = RollingEval(self.output_type)
 
-        # if self.output_type == "classification":
-        rolling_eval = RollingEval()
-
-        # I also want the predictions saved during training, such that we can retrieve and plot those results later if needed
-        # if not (phase == "train"):
         prediction_file = self.create_prediction_file(phase, epoch)
         prediction_file.write("filename label prediction\n")
 
@@ -156,9 +148,10 @@ class QuasiSiameseNetwork(object):
             image1 = image1.to(self.device)
             image2 = image2.to(self.device)
             if self.output_type == "regression":
-                labels = labels.float().to(self.device)
+                labels = labels.float()
             else:
-                labels = labels.long().to(self.device)
+                labels = labels.long()
+            labels = labels.to(self.device)
 
             if phase == "train":
                 # zero the parameter gradients
@@ -174,7 +167,6 @@ class QuasiSiameseNetwork(object):
                     loss.backward()
                     self.optimizer.step()
 
-                # if not (phase == "train"):
                 prediction_file.writelines(
                     [
                         "{} {} {}\n".format(*line)
@@ -184,59 +176,32 @@ class QuasiSiameseNetwork(object):
                     ]
                 )
 
-                # if self.output_type == "classification":
-                rolling_eval.add(labels, preds)
+                batch_loss = loss.item()
+                batch_score = rolling_eval.add(labels, preds, batch_loss)
 
-            running_loss += loss.item() * image1.size(0)
-            # running_n is the number of images in current epoch so far
-            # divide loss and accuracy by this to get average loss and accuracy
-            running_n += image1.size(0)
-            if self.output_type == "regression":
-                running_corrects += (
-                    (outputs - labels.data)
-                    .abs()
-                    .le(
-                        self.train_accuracy_threshold
-                        if phase == "train"
-                        else self.test_accuracy_threshold
-                    )
-                    .sum()
-                )
-
-            if self.output_type == "regression":
-                running_error_meas = running_corrects.double() / running_n
-            else:
-                running_error_meas = rolling_eval.f1_score()
-
-            if idx % 1 == 0:
+            if idx % self.log_step == 0:
                 logger.debug(
-                    "Epoch: {:03d} Phase: {:10s} Batch {:04d}/{:04d}: Loss: {:.4f} Accuracy: {:.4f}".format(
-                        epoch,
-                        phase,
-                        idx,
-                        len(loader),
-                        running_loss / running_n,
-                        running_error_meas,
-                        # running_corrects.double() / running_n,
+                    "Epoch: {:03d} Phase: {:10s} Batch {:04d}/{:04d}: Loss: {:.4f} Score: {:.4f}".format(
+                        epoch, phase, idx, len(loader), batch_loss, batch_score
                     )
                 )
 
-        epoch_loss = running_loss / running_n
-        epoch_error_meas = running_error_meas  # running_corrects.double() / running_n
+        epoch_loss = rolling_eval.loss()
+        epoch_score = rolling_eval.score()
 
         if not (phase == "train"):
             prediction_file.write(
-                "Epoch {:03d} Accuracy: {:.4f}\n".format(epoch, epoch_error_meas)
+                "Epoch {:03d} Score: {:.4f}\n".format(epoch, epoch_score)
             )
             prediction_file.close()
 
         logger.info(
-            "Epoch {:03d} Phase: {:10s} Loss: {:.4f} Accuracy: {:.4f}".format(
-                epoch, phase, epoch_loss, epoch_error_meas
+            "Epoch {:03d} Phase: {:10s} Loss: {:.4f} Score: {:.4f}".format(
+                epoch, phase, epoch_loss, epoch_score
             )
         )
 
-        return epoch_loss, epoch_error_meas
+        return epoch_loss, epoch_score
 
     def train(self, run_report, datasets, number_of_epochs):
         """
