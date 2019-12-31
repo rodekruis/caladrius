@@ -1,9 +1,10 @@
-0.6.4 (2019-12-30)
+0.6.4 (2019-12-31)
 ------------------
 - Show table of models instead of dropdown
 - Visualize val performance
 - Create predict dataset set if possible
 - Create Caladrius Dataset using Digital Globe images for Sint Maarten
+- Remove accuracy threshold
 
 0.6.3 (2019-12-22)
 ------------------
