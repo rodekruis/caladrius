@@ -420,6 +420,8 @@ def main():
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
     )
 
+    logger.info("python {}".format(" ".join(sys.argv)))
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )

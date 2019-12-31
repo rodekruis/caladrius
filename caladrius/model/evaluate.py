@@ -48,4 +48,6 @@ class RollingEval(object):
     def f1_score(self, labels, predictions):
         # average="weighted" is used by xview2_baseline
         # average="micro" was used by caladrius
-        return f1_score(labels.to("cpu"), predictions.to("cpu"), average="macro")
+        return f1_score(
+            labels.cpu().detach(), predictions.cpu().detach(), average="macro"
+        )

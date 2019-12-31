@@ -20,6 +20,7 @@ def main():
     logger = create_logger(__name__)
     sys.excepthook = attach_exception_hook(logger)
 
+    logger.info("python {}".format(" ".join(sys.argv)))
     logger.info("START with Configuration:")
     for k, v in sorted(vars(args).items()):
         logger.info("{0}: {1}".format(k, v))
