@@ -98,8 +98,7 @@ class QuasiSiameseNetwork(object):
 
         # I also want the predictions saved during training, such that we can retrieve and plot those results later if needed
         # if not (phase == "train"):
-        if model_type in ["average","random"]:
-            print("blub")
+        if model_type in ["average", "random"]:
             prediction_file_name = "{}_{}_epoch_{:03d}_predictions_{}.txt".format(
                 self.run_name, phase, epoch, model_type
             )
@@ -124,8 +123,8 @@ class QuasiSiameseNetwork(object):
                 sum_of_labels = sum_of_labels + label
             number_of_labels = len(loader.dataset)
             average_label = sum_of_labels / number_of_labels
-            if self.output_type=="classification":
-                average_label=round(average_label)
+            if self.output_type == "classification":
+                average_label = round(average_label)
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(device)
@@ -143,17 +142,17 @@ class QuasiSiameseNetwork(object):
                 if model_type == "quasi-siamese":
                     outputs = self.model(image1, image2).squeeze()
                 elif model_type == "random":
-                    if self.output_type=="regression":
+                    if self.output_type == "regression":
                         outputs = torch.rand(labels.shape)
-                    elif self.output_type=="classification":
-                        outputs=torch.rand((labels.shape[0],self.n_classes))
+                    elif self.output_type == "classification":
+                        outputs = torch.rand((labels.shape[0], self.n_classes))
                 elif model_type == "average":
-                    if self.output_type=="regression":
+                    if self.output_type == "regression":
                         outputs = torch.ones(labels.shape) * average_label
-                    elif self.output_type=="classification":
+                    elif self.output_type == "classification":
                         average_label_tensor = torch.zeros(self.n_classes)
                         average_label_tensor[average_label] = 1
-                        outputs=average_label_tensor.repeat(labels.shape[0],1)
+                        outputs = average_label_tensor.repeat(labels.shape[0], 1)
                 outputs = outputs.to(device)
                 loss = self.criterion(outputs, labels)
 
@@ -217,9 +216,7 @@ class QuasiSiameseNetwork(object):
         epoch_error_meas = running_error_meas  # running_corrects.double() / running_n
 
         # if not (phase == "train"):
-        performance_file.write(
-            "{} {} {}\n".format(epoch, epoch_loss, epoch_error_meas)
-        )
+        performance_file.write("{} {} {}\n".format(epoch, epoch_loss, epoch_error_meas))
         performance_file.close()
         prediction_file.close()
 
@@ -231,7 +228,9 @@ class QuasiSiameseNetwork(object):
 
         return epoch_loss, epoch_error_meas
 
-    def train(self, n_epochs, datasets, device, model_path, predictions_path, performance_path):
+    def train(
+        self, n_epochs, datasets, device, model_path, predictions_path, performance_path
+    ):
         """
         Train the model
         Args:
@@ -251,12 +250,22 @@ class QuasiSiameseNetwork(object):
         for epoch in range(1, n_epochs + 1):
             # train network
             train_loss, train_accuracy = self.run_epoch(
-                epoch, train_loader, device, predictions_path, performance_path, phase="train"
+                epoch,
+                train_loader,
+                device,
+                predictions_path,
+                performance_path,
+                phase="train",
             )
 
             # eval on validation
             validation_loss, validation_accuracy = self.run_epoch(
-                epoch, validation_loader, device, predictions_path, performance_path, "validation"
+                epoch,
+                validation_loader,
+                device,
+                predictions_path,
+                performance_path,
+                "validation",
             )
 
             self.writer.add_scalar("Train/Loss", train_loss, epoch)
@@ -284,7 +293,15 @@ class QuasiSiameseNetwork(object):
 
         logger.info("Best validation Accuracy: {:4f}.".format(best_accuracy))
 
-    def test(self, datasets, device, model_path, predictions_path, performance_path, model_type):
+    def test(
+        self,
+        datasets,
+        device,
+        model_path,
+        predictions_path,
+        performance_path,
+        model_type,
+    ):
         """
         Test the model
         Args:
