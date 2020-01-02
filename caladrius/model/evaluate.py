@@ -1,4 +1,4 @@
-from sklearn.metrics import f1_score
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 import torch
 
 from utils import create_logger
@@ -21,6 +21,16 @@ class RollingEval(object):
     def add(self, labels, predictions, loss):
         self.labels = self.labels.to(labels.device)
         self.predictions = self.predictions.to(predictions.device)
+        if self.output_type == "regression":
+            self.labels = self.labels.float()
+            self.predictions = self.predictions.float()
+            labels = labels.float()
+            predictions = predictions.float()
+        else:
+            self.labels = self.labels.long()
+            self.predictions = self.predictions.long()
+            labels = labels.long()
+            predictions = predictions.long()
         self.labels = torch.cat([self.labels, labels], dim=0)
         self.predictions = torch.cat([self.predictions, predictions], dim=0)
         self.total_loss += loss * predictions.size(0)
@@ -40,14 +50,29 @@ class RollingEval(object):
         if self.output_type == "regression":
             labels = self.to_classes(labels)
             predictions = self.to_classes(predictions)
-        return self.f1_score(labels, predictions)
+        return self.precision_recall_fscore_support_accuracy(labels, predictions)
 
     def loss(self):
         return self.total_loss / self.predictions.size(0)
 
-    def f1_score(self, labels, predictions):
+    def precision_recall_fscore_support_accuracy(self, labels, predictions):
         # average="weighted" is used by xview2_baseline
         # average="micro" was used by caladrius
-        return f1_score(
-            labels.cpu().detach(), predictions.cpu().detach(), average="macro"
+        labels = labels.cpu().detach()
+        predictions = predictions.cpu().detach()
+        accuracy_value = accuracy_score(labels, predictions, normalize=True)
+        number_of_correct = accuracy_score(labels, predictions, normalize=False)
+        total_number = len(predictions)
+        micro_precision_recall_fscore_support_values = precision_recall_fscore_support(
+            labels, predictions, average="micro"
+        )
+        macro_precision_recall_fscore_support_values = precision_recall_fscore_support(
+            labels, predictions, average="macro"
+        )
+        return (
+            accuracy_value,
+            number_of_correct,
+            total_number,
+            micro_precision_recall_fscore_support_values,
+            macro_precision_recall_fscore_support_values,
         )

@@ -102,7 +102,7 @@ def get_pretrained_iv3_transforms(set_name):
     }[set_name]
 
 
-class SiameseNetwork(nn.Module):
+class InceptionSiameseNetwork(nn.Module):
     def __init__(
         self,
         output_size=512,

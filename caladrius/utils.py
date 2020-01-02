@@ -9,6 +9,9 @@ import json
 
 import torch
 
+NEURAL_MODELS = ["inception", "light"]
+STATISTICAL_MODELS = ["average", "random"]
+
 # logging
 
 logging.getLogger("Fiona").setLevel(logging.ERROR)
@@ -113,8 +116,8 @@ def configuration():
     parser.add_argument(
         "--model-type",
         type=str,
-        default="siamese",
-        choices=["siamese", "random", "average"],
+        default=NEURAL_MODELS[0],
+        choices=NEURAL_MODELS + STATISTICAL_MODELS,
         help="type of model",
     )
 
@@ -207,6 +210,8 @@ def configuration():
     arg_vars["run_report_path"] = os.path.join(
         arg_vars["checkpoint_path"], "run_report.json"
     )
+    arg_vars["statistical_model"] = arg_vars["model_type"] in STATISTICAL_MODELS
+    arg_vars["neural_model"] = arg_vars["model_type"] in NEURAL_MODELS
 
     if torch.cuda.is_available() and not arg_vars["disable_cuda"]:
         arg_vars["device"] = torch.device("cuda:{}".format(arg_vars["cuda_device"]))
