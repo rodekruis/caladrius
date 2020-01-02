@@ -1,6 +1,7 @@
 import os
 import copy
 import time
+import pickle
 import torch
 
 from torch.optim import Adam
@@ -111,6 +112,8 @@ class QuasiSiameseNetwork(object):
         if model_type != "probability":
             prediction_file = open(prediction_file_path, "w+")
             prediction_file.write("filename label prediction\n")
+        else:
+            prediction_file = open(prediction_file_path, "wb")
 
         performance_file_name = "{}_{}_epoch_{:03d}_performance.txt".format(
             self.run_name, phase, epoch
@@ -180,20 +183,7 @@ class QuasiSiameseNetwork(object):
                         ]
                     )
                 else:
-                    import pickle
-
-                    prediction_file = open(prediction_file_path, "wb")
                     pickle.dump(outputs.tolist(), prediction_file)
-                    print("blub")
-                    # print(outputs)
-                    # prediction_file.writelines(
-                    #     [
-                    #         "{} {} {}\n".format(*line)
-                    #         for line in zip(
-                    #         filename, labels.view(-1).tolist(), outputs.tolist()
-                    #     )
-                    #     ]
-                    # )
 
                 rolling_eval.add(labels, preds)
 
