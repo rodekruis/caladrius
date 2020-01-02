@@ -98,7 +98,7 @@ class QuasiSiameseNetwork(object):
 
         # I also want the predictions saved during training, such that we can retrieve and plot those results later if needed
         # if not (phase == "train"):
-        if model_type in ["average", "random"]:
+        if model_type in ["average", "random", "probability"]:
             prediction_file_name = "{}_{}_epoch_{:03d}_predictions_{}.txt".format(
                 self.run_name, phase, epoch, model_type
             )
@@ -107,8 +107,10 @@ class QuasiSiameseNetwork(object):
                 self.run_name, phase, epoch
             )
         prediction_file_path = os.path.join(predictions_path, prediction_file_name)
-        prediction_file = open(prediction_file_path, "w+")
-        prediction_file.write("filename label prediction\n")
+
+        if model_type != "probability":
+            prediction_file = open(prediction_file_path, "w+")
+            prediction_file.write("filename label prediction\n")
 
         performance_file_name = "{}_{}_epoch_{:03d}_performance.txt".format(
             self.run_name, phase, epoch
@@ -139,7 +141,7 @@ class QuasiSiameseNetwork(object):
                 self.optimizer.zero_grad()
 
             with torch.set_grad_enabled(phase == "train"):
-                if model_type == "quasi-siamese":
+                if model_type == "quasi-siamese" or model_type == "probability":
                     outputs = self.model(image1, image2).squeeze()
                 elif model_type == "random":
                     if self.output_type == "regression":
@@ -166,16 +168,33 @@ class QuasiSiameseNetwork(object):
                     self.optimizer.step()
 
                 # if not (phase == "train"):
-                prediction_file.writelines(
-                    [
-                        "{} {} {}\n".format(*line)
-                        for line in zip(
-                            filename, labels.view(-1).tolist(), preds.view(-1).tolist()
-                        )
-                    ]
-                )
+                if model_type != "probability":
+                    prediction_file.writelines(
+                        [
+                            "{} {} {}\n".format(*line)
+                            for line in zip(
+                                filename,
+                                labels.view(-1).tolist(),
+                                preds.view(-1).tolist(),
+                            )
+                        ]
+                    )
+                else:
+                    import pickle
 
-                # if self.output_type == "classification":
+                    prediction_file = open(prediction_file_path, "wb")
+                    pickle.dump(outputs.tolist(), prediction_file)
+                    print("blub")
+                    # print(outputs)
+                    # prediction_file.writelines(
+                    #     [
+                    #         "{} {} {}\n".format(*line)
+                    #         for line in zip(
+                    #         filename, labels.view(-1).tolist(), outputs.tolist()
+                    #     )
+                    #     ]
+                    # )
+
                 rolling_eval.add(labels, preds)
 
             running_loss += loss.item() * image1.size(0)

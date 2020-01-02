@@ -105,7 +105,7 @@ def configuration():
         "--model-type",
         type=str,
         default="quasi-siamese",
-        choices=["quasi-siamese", "random", "average"],
+        choices=["quasi-siamese", "random", "average", "probability"],
         help="type of model",
     )
 
