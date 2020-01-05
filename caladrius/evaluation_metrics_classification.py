@@ -211,7 +211,9 @@ def main():
     allruns_file_path = os.path.join(output_path, allruns_overview_file_name)
     fh, abs_path = mkstemp()
     replicate = False
-    scores_dict_rounded = {k: round(v, 3) for k, v in scores_dict.items()}
+    scores_dict_rounded = {
+        k: round(v, 3) if v is not None else "" for k, v in scores_dict.items()
+    }
     with fdopen(fh, "w+") as new_file:
         new_file.write(
             "run_name,{}\n".format(
