@@ -81,7 +81,7 @@ def gen_score_overview(preds_filename):
         df_pred (pd.DataFrame): dataframe with the predictions and true labels
     """
     preds_file = open(preds_filename)
-    lines = preds_file.readlines()[1:-1]
+    lines = preds_file.readlines()[1:]
     pred_info = []
     for l in lines:
         pred_info.extend([l.rstrip().split(" ")])
@@ -211,6 +211,7 @@ def main():
     allruns_file_path = os.path.join(output_path, allruns_overview_file_name)
     fh, abs_path = mkstemp()
     replicate = False
+    scores_dict_rounded = {k: round(v, 3) for k, v in scores_dict.items()}
     with fdopen(fh, "w+") as new_file:
         new_file.write(
             "run_name,{}\n".format(
@@ -227,20 +228,23 @@ def main():
                             "{},{}\n".format(
                                 args.run_name,
                                 ",".join(
-                                    "{:.3f}".format(item)
-                                    for item in list(scores_dict.values())
+                                    str(item)
+                                    for item in list(scores_dict_rounded.values())
                                 ),
                             )
                         )
+                        #             "{:.3f}".format(item)
+                        #             for item in list(scores_dict.values())
+                        #         ),
+                        #     )
+                        # )
                     else:
                         new_file.write(line)
         if not replicate:
             new_file.write(
                 "{},{}\n".format(
                     args.run_name,
-                    ",".join(
-                        "{:.3f}".format(item) for item in list(scores_dict.values())
-                    ),
+                    ",".join(str(item) for item in list(scores_dict_rounded.values())),
                 )
             )
     if os.path.isfile(allruns_file_path):
