@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
@@ -224,7 +225,7 @@ def main():
             with open(allruns_file_path) as old_file:
                 next(old_file)
                 for line in old_file:
-                    if "{},".format(args.run_name) in line:
+                    if re.search(r"^{},".format(args.run_name), line):
                         print("duplicate", args.run_name)
                         replicate = True
                         new_file.write(
