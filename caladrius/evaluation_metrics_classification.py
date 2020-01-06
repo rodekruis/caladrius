@@ -196,12 +196,12 @@ def main():
                     "harmonized avg", "recall"
                 ]
             if preds_type == "random":
-                scores_dict["harmrecall_random"] = score_overview.loc[
-                    "harmonized avg", "recall"
+                scores_dict["unweightedrecall_random"] = score_overview.loc[
+                    "macro avg", "recall"
                 ]
             if preds_type == "average":
-                scores_dict["harmrecall_average"] = score_overview.loc[
-                    "harmonized avg", "recall"
+                scores_dict["unweightedrecall_average"] = score_overview.loc[
+                    "macro avg", "recall"
                 ]
         else:
             print("No predictions for prediction type {}".format(preds_type))
@@ -226,7 +226,6 @@ def main():
                 next(old_file)
                 for line in old_file:
                     if re.search(r"^{},".format(args.run_name), line):
-                        print("duplicate", args.run_name)
                         replicate = True
                         new_file.write(
                             "{},{}\n".format(
