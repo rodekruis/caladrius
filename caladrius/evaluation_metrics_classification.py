@@ -224,7 +224,7 @@ def main():
             with open(allruns_file_path) as old_file:
                 next(old_file)
                 for line in old_file:
-                    if args.run_name in line:
+                    if "{},".format(args.run_name) in line:
                         replicate = True
                         new_file.write(
                             "{},{}\n".format(
@@ -235,11 +235,6 @@ def main():
                                 ),
                             )
                         )
-                        #             "{:.3f}".format(item)
-                        #             for item in list(scores_dict.values())
-                        #         ),
-                        #     )
-                        # )
                     else:
                         new_file.write(line)
         if not replicate:
