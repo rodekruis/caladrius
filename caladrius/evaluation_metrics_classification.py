@@ -225,6 +225,7 @@ def main():
                 next(old_file)
                 for line in old_file:
                     if "{},".format(args.run_name) in line:
+                        print("duplicate", args.run_name)
                         replicate = True
                         new_file.write(
                             "{},{}\n".format(
