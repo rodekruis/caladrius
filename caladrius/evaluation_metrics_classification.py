@@ -151,8 +151,8 @@ def main():
         "unweighted_recall",
         "weighted_recall",
         "harmonized_recall",
-        "harmrecall_random",
-        "harmrecall_average",
+        "unweightedrecall_random",
+        "unweightedrecall_average",
     ]
     scores_dict = dict.fromkeys(scores_params)
 
