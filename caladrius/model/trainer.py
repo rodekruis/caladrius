@@ -3,6 +3,7 @@ import copy
 import time
 import pickle
 import torch
+from statistics import mode
 
 from torch.optim import Adam
 from torch.nn.modules import loss as nnloss
@@ -113,7 +114,7 @@ class QuasiSiameseNetwork(object):
             prediction_file = open(prediction_file_path, "w+")
             prediction_file.write("filename label prediction\n")
         else:
-            prediction_file = open(prediction_file_path, "wb")
+            output_probability = []
 
         performance_file_name = "{}_{}_epoch_{:03d}_performance.txt".format(
             self.run_name, phase, epoch
@@ -128,8 +129,8 @@ class QuasiSiameseNetwork(object):
                 sum_of_labels = sum_of_labels + label
             number_of_labels = len(loader.dataset)
             average_label = sum_of_labels / number_of_labels
-            if self.output_type == "classification":
-                average_label = round(average_label)
+            # if self.output_type == "classification":
+            #     average_label = round(average_label)
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(device)
@@ -155,8 +156,9 @@ class QuasiSiameseNetwork(object):
                     if self.output_type == "regression":
                         outputs = torch.ones(labels.shape) * average_label
                     elif self.output_type == "classification":
+                        mode_label = mode(labels.tolist())
                         average_label_tensor = torch.zeros(self.n_classes)
-                        average_label_tensor[average_label] = 1
+                        average_label_tensor[mode_label] = 1
                         outputs = average_label_tensor.repeat(labels.shape[0], 1)
                 outputs = outputs.to(device)
                 loss = self.criterion(outputs, labels)
@@ -183,7 +185,7 @@ class QuasiSiameseNetwork(object):
                         ]
                     )
                 else:
-                    pickle.dump(outputs.tolist(), prediction_file)
+                    output_probability = output_probability.extend(outputs.tolist())
 
                 rolling_eval.add(labels, preds)
 
@@ -221,6 +223,9 @@ class QuasiSiameseNetwork(object):
                     )
                 )
 
+        if model_type == "probability":
+            prediction_file = open(prediction_file_path, "wb")
+            pickle.dump(output_probability, prediction_file)
         epoch_loss = running_loss / running_n
         epoch_error_meas = running_error_meas  # running_corrects.double() / running_n
 
