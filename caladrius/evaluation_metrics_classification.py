@@ -14,18 +14,6 @@ from shutil import move
 from os import fdopen, remove
 
 
-def harmonic_score(scores):
-    """
-    Calculate the harmonic mean of a list of scores
-    Args:
-        scores (list): list of scores
-
-    Returns:
-        harmonic mean of scores
-    """
-    return len(scores) / sum((c + 1e-6) ** -1 for c in scores)
-
-
 def cm_analysis(y_true, y_pred, filename, labels, ymap=None, figsize=(10, 10)):
     """
     Generate matrix plot of confusion matrix with pretty annotations.
@@ -71,6 +59,24 @@ def cm_analysis(y_true, y_pred, filename, labels, ymap=None, figsize=(10, 10)):
     plt.savefig(filename, bbox_inches="tight")
 
 
+def harmonic_score(scores):
+    """
+    Calculate the harmonic mean of a list of scores
+    Args:
+        scores (list): list of scores
+
+    Returns:
+        harmonic mean of scores
+    """
+    return len(scores) / sum((c + 1e-6) ** -1 for c in scores)
+
+
+def different_averages(scores):
+    harmonic_avg = len(scores) / sum((c + 1e-6) ** -1 for c in scores)
+    macro_avg = sum(scores) / len(scores)
+    return harmonic_avg, macro_avg
+
+
 def gen_score_overview(preds_filename):
     """
     Generate a dataframe with several performance measures
@@ -93,13 +99,47 @@ def gen_score_overview(preds_filename):
     preds = np.array(df_pred.pred)
     labels = np.array(df_pred.label)
 
-    report = classification_report(preds, labels, digits=3, output_dict=True)
+    report = classification_report(labels, preds, digits=3, output_dict=True)
+    # print(report)
+    dam_report = classification_report(
+        labels, preds, labels=[1, 2, 3], output_dict=True
+    )
+    # print(dam_report.keys())
+    dam_report = pd.DataFrame(dam_report).transpose()
+
     score_overview = pd.DataFrame(report).transpose()
+
     score_overview = score_overview.append(pd.Series(name="harmonized avg"))
+    score_overview = score_overview.append(pd.Series(name="damage macro avg"))
+    score_overview = score_overview.append(pd.Series(name="damage weighted avg"))
+    score_overview = score_overview.append(pd.Series(name="damage harmonized avg"))
     score_overview.loc["harmonized avg", ["precision", "recall", "f1-score"]] = [
         harmonic_score(r)
         for i, r in score_overview.loc[
             ["0", "1", "2", "3"], ["precision", "recall", "f1-score"]
+        ].T.iterrows()
+    ]
+
+    score_overview.loc[
+        "damage macro avg", ["precision", "recall", "f1-score", "support"]
+    ] = (
+        dam_report.loc[["macro avg"], ["precision", "recall", "f1-score", "support"]]
+        .values.flatten()
+        .tolist()
+    )
+
+    score_overview.loc[
+        "damage weighted avg", ["precision", "recall", "f1-score", "support"]
+    ] = (
+        dam_report.loc[["weighted avg"], ["precision", "recall", "f1-score", "support"]]
+        .values.flatten()
+        .tolist()
+    )
+
+    score_overview.loc["damage harmonized avg", ["precision", "recall", "f1-score"]] = [
+        harmonic_score(r)
+        for i, r in score_overview.loc[
+            ["1", "2", "3"], ["precision", "recall", "f1-score"]
         ].T.iterrows()
     ]
 
@@ -176,6 +216,7 @@ def main():
                 "weighted recall {}".format(preds_type),
                 score_overview.loc["weighted avg", "recall"],
             )
+
             if preds_type == "model":
                 # generate and save confusion matrix
                 cm_analysis(
