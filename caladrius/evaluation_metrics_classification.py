@@ -202,6 +202,7 @@ def main():
         "macro_recall_damage",
         "support damage",
         "support all",
+        "percentage damage",
     ]
     scores_dict = dict.fromkeys(scores_params)
 
@@ -255,6 +256,9 @@ def main():
                 )
                 scores_dict["support all"] = int(
                     score_overview.loc["macro avg", "support"]
+                )
+                scores_dict["percentage damage"] = round(
+                    scores_dict["support damage"] / scores_dict["support all"] * 100, 1
                 )
             # if preds_type == "random":
             #     scores_dict["unweightedrecall_random"] = score_overview.loc[
