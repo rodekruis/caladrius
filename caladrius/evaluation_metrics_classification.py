@@ -200,7 +200,8 @@ def main():
         "harmonized_recall_damage",
         "weighted_recall_damage",
         "macro_recall_damage",
-        "percentage damage",
+        "support damage",
+        "support all",
     ]
     scores_dict = dict.fromkeys(scores_params)
 
@@ -249,11 +250,11 @@ def main():
                 scores_dict["macro_recall_damage"] = score_overview.loc[
                     "damage macro avg", "recall"
                 ]
-                scores_dict["percentage damage"] = round(
-                    int(score_overview.loc["damage macro avg", "support"])
-                    / int(score_overview.loc["macro avg", "support"])
-                    * 100,
-                    1,
+                scores_dict["support damage"] = int(
+                    score_overview.loc["damage macro avg", "support"]
+                )
+                scores_dict["support all"] = int(
+                    score_overview.loc["macro avg", "support"]
                 )
             # if preds_type == "random":
             #     scores_dict["unweightedrecall_random"] = score_overview.loc[
