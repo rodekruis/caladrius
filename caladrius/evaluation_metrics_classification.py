@@ -196,6 +196,7 @@ def main():
     # ]
     scores_params = [
         "harmonized_f1",
+        "macro recall",
         "harmonized_recall_damage",
         "weighted_recall_damage",
         "macro_recall_damage",
@@ -237,6 +238,7 @@ def main():
                 scores_dict["harmonized_f1"] = score_overview.loc[
                     "harmonized avg", "f1-score"
                 ]
+                scores_dict["macro recall"] = score_overview.loc["macro avg", "recall"]
                 scores_dict["harmonized_recall_damage"] = score_overview.loc[
                     "damage harmonized avg", "recall"
                 ]
