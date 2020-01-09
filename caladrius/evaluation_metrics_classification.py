@@ -187,12 +187,18 @@ def main():
             os.makedirs(p)
 
     # parameters that should be written to overview file
+    # scores_params = [
+    #     "unweighted_recall",
+    #     "weighted_recall",
+    #     "harmonized_recall",
+    #     "unweightedrecall_random",
+    #     "unweightedrecall_average",
+    # ]
     scores_params = [
-        "unweighted_recall",
-        "weighted_recall",
-        "harmonized_recall",
-        "unweightedrecall_random",
-        "unweightedrecall_average",
+        "harmonized_f1",
+        "harmonized_recall_damage",
+        "weighted_recall_damage",
+        "macro_recall_damage",
     ]
     scores_dict = dict.fromkeys(scores_params)
 
@@ -226,24 +232,28 @@ def main():
                     [0, 1, 2, 3],
                     figsize=(9, 12),
                 )
+
                 # save overview params
-                scores_dict["unweighted_recall"] = score_overview.loc[
-                    "macro avg", "recall"
+                scores_dict["harmonized_f1"] = score_overview.loc[
+                    "harmonized avg", "f1-score"
                 ]
-                scores_dict["weighted_recall"] = score_overview.loc[
-                    "weighted avg", "recall"
+                scores_dict["harmonized_recall_damage"] = score_overview.loc[
+                    "damage harmonized avg", "recall"
                 ]
-                scores_dict["harmonized_recall"] = score_overview.loc[
-                    "harmonized avg", "recall"
+                scores_dict["weighted_recall_damage"] = score_overview.loc[
+                    "damage weighted avg", "recall"
                 ]
-            if preds_type == "random":
-                scores_dict["unweightedrecall_random"] = score_overview.loc[
-                    "macro avg", "recall"
+                scores_dict["macro_recall_damage"] = score_overview.loc[
+                    "damage macro avg", "recall"
                 ]
-            if preds_type == "average":
-                scores_dict["unweightedrecall_average"] = score_overview.loc[
-                    "macro avg", "recall"
-                ]
+            # if preds_type == "random":
+            #     scores_dict["unweightedrecall_random"] = score_overview.loc[
+            #         "macro avg", "recall"
+            #     ]
+            # if preds_type == "average":
+            #     scores_dict["unweightedrecall_average"] = score_overview.loc[
+            #         "macro avg", "recall"
+            #     ]
         else:
             print("No predictions for prediction type {}".format(preds_type))
 
