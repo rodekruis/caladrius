@@ -185,8 +185,7 @@ class QuasiSiameseNetwork(object):
                         ]
                     )
                 else:
-                    output_probability = output_probability.extend(outputs.tolist())
-
+                    output_probability.extend(outputs.tolist())
                 rolling_eval.add(labels, preds)
 
             running_loss += loss.item() * image1.size(0)
