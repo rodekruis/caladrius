@@ -10,6 +10,7 @@ from torch.nn.modules import loss as nnloss
 import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
+from torch import nn
 
 from model.network import get_pretrained_iv3_transforms, SiameseNetwork
 from utils import create_logger
@@ -145,8 +146,16 @@ class QuasiSiameseNetwork(object):
                 self.optimizer.zero_grad()
 
             with torch.set_grad_enabled(phase == "train"):
-                if model_type == "quasi-siamese" or model_type == "probability":
+                if model_type == "quasi-siamese":
                     outputs = self.model(image1, image2).squeeze()
+                elif model_type == "probability":
+                    outputs = self.model(image1, image2).squeeze()
+                    # print("model output",self.model(image1, image2))
+                    # print("model output squeezed",self.model(image1, image2).squeeze())
+                    outputs_probability = nn.functional.softmax(
+                        self.model(image1, image2)
+                    ).squeeze()
+                    # print("outputs probability",outputs_probability)
                 elif model_type == "random":
                     if self.output_type == "regression":
                         outputs = torch.rand(labels.shape)
@@ -185,7 +194,7 @@ class QuasiSiameseNetwork(object):
                         ]
                     )
                 else:
-                    output_probability.extend(outputs.tolist())
+                    output_probability.extend(outputs_probability.tolist())
                 rolling_eval.add(labels, preds)
 
             running_loss += loss.item() * image1.size(0)
