@@ -152,9 +152,9 @@ class QuasiSiameseNetwork(object):
                     outputs = self.model(image1, image2).squeeze()
                     # print("model output",self.model(image1, image2))
                     # print("model output squeezed",self.model(image1, image2).squeeze())
-                    # outputs_probability = nn.functional.softmax(
-                    #     self.model(image1, image2)
-                    # ).squeeze()
+                    outputs_probability = nn.functional.softmax(
+                        self.model(image1, image2)
+                    ).squeeze()
                     # print("outputs probability",outputs_probability)
                 elif model_type == "random":
                     if self.output_type == "regression":
@@ -183,7 +183,7 @@ class QuasiSiameseNetwork(object):
 
                 # if not (phase == "train"):
                 if model_type != "probability":
-                    print("preds view", preds.view(-1).tolist())
+                    # print("preds view", preds.view(-1).tolist())
                     prediction_file.writelines(
                         [
                             "{} {} {}\n".format(*line)
@@ -200,8 +200,10 @@ class QuasiSiameseNetwork(object):
                     # _, preds_prob = torch.max(outputs_probability, 1)
                     # print("preds prob",preds_prob)
                     # print("preds",preds)
-                    print("preds view", preds.view(-1).tolist())
-                    output_probability.extend(outputs.tolist())  # outputs_probability
+                    # print("preds view", preds.view(-1).tolist())
+                    output_probability.extend(
+                        outputs_probability.tolist()
+                    )  # outputs_probability
                 rolling_eval.add(labels, preds)
 
             running_loss += loss.item() * image1.size(0)
