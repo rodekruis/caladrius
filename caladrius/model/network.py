@@ -1,5 +1,3 @@
-import time
-import copy
 from collections import OrderedDict
 
 import torch
@@ -46,11 +44,6 @@ def get_pretrained_iv3(output_size):
                 params.requires_grad = True
         ct.append(name)
 
-    # To view which layers are freeze and which layers are not freezed:
-    for name, child in model_conv.named_children():
-        for name_2, params in child.named_parameters():
-            logger.debug("{}, {}".format(name_2, params.requires_grad))
-
     return model_conv
 
 
@@ -58,7 +51,7 @@ def get_pretrained_iv3_transforms(set_name):
     """
     Compose a series of image transformations to be performed on the input data
     Args:
-        set_name (str): the dataset you want the transformations for. Can be "train","validation", and/or "test"
+        set_name (str): the dataset you want the transformations for. Can be "train", "validation", "test", "inference"
 
     Returns:
         Composition of transformations for given set name
@@ -98,6 +91,7 @@ def get_pretrained_iv3_transforms(set_name):
         "train": train_transform,
         "validation": test_transform,
         "test": test_transform,
+        "inference": test_transform,
     }[set_name]
 
 
