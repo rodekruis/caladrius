@@ -1,24 +1,23 @@
 import pandas as pd
 import numpy as np
 import re
-import matplotlib.pyplot as plt
+import argparse
+import os
+from os import fdopen, remove
+from tempfile import mkstemp
+from shutil import move
+
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
-
-import argparse
-import os
-
-from tempfile import mkstemp
-from shutil import move
-from os import fdopen, remove
+import matplotlib.pyplot as plt
 
 
-def cm_analysis(y_true, y_pred, filename, labels, ymap=None, figsize=(10, 10)):
+def plot_confusionmatrix(y_true, y_pred, filename, labels, figsize=(10, 10)):
     """
     Generate matrix plot of confusion matrix with pretty annotations.
     The plot image is saved to disk.
-    Copied from https://gist.github.com/hitvoice/36cf44689065ca9b927431546381a3f7
+    Adapted from https://gist.github.com/hitvoice/36cf44689065ca9b927431546381a3f7
     args:
       y_true:    true label of the data, with shape (nsamples,)
       y_pred:    prediction of the data, with shape (nsamples,)
@@ -26,18 +25,13 @@ def cm_analysis(y_true, y_pred, filename, labels, ymap=None, figsize=(10, 10)):
       labels:    string array, name the order of class labels in the confusion matrix.
                  use `clf.classes_` if using scikit-learn models.
                  with shape (nclass,).
-      ymap:      dict: any -> string, length == nclass.
-                 if not None, map the labels & ys to more understandable strings.
-                 Caution: original y_true, y_pred and labels must align.
       figsize:   the size of the figure plotted.
     """
-    if ymap is not None:
-        y_pred = [ymap[yi] for yi in y_pred]
-        y_true = [ymap[yi] for yi in y_true]
-        labels = [ymap[yi] for yi in labels]
+
     cm = confusion_matrix(y_true, y_pred, labels=labels)
     cm_sum = np.sum(cm, axis=1, keepdims=True)
     cm_perc = cm / cm_sum.astype(float) * 100
+
     annot = np.empty_like(cm).astype(str)
     nrows, ncols = cm.shape
     for i in range(nrows):
@@ -71,12 +65,6 @@ def harmonic_score(scores):
     return len(scores) / sum((c + 1e-6) ** -1 for c in scores)
 
 
-def different_averages(scores):
-    harmonic_avg = len(scores) / sum((c + 1e-6) ** -1 for c in scores)
-    macro_avg = sum(scores) / len(scores)
-    return harmonic_avg, macro_avg
-
-
 def gen_score_overview(preds_filename):
     """
     Generate a dataframe with several performance measures
@@ -100,25 +88,25 @@ def gen_score_overview(preds_filename):
     labels = np.array(df_pred.label)
 
     report = classification_report(labels, preds, digits=3, output_dict=True)
-    # print(report)
-    dam_report = classification_report(
-        labels, preds, labels=[1, 2, 3], output_dict=True
-    )
-    # print(dam_report.keys())
-    dam_report = pd.DataFrame(dam_report).transpose()
-
     score_overview = pd.DataFrame(report).transpose()
 
     score_overview = score_overview.append(pd.Series(name="harmonized avg"))
-    score_overview = score_overview.append(pd.Series(name="damage macro avg"))
-    score_overview = score_overview.append(pd.Series(name="damage weighted avg"))
-    score_overview = score_overview.append(pd.Series(name="damage harmonized avg"))
     score_overview.loc["harmonized avg", ["precision", "recall", "f1-score"]] = [
         harmonic_score(r)
         for i, r in score_overview.loc[
             ["0", "1", "2", "3"], ["precision", "recall", "f1-score"]
         ].T.iterrows()
     ]
+
+    # create report only for damage categories (represented by 1,2,3)
+    dam_report = classification_report(
+        labels, preds, labels=[1, 2, 3], output_dict=True
+    )
+    dam_report = pd.DataFrame(dam_report).transpose()
+
+    score_overview = score_overview.append(pd.Series(name="damage macro avg"))
+    score_overview = score_overview.append(pd.Series(name="damage weighted avg"))
+    score_overview = score_overview.append(pd.Series(name="damage harmonized avg"))
 
     score_overview.loc[
         "damage macro avg", ["precision", "recall", "f1-score", "support"]
@@ -153,6 +141,92 @@ def gen_score_overview(preds_filename):
     return score_overview, df_pred
 
 
+def create_overviewdict(df_overview):
+    scores_params = [
+        "harmonized_f1",
+        "macro recall",
+        "harmonized_recall_damage",
+        "weighted_recall_damage",
+        "macro_recall_damage",
+        "support damage",
+        "support all",
+        "percentage damage",
+    ]
+
+    scores_dict = dict.fromkeys(scores_params)
+
+    # save overview params
+    scores_dict["harmonized_f1"] = df_overview.loc["harmonized avg", "f1-score"]
+    scores_dict["macro recall"] = df_overview.loc["macro avg", "recall"]
+    scores_dict["harmonized_recall_damage"] = df_overview.loc[
+        "damage harmonized avg", "recall"
+    ]
+    scores_dict["weighted_recall_damage"] = df_overview.loc[
+        "damage weighted avg", "recall"
+    ]
+    scores_dict["macro_recall_damage"] = df_overview.loc["damage macro avg", "recall"]
+    scores_dict["support damage"] = int(df_overview.loc["damage macro avg", "support"])
+    scores_dict["support all"] = int(df_overview.loc["macro avg", "support"])
+    scores_dict["percentage damage"] = round(
+        scores_dict["support damage"] / scores_dict["support all"] * 100, 1
+    )
+    return scores_dict
+
+
+def save_overviewfile(
+    overview_dict, run_name, output_path, filename="allruns_scores.txt"
+):
+    """
+    Save overview_dict to a file with all other runs.
+    Args:
+        overview_dict: Keys and values that should be saved
+        run_name: name of experiment
+        output_path: path to output file
+        filename: name of output file
+    """
+    # save parameters to overview file
+    # replace old values if line with same run_name already exists
+    overview_path = os.path.join(output_path, filename)
+    fh, abs_path = mkstemp()
+    replicate = False
+    scores_dict_rounded = {
+        k: round(v, 3) if v is not None else "" for k, v in overview_dict.items()
+    }
+    with fdopen(fh, "w+") as new_file:
+        new_file.write(
+            "run_name,{}\n".format(
+                ",".join(str(item) for item in list(overview_dict.keys()))
+            )
+        )
+        if os.path.isfile(overview_path):
+            with open(overview_path) as old_file:
+                next(old_file)
+                for line in old_file:
+                    if re.search(r"^{},".format(run_name), line):
+                        replicate = True
+                        new_file.write(
+                            "{},{}\n".format(
+                                run_name,
+                                ",".join(
+                                    str(item)
+                                    for item in list(scores_dict_rounded.values())
+                                ),
+                            )
+                        )
+                    else:
+                        new_file.write(line)
+        if not replicate:
+            new_file.write(
+                "{},{}\n".format(
+                    run_name,
+                    ",".join(str(item) for item in list(scores_dict_rounded.values())),
+                )
+            )
+    if os.path.isfile(overview_path):
+        remove(overview_path)
+    move(abs_path, overview_path)
+
+
 def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -168,43 +242,32 @@ def main():
         help="Full path to the directory with txt file with labels and predictions",
     )
 
+    parser.add_argument(
+        "--checkpoint-folder",
+        type=str,
+        default=os.path.join(".", "runs"),
+        help="runs path",
+    )
+
     args = parser.parse_args()
     if not args.run_folder:
-        args.run_folder = "{}-input_size_32-learning_rate_0.001-batch_size_32".format(
-            args.run_name
+        args.run_folder = os.path.join(
+            args.checkpoint_folder,
+            "{}-input_size_32-learning_rate_0.001-batch_size_32".format(args.run_name),
         )
 
     # define all file names and paths
     test_file_name = "{}_test_epoch_001_predictions.txt".format(args.run_name)
-    preds_model = "../runs/{}/predictions/{}".format(args.run_folder, test_file_name)
+    preds_model = "{}/predictions/{}".format(args.run_folder, test_file_name)
     preds_random = "{}_random.txt".format(preds_model[:-4])
     preds_average = "{}_average.txt".format(preds_model[:-4])
-    output_path = "../performance/"
+    output_path = "./performance/"
     score_overviews_path = os.path.join(output_path, "score_overviews/")
     confusion_matrices_path = os.path.join(output_path, "confusion_matrices/")
+
     for p in [output_path, score_overviews_path, confusion_matrices_path]:
         if not os.path.exists(p):
             os.makedirs(p)
-
-    # parameters that should be written to overview file
-    # scores_params = [
-    #     "unweighted_recall",
-    #     "weighted_recall",
-    #     "harmonized_recall",
-    #     "unweightedrecall_random",
-    #     "unweightedrecall_average",
-    # ]
-    scores_params = [
-        "harmonized_f1",
-        "macro recall",
-        "harmonized_recall_damage",
-        "weighted_recall_damage",
-        "macro_recall_damage",
-        "support damage",
-        "support all",
-        "percentage damage",
-    ]
-    scores_dict = dict.fromkeys(scores_params)
 
     for preds_filename, preds_type in zip(
         [preds_model, preds_random, preds_average], ["model", "random", "average"]
@@ -218,18 +281,17 @@ def main():
                     score_overviews_path, args.run_name, preds_type
                 )
             )
-            print(
-                "macro recall {}".format(preds_type),
-                score_overview.loc["macro avg", "recall"],
-            )
-            print(
-                "weighted recall {}".format(preds_type),
-                score_overview.loc["weighted avg", "recall"],
-            )
 
             if preds_type == "model":
+                scores_dict = create_overviewdict(score_overview)
+                save_overviewfile(
+                    scores_dict,
+                    args.run_name,
+                    output_path,
+                    filename="allruns_scores.txt",
+                )
                 # generate and save confusion matrix
-                cm_analysis(
+                plot_confusionmatrix(
                     df_pred.label,
                     df_pred.pred,
                     "{}{}_confusion".format(confusion_matrices_path, args.run_name),
@@ -237,82 +299,8 @@ def main():
                     figsize=(9, 12),
                 )
 
-                # save overview params
-                scores_dict["harmonized_f1"] = score_overview.loc[
-                    "harmonized avg", "f1-score"
-                ]
-                scores_dict["macro recall"] = score_overview.loc["macro avg", "recall"]
-                scores_dict["harmonized_recall_damage"] = score_overview.loc[
-                    "damage harmonized avg", "recall"
-                ]
-                scores_dict["weighted_recall_damage"] = score_overview.loc[
-                    "damage weighted avg", "recall"
-                ]
-                scores_dict["macro_recall_damage"] = score_overview.loc[
-                    "damage macro avg", "recall"
-                ]
-                scores_dict["support damage"] = int(
-                    score_overview.loc["damage macro avg", "support"]
-                )
-                scores_dict["support all"] = int(
-                    score_overview.loc["macro avg", "support"]
-                )
-                scores_dict["percentage damage"] = round(
-                    scores_dict["support damage"] / scores_dict["support all"] * 100, 1
-                )
-            # if preds_type == "random":
-            #     scores_dict["unweightedrecall_random"] = score_overview.loc[
-            #         "macro avg", "recall"
-            #     ]
-            # if preds_type == "average":
-            #     scores_dict["unweightedrecall_average"] = score_overview.loc[
-            #         "macro avg", "recall"
-            #     ]
         else:
             print("No predictions for prediction type {}".format(preds_type))
-
-    # save parameters to overview file
-    # replace old values if line with same run_name already exists
-    allruns_overview_file_name = "allruns_scores.txt"
-    allruns_file_path = os.path.join(output_path, allruns_overview_file_name)
-    fh, abs_path = mkstemp()
-    replicate = False
-    scores_dict_rounded = {
-        k: round(v, 3) if v is not None else "" for k, v in scores_dict.items()
-    }
-    with fdopen(fh, "w+") as new_file:
-        new_file.write(
-            "run_name,{}\n".format(
-                ",".join(str(item) for item in list(scores_dict.keys()))
-            )
-        )
-        if os.path.isfile(allruns_file_path):
-            with open(allruns_file_path) as old_file:
-                next(old_file)
-                for line in old_file:
-                    if re.search(r"^{},".format(args.run_name), line):
-                        replicate = True
-                        new_file.write(
-                            "{},{}\n".format(
-                                args.run_name,
-                                ",".join(
-                                    str(item)
-                                    for item in list(scores_dict_rounded.values())
-                                ),
-                            )
-                        )
-                    else:
-                        new_file.write(line)
-        if not replicate:
-            new_file.write(
-                "{},{}\n".format(
-                    args.run_name,
-                    ",".join(str(item) for item in list(scores_dict_rounded.values())),
-                )
-            )
-    if os.path.isfile(allruns_file_path):
-        remove(allruns_file_path)
-    move(abs_path, allruns_file_path)
 
 
 if __name__ == "__main__":
