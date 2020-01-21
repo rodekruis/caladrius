@@ -5,6 +5,7 @@ import argparse
 import pickle
 import logging
 import re
+import json
 
 import torch
 
@@ -51,6 +52,14 @@ def save_obj(obj, path):
 def load_obj(path):
     with open(path, "rb") as f:
         return pickle.load(f)
+
+
+def readable_float(number):
+    return round(float(number), 4)
+
+
+def dynamic_report_key(label, prefix, condition):
+    return "{}{}".format((prefix + "_model_") if condition else "", label)
 
 
 def run_name_type(run_name):
@@ -104,8 +113,8 @@ def configuration():
     parser.add_argument(
         "--model-type",
         type=str,
-        default="quasi-siamese",
-        choices=["quasi-siamese", "random", "average"],
+        default="siamese",
+        choices=["siamese", "random", "average"],
         help="type of model",
     )
 
@@ -143,19 +152,25 @@ def configuration():
         help="test the model on the test set instead of training",
     )
     parser.add_argument(
+        "--inference",
+        action="store_true",
+        default=False,
+        help="test and use the model on the inference set instead of training",
+    )
+    parser.add_argument(
         "--max-data-points",
         default=None,
         type=int,
         help="limit the total number of data points used, for debugging on GPU-less laptops",
     )
     parser.add_argument(
-        "--training-accuracy-threshold",
+        "--train-accuracy-threshold",
         type=float,
         default=0.1,
         help="window size to calculate regression accuracy",
     )
     parser.add_argument(
-        "--testing-accuracy-threshold",
+        "--test-accuracy-threshold",
         type=float,
         default=0.3,
         help="window size to calculate regression accuracy",
@@ -171,6 +186,7 @@ def configuration():
     args = parser.parse_args()
 
     arg_vars = vars(args)
+    arg_vars["model_name"] = arg_vars["run_name"]
 
     if args.torch_seed is not None:
         torch.manual_seed(arg_vars["torch_seed"])
@@ -178,11 +194,13 @@ def configuration():
         arg_vars["torch_seed"] = torch.initial_seed()
 
     if args.max_data_points is not None:
-        arg_vars["run_name"] = "{}-max_data_points_{}".format(
+        arg_vars["run_name"] = "{}_max_data_points_{}".format(
             arg_vars["run_name"], arg_vars["max_data_points"]
         )
 
-    checkpointFolderName = "{}-input_size_{}-learning_rate_{}-batch_size_{}".format(
+    arg_vars[
+        "model_directory"
+    ] = "{}-input_size_{}-learning_rate_{}-batch_size_{}".format(
         arg_vars["run_name"],
         arg_vars["input_size"],
         arg_vars["learning_rate"],
@@ -190,13 +208,16 @@ def configuration():
     )
 
     arg_vars["checkpoint_path"] = make_directory(
-        os.path.join(arg_vars["checkpoint_path"], checkpointFolderName)
+        os.path.join(arg_vars["checkpoint_path"], arg_vars["model_directory"])
     )
     arg_vars["prediction_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], "predictions")
     )
     arg_vars["model_path"] = os.path.join(
         arg_vars["checkpoint_path"], "best_model_wts.pkl"
+    )
+    arg_vars["run_report_path"] = os.path.join(
+        arg_vars["checkpoint_path"], "run_report.json"
     )
 
     if torch.cuda.is_available() and not arg_vars["disable_cuda"]:
@@ -205,6 +226,22 @@ def configuration():
         arg_vars["device"] = torch.device("cpu")
 
     return args
+
+
+def load_run_report(run_report_path):
+    run_report_json = dotdict({})
+    if os.path.exists(run_report_path):
+        with open(run_report_path, "r") as run_report_file:
+            run_report_json = json.load(run_report_file)
+            run_report_json = dotdict(run_report_json)
+            run_report_json.device = torch.device(run_report_json.device)
+    return run_report_json
+
+
+def save_run_report(run_report_json):
+    run_report_json.device = str(run_report_json.device)
+    with open(run_report_json.run_report_path, "w") as run_report_file:
+        json.dump(run_report_json, run_report_file, indent=4)
 
 
 def attach_exception_hook(logger):

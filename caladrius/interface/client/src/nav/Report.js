@@ -52,7 +52,7 @@ export class Report extends React.Component {
         doc.text("Addresses", 15, 20);
         doc.setFontSize(TEXT_FONT_SIZE);
         let address_table = [];
-        data.map(datapoint => {
+        (data["inference"].slice(-1)[0] || []).map(datapoint => {
             address_table.push({
                 damage: this.props.get_datum_priority(datapoint),
                 address: datapoint.address || "ADDRESS NOT AVAILABLE",

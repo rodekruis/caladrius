@@ -63,11 +63,11 @@ export class ClassificationStatsTable extends Table {
         predcition_class
     ) => {
         return data.filter(datum => {
-            const low = datum.label <= damage_boundary_a;
+            const low = datum.prediction <= damage_boundary_a;
             const medium =
-                datum.label > damage_boundary_a &&
-                datum.label < damage_boundary_b;
-            const high = datum.label >= damage_boundary_b;
+                datum.prediction > damage_boundary_a &&
+                datum.prediction < damage_boundary_b;
+            const high = datum.prediction >= damage_boundary_b;
             return this.class_condition(low, medium, high, predcition_class);
         });
     };
