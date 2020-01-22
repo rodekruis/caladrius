@@ -178,10 +178,10 @@ def configuration():
         type=str,
         default="recall_micro",
         choices=[
-            "recall_macro",
             "recall_micro",
-            "precision_micro",
-            "f1_micro",
+            "recall_macro",
+            "precision_macro",
+            "f1_macro",
             "recall_weighted",
             "precision_weighted",
             "f1_weighted",
