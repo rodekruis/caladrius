@@ -54,7 +54,7 @@ ALL_BUILDINGS_GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, "AllBuildingOutline.ge
 GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, "TrainingDataset.geojson")
 
 # output
-TARGET_DATA_FOLDER = os.path.join("data", "Sint-Maarten-2017-Classification")
+TARGET_DATA_FOLDER = os.path.join("data", "Sint-Maarten-2017")
 os.makedirs(TARGET_DATA_FOLDER, exist_ok=True)
 
 # cache
@@ -70,7 +70,7 @@ ADMIN_REGIONS_FILE = os.path.join(
 )
 
 
-def damage_quantifier_(category):
+def damage_quantifier(category):
     stats = {
         "none": {"mean": 0.2, "std": 0.2},
         "partial": {"mean": 0.55, "std": 0.15},
@@ -87,17 +87,6 @@ def damage_quantifier_(category):
         )
 
     return np.clip(value, 0.0, 1.0)
-
-
-def damage_quantifier(category):
-    category_class = 2
-
-    if category == "none":
-        category_class = 0
-    elif category == "partial":
-        category_class = 1
-
-    return category_class
 
 
 def makesquare(minx, miny, maxx, maxy):
