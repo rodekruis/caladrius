@@ -236,6 +236,17 @@ class QuasiSiameseNetwork(object):
                         batch_score[4][2],
                     )
                 )
+                logger.debug(
+                    "Epoch: {:03d} Phase: {:10s} Batch {:04d}/{:04d}: (Weighted) Precision: {:.4f} Recall: {:.4f} F1: {:.4f}".format(
+                        epoch,
+                        phase,
+                        idx,
+                        len(loader),
+                        batch_score[5][0],
+                        batch_score[5][1],
+                        batch_score[5][2],
+                    )
+                )
 
         epoch_loss = rolling_eval.loss()
         epoch_score = rolling_eval.score()
@@ -251,7 +262,9 @@ class QuasiSiameseNetwork(object):
 
         if not (phase == "train"):
             prediction_file.write(
-                "Epoch {:03d} (Micro) Recall: {:.4f}\n".format(epoch, epoch_main_metric)
+                "Epoch {:03d} ({}) {}: {:.4f}\n".format(
+                    epoch, first_index_key, second_index_key, epoch_main_metric
+                )
             )
             prediction_file.close()
 
