@@ -40,7 +40,6 @@ class dotdict(dict):
 
 def make_directory(directoryPath):
     if not os.path.isdir(directoryPath):
-        print(directoryPath)
         os.makedirs(directoryPath)
     return directoryPath
 
