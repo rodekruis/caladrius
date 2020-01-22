@@ -43,7 +43,6 @@ def get_pretrained_iv3(output_size):
             for params in child.parameters():
                 params.requires_grad = True
         ct.append(name)
-
     return model_conv
 
 

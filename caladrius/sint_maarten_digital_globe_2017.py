@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import datetime
 
 from shutil import move
 
@@ -40,21 +41,20 @@ sys.excepthook = exceptionLogger
 DAMAGE_TYPES = ["destroyed", "significant", "partial", "none"]
 
 # Fraction of image pixels that must be non-zero
-NONZERO_PIXEL_THRESHOLD = 0.90
+NONZERO_PIXEL_THRESHOLD = 0.70
 
 # input
-ROOT_DIRECTORY = os.path.join("../../data", "RC Challenge 1", "1")
+ROOT_DIRECTORY = os.path.join("data", "digital-globe")
 
-BEFORE_FOLDER = os.path.join(ROOT_DIRECTORY, "Before")
-AFTER_FOLDER = os.path.join(ROOT_DIRECTORY, "After")
+BEFORE_FOLDER = os.path.join(ROOT_DIRECTORY, "pre-event")
+AFTER_FOLDER = os.path.join(ROOT_DIRECTORY, "post-event")
 
-GEOJSON_FOLDER = os.path.join(ROOT_DIRECTORY, "Building Info")
-
-ALL_BUILDINGS_GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, "AllBuildingOutline.geojson")
-GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, "TrainingDataset.geojson")
+GEOJSON_FILE = os.path.join(ROOT_DIRECTORY, "TrainingDataset.geojson")
 
 # output
-TARGET_DATA_FOLDER = os.path.join("../../data", "Sint-Maarten-2017")
+VERSION_FILE_NAME = "VERSION"
+
+TARGET_DATA_FOLDER = os.path.join("data", "Sint-Maarten-Digital-Globe-2017")
 os.makedirs(TARGET_DATA_FOLDER, exist_ok=True)
 
 # cache
@@ -66,33 +66,27 @@ ADDRESS_CACHE = os.path.join(TARGET_DATA_FOLDER, "address_cache.esri")
 
 # Administrative boundaries file
 ADMIN_REGIONS_FILE = os.path.join(
-    GEOJSON_FOLDER, "admin_regions", "sxm_admbnda_adm1.shp"
+    ROOT_DIRECTORY, "admin_regions", "sxm_admbnda_adm1.shp"
 )
 
 
-def damage_quantifier(category, label_type):
+def damage_quantifier(category):
+    stats = {
+        "none": {"mean": 0.2, "std": 0.2},
+        "partial": {"mean": 0.55, "std": 0.15},
+        "significant": {"mean": 0.85, "std": 0.15},
+    }
 
-    if label_type == "classification":
-        damage_dict = {"none": 0, "partial": 1, "significant": 2, "destroyed": 3}
-        return damage_dict[category]
+    if category == "none":
+        value = np.random.normal(stats["none"]["mean"], stats["none"]["std"])
+    elif category == "partial":
+        value = np.random.normal(stats["partial"]["mean"], stats["partial"]["std"])
+    else:
+        value = np.random.normal(
+            stats["significant"]["mean"], stats["significant"]["std"]
+        )
 
-    elif label_type == "regression":
-        stats = {
-            "none": {"mean": 0.2, "std": 0.2},
-            "partial": {"mean": 0.55, "std": 0.15},
-            "significant": {"mean": 0.85, "std": 0.15},
-        }
-
-        if category == "none":
-            value = np.random.normal(stats["none"]["mean"], stats["none"]["std"])
-        elif category == "partial":
-            value = np.random.normal(stats["partial"]["mean"], stats["partial"]["std"])
-        else:
-            value = np.random.normal(
-                stats["significant"]["mean"], stats["significant"]["std"]
-            )
-
-        return np.clip(value, 0.0, 1.0)
+    return np.clip(value, 0.0, 1.0)
 
 
 def makesquare(minx, miny, maxx, maxy):
@@ -137,7 +131,16 @@ def makesquare(minx, miny, maxx, maxy):
     return geoms
 
 
-def saveImage(image, transform, out_meta, folder, name):
+def get_image_list(root_folder):
+    image_list = []
+    for path, subdirs, files in os.walk(root_folder):
+        for name in files:
+            if name.endswith(".tif"):
+                image_list.append(os.path.join(path, name))
+    return image_list
+
+
+def save_image(image, transform, out_meta, image_path):
     out_meta.update(
         {
             "driver": "PNG",
@@ -146,109 +149,98 @@ def saveImage(image, transform, out_meta, folder, name):
             "transform": transform,
         }
     )
-    directory = os.path.join(TEMP_DATA_FOLDER, folder)
-    os.makedirs(directory, exist_ok=True)
-    file_path = os.path.join(directory, name)
-    with rasterio.open(file_path, "w", **out_meta) as dest:
+    with rasterio.open(image_path, "w", **out_meta) as dest:
         dest.write(image)
-    return file_path
+    return image_path
 
 
-def getBeforeImage(source, geometry, name):
-    image, transform = rasterio.mask.mask(source, geometry, crop=True)
-    out_meta = source.meta.copy()
-    good_pixel_frac = np.count_nonzero(image) / image.size
-    if np.sum(image) > 0 and good_pixel_frac > NONZERO_PIXEL_THRESHOLD:
-        return saveImage(image, transform, out_meta, "before", name)
-    return None
+def get_image_path(geo_image_path, object_id):
+    filename = "{}.png".format(object_id)
+
+    image_path = geo_image_path.split("/")
+
+    sub_folder = "before" if image_path[2] == "pre-event" else "after"
+    image_path = os.path.join(TEMP_DATA_FOLDER, sub_folder)
+
+    os.makedirs(image_path, exist_ok=True)
+
+    image_path = os.path.join(image_path, filename)
+
+    return image_path
 
 
-def getAfterImage(geometry, name):
-    after_files = [
-        os.path.join(AFTER_FOLDER, after_file)
-        for after_file in os.listdir(AFTER_FOLDER)
-        if after_file.endswith(".tif")
-    ]
-    image_list = []
-    for index, file in enumerate(after_files):
-        try:
-            with rasterio.open(file) as after_file:
-                image, transform = rasterio.mask.mask(after_file, geometry, crop=True)
-                good_pixel_frac = np.count_nonzero(image) / image.size
-                if np.sum(image) > 0 and good_pixel_frac > NONZERO_PIXEL_THRESHOLD:
-                    image_list.append(
-                        {
-                            "after_file": after_file,
-                            "good_pixel_frac": good_pixel_frac,
-                            "image": image,
-                            "transform": transform,
-                        }
-                    )
-        except ValueError:
-            pass
-    if len(image_list) == 0:
-        return None
-    elif len(image_list) == 1:
-        after_image = image_list[0]
-    else:
-        after_image = image_list[
-            np.argmax(np.array([image["good_pixel_frac"] for image in image_list]))
-        ]
-    return saveImage(
-        after_image["image"],
-        after_image["transform"],
-        after_image["after_file"].meta.copy(),
-        "after",
-        name,
-    )
+def match_geometry(image_path, geo_image_file, geometry):
+    try:
+        image, transform = rasterio.mask.mask(geo_image_file, geometry, crop=True)
+        out_meta = geo_image_file.meta.copy()
+        good_pixel_fraction = np.count_nonzero(image) / image.size
+        if (
+            np.sum(image) > 0
+            and good_pixel_fraction > NONZERO_PIXEL_THRESHOLD
+            and len(image.shape) > 2
+            and image.shape[0] == 3
+        ):
+            return save_image(image, transform, out_meta, image_path)
+    except ValueError:
+        return False
 
 
-def createDatapoints(df, label_type):
+def create_datapoints(df):
+    start_time = datetime.datetime.now()
 
     logger.info("Feature Size {}".format(len(df)))
 
-    BEFORE_FILE = os.path.join(BEFORE_FOLDER, "IGN_Feb2017_20CM.tif")
+    count = 0
+
+    image_list = get_image_list(ROOT_DIRECTORY)
+
+    # logger.info(len(image_list)) # 319
 
     with open(LABELS_FILE, "w+") as labels_file:
-        with rasterio.open(BEFORE_FILE) as source_before_image:
+        for geo_image_path in tqdm(image_list):
+            with rasterio.open(geo_image_path) as geo_image_file:
+                for index, row in tqdm(df.iterrows(), total=df.shape[0]):
 
-            count = 0
+                    damage = row["_damage"]
 
-            for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+                    bounds = row["geometry"].bounds
+                    geometry = makesquare(*bounds)
 
-                damage = row["_damage"]
+                    # identify data point
+                    object_id = row["OBJECTID"]
 
-                bounds = row["geometry"].bounds
-                geoms = makesquare(*bounds)
+                    image_path = get_image_path(geo_image_path, object_id)
 
-                # identify data point
-                objectID = row["OBJECTID"]
-
-                try:
-                    before_file = getBeforeImage(
-                        source_before_image, geoms, "{}.png".format(objectID)
-                    )
-                    after_file = getAfterImage(geoms, "{}.png".format(objectID))
-                    if (
-                        (before_file is not None)
-                        and os.path.isfile(before_file)
-                        and (after_file is not None)
-                        and os.path.isfile(after_file)
-                        and damage in DAMAGE_TYPES
-                    ):
-                        labels_file.write(
-                            "{0}.png {1:.4f}\n".format(
-                                objectID, damage_quantifier(damage, label_type)
-                            )
+                    if not os.path.exists(image_path):
+                        save_success = match_geometry(
+                            image_path, geo_image_file, geometry
                         )
-                        count += 1
-                except ValueError:
-                    continue
+                        if save_success:
+                            logger.info("Saved image at {}".format(image_path))
+                            one_path = image_path
+                            other_path = image_path.split("/")
+                            other_path[-2] = (
+                                "after" if other_path[-2] == "before" else "before"
+                            )
+                            other_path = "/".join(other_path)
+                            if (
+                                os.path.isfile(one_path)
+                                and os.path.isfile(other_path)
+                                and damage in DAMAGE_TYPES
+                            ):
+                                labels_file.write(
+                                    "{0}.png {1:.4f}\n".format(
+                                        object_id, damage_quantifier(damage)
+                                    )
+                                )
+                                count = count + 1
 
-    logger.info("Created {} Datapoints".format(count))
+    delta = datetime.datetime.now() - start_time
+
+    logger.info("Created {} Datapoints in {}".format(count, delta))
 
 
-def splitDatapoints(filepath):
+def split_datapoints(filepath):
 
     with open(filepath) as file:
         datapoints = file.readlines()
@@ -307,7 +299,7 @@ def splitDatapoints(filepath):
     return split_mappings
 
 
-def createInferenceDataset():
+def create_inference_dataset():
     temp_before_directory = os.path.join(TEMP_DATA_FOLDER, "before")
     temp_after_directory = os.path.join(TEMP_DATA_FOLDER, "after")
     images_in_before_directory = [
@@ -416,6 +408,14 @@ def create_geojson_for_visualization(df):
     admin_regions.to_file(admin_regions_file, driver="GeoJSON")
 
 
+def create_version_file(version_number):
+    with open(
+        os.path.join(TARGET_DATA_FOLDER, VERSION_FILE_NAME), "w+"
+    ) as version_file:
+        version_file.write("{0}".format(version_number))
+    return version_number
+
+
 def main():
     logging.basicConfig(
         handlers=[
@@ -431,12 +431,10 @@ def main():
     )
 
     parser.add_argument(
-        "--run-all",
-        action="store_true",
-        default=False,
-        help="Run all of the steps: create and split image stamps, "
-        "query for addresses, and create information file for the "
-        "report. Overrides individual step flags.",
+        "--version",
+        type=str,
+        required=True,
+        help="set a version number to identify dataset",
     )
     parser.add_argument(
         "--create-image-stamps",
@@ -473,22 +471,12 @@ def main():
         "shapes of the buildings, their respective administrative "
         "regions and addresses (if --query-address-api has been run)",
     )
-
-    parser.add_argument(
-        "--label-type",
-        default="regression",
-        type=str,
-        choices=["regression", "classification"],
-        metavar="label_type",
-        help="How the damage label should be produced, on a continuous scale or in classes.",
-    )
-
     args = parser.parse_args()
 
     logger.info("Reading source file: {}".format(GEOJSON_FILE))
 
     # Read in the main buildings shape file
-    df = geopandas.read_file(GEOJSON_FILE)
+    df = geopandas.read_file(GEOJSON_FILE).to_crs(epsg="4326")
 
     # Remove any empty building shapes
     number_of_all_datapoints = len(df)
@@ -498,18 +486,20 @@ def main():
     logger.info("Removed {} empty datapoints.".format(number_of_empty_datapoints))
 
     logger.info(
-        "Creating Sint-Maarten-2017 dataset using {} datapoints.".format(len(df))
+        "Creating Sint-Maarten-Digital-Globe-2017 dataset using {} datapoints.".format(
+            len(df)
+        )
     )
 
-    if args.create_image_stamps or args.run_all:
+    if args.create_image_stamps:
         logger.info("Creating training dataset.")
-        createDatapoints(df, args.label_type)
-        splitDatapoints(LABELS_FILE)
-        createInferenceDataset()
+        create_datapoints(df)
+        split_datapoints(LABELS_FILE)
+        create_inference_dataset()
     else:
         logger.info("Skipping creation of training dataset.")
 
-    if args.query_address_api or args.run_all:
+    if args.query_address_api:
         logger.info("Fetching map addresses.")
         query_address_api(
             df, address_api=args.address_api, address_api_key=args.address_api_key
@@ -517,11 +507,17 @@ def main():
     else:
         logger.info("Skipping fetching of map addresses.")
 
-    if args.create_report_info_file or args.run_all:
+    if args.create_report_info_file:
         logger.info("Creating geojson for visualization.")
         create_geojson_for_visualization(df)
     else:
         logger.info("Skipping creation of geojson for visualization.")
+
+    logger.info(
+        "Created a Caladrius Dataset at {}v{}".format(
+            TARGET_DATA_FOLDER, create_version_file(args.version)
+        )
+    )
 
 
 if __name__ == "__main__":

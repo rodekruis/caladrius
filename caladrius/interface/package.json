@@ -1,14 +1,14 @@
 {
     "name": "caladrius",
-    "version": "0.6.3",
+    "version": "0.6.4",
     "description": "Assessing Building Damage caused by Natural Disasters using Satellite Images",
     "main": "index.js",
     "scripts": {
         "backend": "nodemon index.js",
         "frontendstart": "cd client && npm run-script start",
         "frontendbuild": "cd client && npm run-script build",
-        "dev": "run-s frontendstart backend",
-        "start": "run-s frontendbuild backend",
+        "dev": "run-p backend frontendstart",
+        "start": "run-p backend frontendbuild",
         "test": "echo \"Error: no test specified\" && exit 1",
         "prettier": "prettier --write \"**/*.{js,css,html,json}\" --ignore-path ../../.prettierignore"
     },
@@ -35,7 +35,7 @@
     },
     "homepage": "https://github.com/rodekruis/caladrius#readme",
     "dependencies": {
-        "bcrypt": "^3.0.6",
+        "bcrypt": "^3.0.7",
         "body-parser": "^1.18.3",
         "cookie-parser": "^1.4.4",
         "cors": "^2.8.5",

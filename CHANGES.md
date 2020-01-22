@@ -1,7 +1,14 @@
-0.6.3 (YYYY-MM-DD)
+0.6.4 (2019-12-30)
 ------------------
-- [x] evaluate random model
-- [x] evaluate label average model
+- Show table of models instead of dropdown
+- Visualize val performance
+- Create predict dataset set if possible
+- Create Caladrius Dataset using Digital Globe images for Sint Maarten
+
+0.6.3 (2019-12-22)
+------------------
+- evaluate random model
+- evaluate label average model
 
 0.6.2 (2019-11-30)
 ------------------

@@ -1,6 +1,6 @@
 {
     "name": "caladrius",
-    "version": "0.6.3",
+    "version": "0.6.4",
     "private": true,
     "dependencies": {
         "bulma": "^0.8.0",
@@ -14,7 +14,6 @@
         "react": "^16.8.6",
         "react-dom": "^16.8.6",
         "react-leaflet": "^2.4.0",
-        "react-leaflet-heatmap-layer": "^2.0.0",
         "react-scripts": "3.0.1"
     },
     "scripts": {
