@@ -69,10 +69,14 @@ class RollingEval(object):
         macro_precision_recall_fscore_support_values = precision_recall_fscore_support(
             labels, predictions, average="macro"
         )
+        weighted_precision_recall_fscore_support_values = precision_recall_fscore_support(
+            labels, predictions, average="weighted"
+        )
         return (
             accuracy_value,
             number_of_correct,
             total_number,
             micro_precision_recall_fscore_support_values,
             macro_precision_recall_fscore_support_values,
+            weighted_precision_recall_fscore_support_values,
         )

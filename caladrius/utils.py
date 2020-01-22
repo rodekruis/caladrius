@@ -173,6 +173,21 @@ def configuration():
         choices=["regression", "classification"],
         help="choose if want regression or classification model",
     )
+    parser.add_argument(
+        "--selection-metric",
+        type=str,
+        default="recall_micro",
+        choices=[
+            "recall_macro",
+            "recall_micro",
+            "precision_micro",
+            "f1_micro",
+            "recall_weighted",
+            "precision_weighted",
+            "f1_weighted",
+        ],
+        help="choose metric to use for tracking best model",
+    )
 
     args = parser.parse_args()
 

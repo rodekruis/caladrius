@@ -131,7 +131,14 @@ class QuasiSiameseNetwork(object):
 
         return outputs, preds
 
-    def run_epoch(self, epoch, loader, phase="train", train_set=None):
+    def run_epoch(
+        self,
+        epoch,
+        loader,
+        phase="train",
+        train_set=None,
+        selection_metric="recall_micro",
+    ):
         """
         Run one epoch of the model
         Args:
@@ -232,7 +239,15 @@ class QuasiSiameseNetwork(object):
 
         epoch_loss = rolling_eval.loss()
         epoch_score = rolling_eval.score()
-        epoch_main_metric = epoch_score[3][1]
+
+        second_index_key, first_index_key = selection_metric.split("_")
+
+        first_index = {"micro": 3, "macro": 4, "weighted": 5}
+        second_index = {"precision": 0, "recall": 1, "f1": 2}
+
+        epoch_main_metric = epoch_score[first_index[first_index_key]][
+            second_index[second_index_key]
+        ]
 
         if not (phase == "train"):
             prediction_file.write(
@@ -255,10 +270,15 @@ class QuasiSiameseNetwork(object):
                 epoch, phase, epoch_score[4][0], epoch_score[4][1], epoch_score[4][2]
             )
         )
+        logger.info(
+            "Epoch {:03d} Phase: {:10s}: (Weighted) Precision: {:.4f} Recall: {:.4f} F1: {:.4f}".format(
+                epoch, phase, epoch_score[5][0], epoch_score[5][1], epoch_score[5][2]
+            )
+        )
 
         return epoch_loss, epoch_main_metric
 
-    def train(self, run_report, datasets, number_of_epochs):
+    def train(self, run_report, datasets, number_of_epochs, selection_metric):
         """
         Train the model
         Args:
@@ -288,13 +308,18 @@ class QuasiSiameseNetwork(object):
 
         for epoch in range(1, number_of_epochs + 1):
             # train network
-            train_loss, train_score = self.run_epoch(epoch, train_loader, phase="train")
+            train_loss, train_score = self.run_epoch(
+                epoch, train_loader, phase="train", selection_metric=selection_metric
+            )
             run_report.train_loss.append(readable_float(train_loss))
             run_report.train_score.append(readable_float(train_score))
 
             # eval on validation
             validation_loss, validation_score = self.run_epoch(
-                epoch, validation_loader, phase="validation"
+                epoch,
+                validation_loader,
+                phase="validation",
+                selection_metric=selection_metric,
             )
             run_report.validation_loss.append(readable_float(validation_loss))
             run_report.validation_score.append(readable_float(validation_score))

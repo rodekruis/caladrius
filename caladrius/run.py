@@ -31,7 +31,9 @@ def main():
     qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
     if args.neural_model and not (args.test or args.inference):
-        run_report = qsn.train(run_report, datasets, args.number_of_epochs)
+        run_report = qsn.train(
+            run_report, datasets, args.number_of_epochs, args.selection_metric
+        )
     logger.info("Evaluating on test dataset")
     run_report = qsn.test(run_report, datasets)
     if args.inference:
