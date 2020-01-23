@@ -176,7 +176,7 @@ def configuration():
     parser.add_argument(
         "--selection-metric",
         type=str,
-        default="recall_micro",
+        default="f1_macro",
         choices=[
             "recall_micro",
             "recall_macro",
