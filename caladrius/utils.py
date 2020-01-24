@@ -93,6 +93,9 @@ def configuration():
         help="data path",
     )
     parser.add_argument(
+        "--label-file", type=str, default="labels.txt", help="filename of labels",
+    )
+    parser.add_argument(
         "--run-name",
         type=run_name_type,
         default="{:.0f}".format(time.time()),
