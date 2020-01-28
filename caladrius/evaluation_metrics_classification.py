@@ -11,6 +11,7 @@ import seaborn as sns
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 import matplotlib.pyplot as plt
+from mlxtend.plotting import plot_confusion_matrix
 
 
 def plot_confusionmatrix(y_true, y_pred, filename, labels, figsize=(10, 10)):
@@ -29,28 +30,19 @@ def plot_confusionmatrix(y_true, y_pred, filename, labels, figsize=(10, 10)):
     """
 
     cm = confusion_matrix(y_true, y_pred, labels=labels)
-    cm_sum = np.sum(cm, axis=1, keepdims=True)
-    cm_perc = cm / cm_sum.astype(float) * 100
 
-    annot = np.empty_like(cm).astype(str)
-    nrows, ncols = cm.shape
-    for i in range(nrows):
-        for j in range(ncols):
-            c = cm[i, j]
-            p = cm_perc[i, j]
-            if i == j:
-                s = cm_sum[i]
-                annot[i, j] = "%.1f%%\n%d/%d" % (p, c, s)
-            elif c == 0:
-                annot[i, j] = ""
-            else:
-                annot[i, j] = "%.1f%%\n%d" % (p, c)
-    cm = pd.DataFrame(cm, index=labels, columns=labels)
-    cm.index.name = "Actual"
-    cm.columns.name = "Predicted"
-    fig, ax = plt.subplots(figsize=figsize)
-    sns.heatmap(cm, annot=annot, fmt="", ax=ax)
-    plt.savefig(filename, bbox_inches="tight")
+    fig, ax = plot_confusion_matrix(
+        conf_mat=cm,
+        colorbar=True,
+        show_absolute=True,  # False,
+        show_normed=True,
+        class_names=labels,
+    )
+    ax.margins(2, 2)
+    plt.tight_layout()
+    # fig.savefig("../../DataAnalysis/Data/conf_matrix_7disasters.pdf")
+
+    fig.savefig(filename, bbox_inches="tight")
 
 
 def harmonic_score(scores):
@@ -261,14 +253,14 @@ def main():
         args.run_name
     )
     preds_model = "{}/predictions/{}".format(args.run_folder, test_file_name)
-    preds_random = "{}-split_test-epoch_001-model_random-predictions.txt".format(
-        args.run_name
+    preds_random = "{}/predictions/{}-split_test-epoch_001-model_random-predictions.txt".format(
+        args.run_folder, args.run_name
     )
-    preds_average = "{}-split_test-epoch_001-model_average-predictions.txt".format(
-        args.run_name
+    preds_average = "{}/predictions/{}-split_test-epoch_001-model_average-predictions.txt".format(
+        args.run_folder, args.run_name
     )
-    preds_validation = "{}-split_validation-epoch_100-model_siamese-predictions.txt".format(
-        args.run_name
+    preds_validation = "{}/predictions/{}-split_validation-epoch_100-model_siamese-predictions.txt".format(
+        args.run_folder, args.run_name
     )
     output_path = "./performance/"
     score_overviews_path = os.path.join(output_path, "score_overviews/")
@@ -282,6 +274,7 @@ def main():
         [preds_model, preds_random, preds_average, preds_validation],
         ["model", "random", "average", "validation"],
     ):
+        print(preds_filename)
         # check if file for preds type exists
         if os.path.exists(preds_filename):
             # generate overview with performance measures
@@ -300,11 +293,14 @@ def main():
                     output_path,
                     filename="allruns_scores.txt",
                 )
+            if preds_type in ["model", "validation"]:
                 # generate and save confusion matrix
                 plot_confusionmatrix(
                     df_pred.label,
                     df_pred.pred,
-                    "{}{}_confusion".format(confusion_matrices_path, args.run_name),
+                    "{}{}_confusion_{}".format(
+                        confusion_matrices_path, args.run_name, preds_type
+                    ),
                     [0, 1, 2, 3],
                     figsize=(9, 12),
                 )
