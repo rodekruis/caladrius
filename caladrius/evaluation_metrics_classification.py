@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
 
 
-def plot_confusionmatrix(y_true, y_pred, filename, labels, figsize=(10, 10)):
+def create_confusionmatrix(y_true, y_pred, filename, labels, figsize=(10, 10)):
     """
     Generate matrix plot of confusion matrix with pretty annotations.
     The plot image is saved to disk.
@@ -295,7 +295,7 @@ def main():
                 )
             if preds_type in ["model", "validation"]:
                 # generate and save confusion matrix
-                plot_confusionmatrix(
+                create_confusionmatrix(
                     df_pred.label,
                     df_pred.pred,
                     "{}{}_confusion_{}".format(
