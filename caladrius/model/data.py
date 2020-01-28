@@ -41,6 +41,10 @@ class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
             else:
                 label_to_count[label] = 1
 
+        # print("label to count",label_to_count)
+        # self.n_classes=len(label_to_count.keys())
+        # print("number classes",self.n_classes)
+
         # weight for each sample
         weights = [
             1.0 / label_to_count[self._get_label(dataset, idx)] for idx in self.indices
@@ -128,7 +132,7 @@ class Datasets(object):
         self.transforms = transforms
         self.number_of_workers = args.number_of_workers
         self.max_data_points = args.max_data_points
-        self.labels_file = args.label_file
+        self.label_file = args.label_file
 
     def load(self, set_name):
         assert set_name in {"train", "validation", "test", "inference"}

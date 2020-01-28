@@ -185,6 +185,9 @@ def configuration():
         choices=["regression", "classification"],
         help="choose if want regression or classification model",
     )
+    parser.add_argument(
+        "--number-classes", type=int, default=4,
+    )
 
     args = parser.parse_args()
 

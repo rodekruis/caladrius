@@ -37,7 +37,7 @@ class QuasiSiameseNetwork(object):
             self.model = SiameseNetwork()
         elif self.output_type == "classification":
             self.criterion = nnloss.CrossEntropyLoss()
-            self.n_classes = 4  # replace by args
+            self.n_classes = args.n_classes
             self.model = SiameseNetwork(
                 output_type=self.output_type, n_classes=self.n_classes
             )
