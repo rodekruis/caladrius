@@ -92,9 +92,9 @@ def configuration():
         default=os.path.join(".", "data", "Sint-Maarten-2017"),
         help="data path",
     )
-    parser.add_argument(
-        "--label-file", type=str, default="labels.txt", help="filename of labels",
-    )
+    # parser.add_argument(
+    #     "--label-file", type=str, default="labels.txt", help="filename of labels",
+    # )
     parser.add_argument(
         "--run-name",
         type=run_name_type,

@@ -72,13 +72,13 @@ class CaladriusDataset(Dataset):
         self,
         directory,
         set_name,
-        labels_filename,
+        # labels_filename,
         transforms=None,
         max_data_points=None,
     ):
         self.set_name = set_name
         self.directory = os.path.join(directory, set_name)
-        self.labels_filename = labels_filename
+        # self.labels_filename = labels_filename
         if self.set_name == "inference":
             self.datapoints = [
                 filename
@@ -86,7 +86,7 @@ class CaladriusDataset(Dataset):
             ]
         else:
             with open(
-                os.path.join(self.directory, self.labels_filename)
+                os.path.join(self.directory, "labels.txt")  # self.labels_filename)
             ) as labels_file:
                 self.datapoints = [x.strip() for x in tqdm(labels_file.readlines())]
         if max_data_points is not None:
@@ -128,24 +128,24 @@ class Datasets(object):
         self.transforms = transforms
         self.number_of_workers = args.number_of_workers
         self.max_data_points = args.max_data_points
-        self.labels_file = args.labels_file
+        # self.labels_file = args.labels_file #think should be args.label_file
 
     def load(self, set_name):
         assert set_name in {"train", "validation", "test", "inference"}
         dataset = CaladriusDataset(
             self.data_path,
             set_name,
-            self.labels_file,
+            # self.labels_file,
             transforms=self.transforms[set_name],
             max_data_points=self.max_data_points,
         )
         data_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,
-            # shuffle=(set_name == "train"),
+            shuffle=(set_name == "train"),
             num_workers=self.number_of_workers,
             drop_last=True,
-            sampler=RandomSampler(dataset) if (set_name == "train") else None,
+            # sampler=RandomSampler(dataset) if (set_name == "train") else None,
             # sampler=ImbalancedDatasetSampler(dataset),
         )
 
