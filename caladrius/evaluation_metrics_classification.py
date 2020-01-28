@@ -249,26 +249,25 @@ def main():
         help="runs path",
     )
 
-    parser.add_argument("--test-file", type=str, help="path to predictions file")
-
     args = parser.parse_args()
     if not args.run_folder:
         args.run_folder = os.path.join(
             args.checkpoint_folder,
             "{}-input_size_32-learning_rate_0.001-batch_size_32".format(args.run_name),
         )
+
     # define all file names and paths
-    if not args.test_file:
-        test_file_name = "{}-split_test-epoch_001-model_siamese-predictions.txt".format(
-            args.run_name
-        )
-    else:
-        test_file_name = args.test_file
+    test_file_name = "{}-split_test-epoch_001-model_siamese-predictions.txt".format(
+        args.run_name
+    )
     preds_model = "{}/predictions/{}".format(args.run_folder, test_file_name)
     preds_random = "{}-split_test-epoch_001-model_random-predictions.txt".format(
         args.run_name
     )
     preds_average = "{}-split_test-epoch_001-model_average-predictions.txt".format(
+        args.run_name
+    )
+    preds_validation = "{}-split_validation-epoch_100-model_siamese-predictions.txt".format(
         args.run_name
     )
     output_path = "./performance/"
@@ -280,7 +279,8 @@ def main():
             os.makedirs(p)
 
     for preds_filename, preds_type in zip(
-        [preds_model, preds_random, preds_average], ["model", "random", "average"]
+        [preds_model, preds_random, preds_average, preds_validation],
+        ["model", "random", "average", "validation"],
     ):
         # check if file for preds type exists
         if os.path.exists(preds_filename):
