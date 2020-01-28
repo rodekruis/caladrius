@@ -66,7 +66,7 @@ def main():
 
     args = parser.parse_args()
 
-    set_labels(args.data_path, args.file_in, args.file_out, args.label_values)
+    set_labels(args.data_path, args.file_in, args.file_out)  # , args.label_values)
 
 
 if __name__ == "__main__":
