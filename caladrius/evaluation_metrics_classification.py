@@ -249,17 +249,21 @@ def main():
         help="runs path",
     )
 
+    parser.add_argument("--test-file", type=str, help="path to predictions file")
+
     args = parser.parse_args()
     if not args.run_folder:
         args.run_folder = os.path.join(
             args.checkpoint_folder,
             "{}-input_size_32-learning_rate_0.001-batch_size_32".format(args.run_name),
         )
-
     # define all file names and paths
-    test_file_name = "{}-split_test-epoch_001-model_siamese-predictions.txt".format(
-        args.run_name
-    )
+    if not args.test_file:
+        test_file_name = "{}-split_test-epoch_001-model_siamese-predictions.txt".format(
+            args.run_name
+        )
+    else:
+        test_file_name = args.test_file
     preds_model = "{}/predictions/{}".format(args.run_folder, test_file_name)
     preds_random = "{}-split_test-epoch_001-model_random-predictions.txt".format(
         args.run_name
