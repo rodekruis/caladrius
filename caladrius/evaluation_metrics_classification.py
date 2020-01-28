@@ -257,10 +257,16 @@ def main():
         )
 
     # define all file names and paths
-    test_file_name = "{}_test_epoch_001_predictions.txt".format(args.run_name)
+    test_file_name = "{}-split_test-epoch_001-model_siamese-predictions.txt".format(
+        args.run_name
+    )
     preds_model = "{}/predictions/{}".format(args.run_folder, test_file_name)
-    preds_random = "{}_random.txt".format(preds_model[:-4])
-    preds_average = "{}_average.txt".format(preds_model[:-4])
+    preds_random = "{}-split_test-epoch_001-model_random-predictions.txt".format(
+        args.run_name
+    )
+    preds_average = "{}-split_test-epoch_001-model_average-predictions.txt".format(
+        args.run_name
+    )
     output_path = "./performance/"
     score_overviews_path = os.path.join(output_path, "score_overviews/")
     confusion_matrices_path = os.path.join(output_path, "confusion_matrices/")
