@@ -37,9 +37,9 @@ class QuasiSiameseNetwork(object):
             self.model = SiameseNetwork()
         elif self.output_type == "classification":
             self.criterion = nnloss.CrossEntropyLoss()
-            self.n_classes = args.n_classes
+            self.number_classes = args.number_classes
             self.model = SiameseNetwork(
-                output_type=self.output_type, n_classes=self.n_classes
+                output_type=self.output_type, n_classes=self.number_classes
             )
 
         self.transforms = {}
@@ -73,7 +73,7 @@ class QuasiSiameseNetwork(object):
         if self.output_type == "regression":
             outputs = torch.ones(output_size) * average_label
         elif self.output_type == "classification":
-            average_label_tensor = torch.zeros(self.n_classes)
+            average_label_tensor = torch.zeros(self.number_classes)
             average_label_tensor[average_label] = 1
             outputs = average_label_tensor.repeat(output_size[0], 1)
         return outputs
@@ -110,7 +110,7 @@ class QuasiSiameseNetwork(object):
             output_shape = (
                 random_target_shape
                 if self.output_type == "regression"
-                else (random_target_shape[0], self.n_classes)
+                else (random_target_shape[0], self.number_classes)
             )
             outputs = self.get_random_output_values(output_shape)
         elif self.model_type == "average":
