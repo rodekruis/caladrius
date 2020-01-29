@@ -30,6 +30,7 @@ class QuasiSiameseNetwork(object):
         self.train_accuracy_threshold = args.train_accuracy_threshold
         self.test_accuracy_threshold = args.test_accuracy_threshold
         self.output_type = args.output_type
+        self.test_epoch = args.test_epoch
 
         # define the loss measure
         if self.output_type == "regression":
@@ -296,22 +297,27 @@ class QuasiSiameseNetwork(object):
             run_report.validation_loss.append(readable_float(validation_loss))
             run_report.validation_accuracy.append(readable_float(validation_accuracy))
 
-            # eval on test while training
-            testrunning_loss, testrunning_accuracy = self.run_epoch(
-                epoch,
-                testrunning_loader,
-                phase="test",  # might have to do phase=val here?
-            )
-            run_report.testrunning_loss.append(readable_float(testrunning_loss))
-            run_report.testrunning_accuracy.append(readable_float(testrunning_accuracy))
-
             # used for Tensorboard
             self.writer.add_scalar("Train/Loss", train_loss, epoch)
             self.writer.add_scalar("Train/Accuracy", train_accuracy, epoch)
             self.writer.add_scalar("Validation/Loss", validation_loss, epoch)
             self.writer.add_scalar("Validation/Accuracy", validation_accuracy, epoch)
-            self.writer.add_scalar("Testrunning/Loss", testrunning_loss, epoch)
-            self.writer.add_scalar("Testrunning/Accuracy", testrunning_accuracy, epoch)
+
+            if self.test_epoch:
+                # eval on test while training
+                testrunning_loss, testrunning_accuracy = self.run_epoch(
+                    epoch,
+                    testrunning_loader,
+                    phase="test",  # might have to do phase=val here?
+                )
+                run_report.testrunning_loss.append(readable_float(testrunning_loss))
+                run_report.testrunning_accuracy.append(
+                    readable_float(testrunning_accuracy)
+                )
+                self.writer.add_scalar("Testrunning/Loss", testrunning_loss, epoch)
+                self.writer.add_scalar(
+                    "Testrunning/Accuracy", testrunning_accuracy, epoch
+                )
 
             self.lr_scheduler.step(validation_loss)
 

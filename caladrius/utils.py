@@ -189,6 +189,13 @@ def configuration():
         "--number-classes", type=int, default=4,
     )
 
+    parser.add_argument(
+        "--test-epoch",
+        type=bool,
+        default=False,
+        help="If true, run model on test set every epoch. For research purposes.",
+    )
+
     args = parser.parse_args()
 
     arg_vars = vars(args)
