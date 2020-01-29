@@ -189,20 +189,20 @@ class QuasiSiameseNetwork(object):
                     loss.backward()
                     self.optimizer.step()
 
-                if not (phase == "train"):
-                    if self.model_type != "probability":
-                        prediction_file.writelines(
-                            [
-                                "{} {} {}\n".format(*line)
-                                for line in zip(
-                                    filename,
-                                    labels.view(-1).tolist(),
-                                    preds.view(-1).tolist(),
-                                )
-                            ]
-                        )
-                    else:
-                        output_probability_list.extend(outputs.tolist())
+                # if not (phase == "train"):
+                if self.model_type != "probability":
+                    prediction_file.writelines(
+                        [
+                            "{} {} {}\n".format(*line)
+                            for line in zip(
+                                filename,
+                                labels.view(-1).tolist(),
+                                preds.view(-1).tolist(),
+                            )
+                        ]
+                    )
+                else:
+                    output_probability_list.extend(outputs.tolist())
                 rolling_eval.add(labels, preds)
 
             running_loss += loss.item() * image1.size(0)
