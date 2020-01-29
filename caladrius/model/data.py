@@ -52,14 +52,15 @@ class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
         self.weights = torch.DoubleTensor(weights)
 
     def _get_label(self, dataset, idx):
-        if isinstance(dataset, torchvision.datasets.MNIST):
-            return dataset.train_labels[idx].item()
-        elif isinstance(dataset, torchvision.datasets.ImageFolder):
-            return dataset.imgs[idx][1]
-        elif self.callback_get_label:
-            return self.callback_get_label(dataset, idx)
-        else:
-            raise NotImplementedError
+        return dataset.load_datapoint(idx)[-1]
+        # if isinstance(dataset, torchvision.datasets.MNIST):
+        #     return dataset.train_labels[idx].item()
+        # elif isinstance(dataset, torchvision.datasets.ImageFolder):
+        #     return dataset.imgs[idx][1]
+        # elif self.callback_get_label:
+        #     return self.callback_get_label(dataset, idx)
+        # else:
+        #     raise NotImplementedError
 
     def __iter__(self):
         return (
@@ -143,14 +144,17 @@ class Datasets(object):
             transforms=self.transforms[set_name],
             max_data_points=self.max_data_points,
         )
+
         data_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,
-            shuffle=(set_name == "train"),
+            # shuffle=(set_name == "train"),
             num_workers=self.number_of_workers,
             drop_last=True,
             # sampler=RandomSampler(dataset) if (set_name == "train") else None,
-            # sampler=ImbalancedDatasetSampler(dataset),
+            sampler=ImbalancedDatasetSampler(dataset)
+            if (set_name == "train")
+            else None,
         )
 
         return dataset, data_loader
