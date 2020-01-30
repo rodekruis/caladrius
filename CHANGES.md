@@ -1,4 +1,12 @@
-0.6.4 (2019-12-31)
+0.6.5 (YYYY-MM-DD)
+------------------
+- [x] Remove accuracy threshold
+- [x] Log all metrics
+- [x] Set default metric to F1 macro
+- [x] Add experiment results to repository
+- [x] Save classification prediction probabilities to file
+
+0.6.4 (2019-12-30)
 ------------------
 - Show table of models instead of dropdown
 - Visualize val performance

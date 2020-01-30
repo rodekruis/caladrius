@@ -56,8 +56,6 @@ class RollingEval(object):
         return self.total_loss / self.predictions.size(0)
 
     def precision_recall_fscore_support_accuracy(self, labels, predictions):
-        # average="weighted" is used by xview2_baseline
-        # average="micro" was used by caladrius
         labels = labels.cpu().detach()
         predictions = predictions.cpu().detach()
         accuracy_value = accuracy_score(labels, predictions, normalize=True)
