@@ -69,7 +69,7 @@ tar -xvzf rc.tgz
 Transform the raw dataset to a training dataset using,
 
 ```
-python caladrius/sint_maarten_2017.py --run-all
+python caladrius/dataset/sint_maarten_2017.py --version 1.0.0 --create-image-stamps --query-address-api --address-api openmapquest --address-api-key <ADDRESS_API_KEY> --create-report-info-file
 ```
 
 The above command will create the dataset as per the
@@ -80,17 +80,16 @@ The above command will create the dataset as per the
 `sint_maarten_2017.py` accepts the command line arguments described below,
 
 ```
-usage: sint_maarten_2017.py [-h] [--run-all] [--create-image-stamps]
-                      [--query-address-api] [--address-api ADDRESS_API]
-                      [--address-api-key ADDRESS_API_KEY]
-                      [--create-report-info-file]
+usage: sint_maarten_2017.py [-h] --version VERSION [--create-image-stamps]
+                            [--query-address-api] [--address-api ADDRESS_API]
+                            [--address-api-key ADDRESS_API_KEY]
+                            [--create-report-info-file]
+                            [--label-type label_type]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --run-all             Run all of the steps: create and split image stamps,
-                        query for addresses, and create information file for
-                        the report. Overrides individual step flags. (default:
-                        False)
+  --version VERSION     set a version number to identify dataset (default:
+                        None)
   --create-image-stamps
                         For each building shape, creates a before and after
                         image stamp for the learning model, and places them in
@@ -110,6 +109,9 @@ optional arguments:
                         shapes of the buildings, their respective
                         administrative regions and addresses (if --query-
                         address-api has been run) (default: False)
+  --label-type label_type
+                        Sets whether the damage label should be produced on a
+                        continuous scale or in classes. (default: regression)
 ```
 
 ## Interface
