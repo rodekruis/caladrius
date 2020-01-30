@@ -1,4 +1,4 @@
-[![stable: 0.6.4](https://img.shields.io/badge/stable-0.6.4-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
+[![stable: 0.6.5](https://img.shields.io/badge/stable-0.6.5-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
@@ -200,7 +200,7 @@ optional arguments:
 
 After cloning the repo, run `pre-commit install` to enable format checking when committing changes.
 
-When making changes, increment version number in [VERSION](VERSION), [package.json](caladrius/interface/package.json) and [package.json](caladrius/interface/client/package.json) according to [PEP 440](https://www.python.org/dev/peps/pep-0440/) and update [CHANGES.md](CHANGES.md).
+When making changes, increment version number in [VERSION](VERSION), [package.json](caladrius/interface/package.json), the badge in [README.md](README.md) and [package.json](caladrius/interface/client/package.json) according to [PEP 440](https://www.python.org/dev/peps/pep-0440/) and update [CHANGES.md](CHANGES.md).
 
 ## Docker image
 
