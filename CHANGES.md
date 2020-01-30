@@ -1,3 +1,11 @@
+0.6.5 (YYYY-MM-DD)
+------------------
+- [ ] Remove accuracy threshold
+- [ ] Log all metrics
+- [ ] Set default metric to F1 macro
+- [ ] Add experiment results to repository
+- [ ] Save classification prediction probabilities to file
+
 0.6.4 (2019-12-30)
 ------------------
 - Show table of models instead of dropdown
