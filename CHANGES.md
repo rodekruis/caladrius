@@ -12,7 +12,6 @@
 - Visualize val performance
 - Create predict dataset set if possible
 - Create Caladrius Dataset using Digital Globe images for Sint Maarten
-- Remove accuracy threshold
 
 0.6.3 (2019-12-22)
 ------------------
