@@ -1,5 +1,3 @@
-import time
-import copy
 from collections import OrderedDict
 
 import torch
@@ -45,12 +43,6 @@ def get_pretrained_iv3(output_size):
             for params in child.parameters():
                 params.requires_grad = True
         ct.append(name)
-
-    # To view which layers are freeze and which layers are not freezed:
-    # for name, child in model_conv.named_children():
-    #     for name_2, params in child.named_parameters():
-    #         logger.debug("{}, {}".format(name_2, params.requires_grad))
-
     return model_conv
 
 
@@ -150,7 +142,7 @@ class SiameseNetwork(nn.Module):
             # final layer with one output which is the amount of damage from 0 to 1
             self.output = nn.Linear(hidden, 1)
         elif output_type == "classification":
-            self.output = self.output = nn.Linear(hidden, n_classes)
+            self.output = nn.Linear(hidden, n_classes)
 
     def forward(self, image_1, image_2):
         """

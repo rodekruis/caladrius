@@ -1,14 +1,17 @@
 import os
 import copy
 import time
+import pickle
 from datetime import datetime
 import torch
+from statistics import mode, mean
 
 from torch.optim import Adam
 from torch.nn.modules import loss as nnloss
 import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
+from torch import nn
 
 from model.network import get_pretrained_iv3_transforms, SiameseNetwork
 from utils import create_logger, readable_float, dynamic_report_key
@@ -76,13 +79,14 @@ class QuasiSiameseNetwork(object):
         return outputs
 
     def calculate_average_label(self, train_set):
-        sum_of_labels = 0
+        list_of_labels = []
         for _, _, _, label in train_set:
-            sum_of_labels = sum_of_labels + label
-        number_of_labels = len(train_set)
-        average_label = sum_of_labels / number_of_labels
-        if self.output_type == "classification":
-            average_label = round(average_label)
+            list_of_labels.extend([label])
+        if self.output_type == "regression":
+            average_label = mean(list_of_labels)
+        elif self.output_type == "classification":
+            # use mode as average. mode=number that occurs most often in the list
+            average_label = int(mode(list_of_labels))
         return average_label
 
     def create_prediction_file(self, phase, epoch):
@@ -90,7 +94,12 @@ class QuasiSiameseNetwork(object):
             self.run_name, phase, epoch, self.model_type
         )
         prediction_file_path = os.path.join(self.prediction_path, prediction_file_name)
-        return open(prediction_file_path, "w+")
+        if self.model_type != "probability":
+            prediction_file = open(prediction_file_path, "w+")
+            prediction_file.write("filename label prediction\n")
+            return prediction_file
+        else:
+            return open(prediction_file_path, "wb")
 
     def get_outputs_preds(
         self, image1, image2, random_target_shape, average_target_size
@@ -108,6 +117,10 @@ class QuasiSiameseNetwork(object):
             outputs = self.get_average_output_values(
                 average_target_size, self.average_label
             )
+
+        elif self.model_type == "probability":
+            outputs = nn.functional.softmax(self.model(image1, image2), dim=1).squeeze()
+
         outputs = outputs.to(self.device)
 
         if self.output_type == "classification":
@@ -141,16 +154,17 @@ class QuasiSiameseNetwork(object):
         running_corrects = 0
         running_n = 0.0
 
-        # if self.output_type == "classification":
         rolling_eval = RollingEval()
 
         # I also want the predictions saved during training, such that we can retrieve and plot those results later if needed
         # if not (phase == "train"):
         prediction_file = self.create_prediction_file(phase, epoch)
-        prediction_file.write("filename label prediction\n")
 
         if self.model_type == "average":
             self.average_label = self.calculate_average_label(train_set)
+
+        if self.model_type == "probability":
+            output_probability_list = []
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(self.device)
@@ -174,17 +188,20 @@ class QuasiSiameseNetwork(object):
                     loss.backward()
                     self.optimizer.step()
 
-                # if not (phase == "train"):
-                prediction_file.writelines(
-                    [
-                        "{} {} {}\n".format(*line)
-                        for line in zip(
-                            filename, labels.view(-1).tolist(), preds.view(-1).tolist()
+                if not (phase == "train"):
+                    if self.model_type != "probability":
+                        prediction_file.writelines(
+                            [
+                                "{} {} {}\n".format(*line)
+                                for line in zip(
+                                    filename,
+                                    labels.view(-1).tolist(),
+                                    preds.view(-1).tolist(),
+                                )
+                            ]
                         )
-                    ]
-                )
-
-                # if self.output_type == "classification":
+                    else:
+                        output_probability_list.extend(outputs.tolist())
                 rolling_eval.add(labels, preds)
 
             running_loss += loss.item() * image1.size(0)
@@ -221,14 +238,12 @@ class QuasiSiameseNetwork(object):
                     )
                 )
 
+        if self.model_type == "probability":
+            pickle.dump(output_probability_list, prediction_file)
         epoch_loss = running_loss / running_n
         epoch_error_meas = running_error_meas  # running_corrects.double() / running_n
 
-        if not (phase == "train"):
-            prediction_file.write(
-                "Epoch {:03d} Accuracy: {:.4f}\n".format(epoch, epoch_error_meas)
-            )
-            prediction_file.close()
+        prediction_file.close()
 
         logger.info(
             "Epoch {:03d} Phase: {:10s} Loss: {:.4f} Accuracy: {:.4f}".format(
@@ -278,6 +293,7 @@ class QuasiSiameseNetwork(object):
             run_report.validation_loss.append(readable_float(validation_loss))
             run_report.validation_accuracy.append(readable_float(validation_accuracy))
 
+            # used for Tensorboard
             self.writer.add_scalar("Train/Loss", train_loss, epoch)
             self.writer.add_scalar("Train/Accuracy", train_accuracy, epoch)
             self.writer.add_scalar("Validation/Loss", validation_loss, epoch)
@@ -318,7 +334,7 @@ class QuasiSiameseNetwork(object):
         Returns:
             run_report (dict): configuration parameters for testing with testing statistics
         """
-        is_statistical_model = self.model_type != "siamese"
+        is_statistical_model = self.model_type not in ["siamese", "probability"]
         if is_statistical_model:
             train_set, _ = datasets.load("train")
         else:
@@ -372,7 +388,7 @@ class QuasiSiameseNetwork(object):
         Args:
             datasets: DataSet object with datasets loaded
         """
-        is_statistical_model = self.model_type != "siamese"
+        is_statistical_model = self.model_type not in ["siamese", "probability"]
         if is_statistical_model:
             train_set, _ = datasets.load("train")
         else:
