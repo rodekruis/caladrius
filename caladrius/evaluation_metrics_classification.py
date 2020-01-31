@@ -40,7 +40,9 @@ def create_confusionmatrix(y_true, y_pred, filename, labels, figsize=(10, 10)):
     )
     ax.margins(2, 2)
     plt.tight_layout()
+    plt.show()
     # fig.savefig("../../DataAnalysis/Data/conf_matrix_7disasters.pdf")
+    print(filename)
 
     fig.savefig(filename, bbox_inches="tight")
 
@@ -78,21 +80,27 @@ def gen_score_overview(preds_filename):
 
     preds = np.array(df_pred.pred)
     labels = np.array(df_pred.label)
+    # print(list(map(str,np.unique(labels))))
+    # print(list(map(str,np.where(np.unique(labels) > 0))))
+    unique_labels = np.unique(labels)
+    damage_labels = [i for i in unique_labels if i != 0]
+    # print(sorted(df_pred.label.unique())>0)
 
     report = classification_report(labels, preds, digits=3, output_dict=True)
     score_overview = pd.DataFrame(report).transpose()
-
+    # print(score_overview)
     score_overview = score_overview.append(pd.Series(name="harmonized avg"))
+
     score_overview.loc["harmonized avg", ["precision", "recall", "f1-score"]] = [
         harmonic_score(r)
         for i, r in score_overview.loc[
-            ["0", "1", "2", "3"], ["precision", "recall", "f1-score"]
+            list(map(str, unique_labels)), ["precision", "recall", "f1-score"]
         ].T.iterrows()
     ]
 
     # create report only for damage categories (represented by 1,2,3)
     dam_report = classification_report(
-        labels, preds, labels=[1, 2, 3], output_dict=True
+        labels, preds, labels=damage_labels, output_dict=True
     )
     dam_report = pd.DataFrame(dam_report).transpose()
 
@@ -119,7 +127,7 @@ def gen_score_overview(preds_filename):
     score_overview.loc["damage harmonized avg", ["precision", "recall", "f1-score"]] = [
         harmonic_score(r)
         for i, r in score_overview.loc[
-            ["1", "2", "3"], ["precision", "recall", "f1-score"]
+            list(map(str, damage_labels)), ["precision", "recall", "f1-score"]
         ].T.iterrows()
     ]
 
@@ -294,6 +302,8 @@ def main():
                     filename="allruns_scores.txt",
                 )
             if preds_type in ["model", "validation"]:
+                print(preds_type)
+                unique_labels = np.unique(np.array(df_pred.label))
                 # generate and save confusion matrix
                 create_confusionmatrix(
                     df_pred.label,
@@ -301,7 +311,7 @@ def main():
                     "{}{}_confusion_{}".format(
                         confusion_matrices_path, args.run_name, preds_type
                     ),
-                    [0, 1, 2, 3],
+                    unique_labels,
                     figsize=(9, 12),
                 )
 
