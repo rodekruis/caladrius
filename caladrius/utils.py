@@ -196,6 +196,13 @@ def configuration():
         help="If true, run model on test set every epoch. For research purposes.",
     )
 
+    parser.add_argument(
+        "--sample-data",
+        type=bool,
+        default=False,
+        help="If true, resample data such that classes are balanced. For research purposes.",
+    )
+
     args = parser.parse_args()
 
     arg_vars = vars(args)

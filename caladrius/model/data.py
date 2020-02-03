@@ -134,6 +134,7 @@ class Datasets(object):
         self.number_of_workers = args.number_of_workers
         self.max_data_points = args.max_data_points
         self.label_file = args.label_file
+        self.sample_data = args.sample_data
 
     def load(self, set_name):
         assert set_name in {"train", "validation", "test", "inference"}
@@ -145,16 +146,27 @@ class Datasets(object):
             max_data_points=self.max_data_points,
         )
 
-        data_loader = DataLoader(
-            dataset,
-            batch_size=self.batch_size,
-            # shuffle=(set_name == "train"),
-            num_workers=self.number_of_workers,
-            drop_last=True,
-            # sampler=RandomSampler(dataset) if (set_name == "train") else None,
-            sampler=ImbalancedDatasetSampler(dataset)
-            if (set_name == "train")
-            else None,
-        )
+        if self.sample_data:
+            data_loader = DataLoader(
+                dataset,
+                batch_size=self.batch_size,
+                # shuffle=(set_name == "train"),
+                num_workers=self.number_of_workers,
+                drop_last=True,
+                sampler=ImbalancedDatasetSampler(dataset)
+                if (set_name == "train")
+                else None,
+            )
+        else:
+            data_loader = DataLoader(
+                dataset,
+                batch_size=self.batch_size,
+                shuffle=(set_name == "train"),
+                num_workers=self.number_of_workers,
+                drop_last=True,
+                # sampler=ImbalancedDatasetSampler(dataset)
+                # if (set_name == "train")
+                # else None,
+            )
 
         return dataset, data_loader
