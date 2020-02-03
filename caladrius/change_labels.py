@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 
 
-def set_labels(directory_path, file_label_in, file_label_out):
+def binary_labels(directory_path, file_label_in, file_label_out):
     for set_name in ["train", "validation", "test"]:
         df = pd.read_csv(
             os.path.join(directory_path, set_name, file_label_in),
@@ -20,6 +20,28 @@ def set_labels(directory_path, file_label_in, file_label_out):
             index=False,
             header=False,
         )
+
+
+def disaster_labels(disaster_names, directory_path, file_label_in, file_label_out):
+    assert disaster_names is not None
+
+    for set_name in ["train", "validation", "test"]:
+        label_path = os.path.join(directory_path, set_name, file_label_in)
+        if os.path.exists(label_path):
+            df = pd.read_csv(
+                label_path, sep=" ", header=None, names=["filename", "damage"],
+            )
+            disaster_names_list = [item for item in disaster_names.split(",")]
+            pattern = "|".join([f"{d}" for d in disaster_names_list])
+            df_select = df[df.filename.str.contains(pattern)]
+            df_select.to_csv(
+                os.path.join(directory_path, set_name, file_label_out),
+                sep=" ",
+                index=False,
+                header=False,
+            )
+        else:
+            print("No label file for {}".format(set_name))
 
 
 def main():
@@ -53,20 +75,28 @@ def main():
         default="binary",
         type=str,
         metavar="label_type",
-        choices=["binary", "regression", "regression_noise"],
+        choices=["binary", "regression", "regression_noise", "disaster"],
         help="type of output labels",
     )
 
-    # parser.add_argument(
-    #     "--label-values",
-    #     default=["0","1","2","3"],
-    #     metavar="label_values",
-    #     help="unique values in input labels"
-    # )
+    parser.add_argument(
+        "--disaster-names",
+        default=None,
+        type=str,
+        metavar="disaster_names",
+        help="List of disasters to be included, as a delimited string. E.g. typhoon,flood This can be types or specific occurences, as long as the building filenames contain these names.",
+    )
 
     args = parser.parse_args()
 
-    set_labels(args.data_path, args.file_in, args.file_out)  # , args.label_values)
+    if args.label_type == "binary":
+        binary_labels(
+            args.data_path, args.file_in, args.file_out
+        )  # , args.label_values)
+    elif args.label_type == "disaster":
+        disaster_labels(
+            args.disaster_names, args.data_path, args.file_in, args.file_out
+        )
 
 
 if __name__ == "__main__":
