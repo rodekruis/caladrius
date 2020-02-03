@@ -203,6 +203,13 @@ def configuration():
         help="If true, resample data such that classes are balanced. For research purposes.",
     )
 
+    parser.add_argument(
+        "--freeze",
+        type=bool,
+        default=False,
+        help="If true, Inception part will not be retrained.",
+    )
+
     args = parser.parse_args()
 
     arg_vars = vars(args)

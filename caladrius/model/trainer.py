@@ -31,6 +31,7 @@ class QuasiSiameseNetwork(object):
         self.test_accuracy_threshold = args.test_accuracy_threshold
         self.output_type = args.output_type
         self.test_epoch = args.test_epoch
+        self.freeze = args.freeze
 
         # define the loss measure
         if self.output_type == "regression":
@@ -40,7 +41,9 @@ class QuasiSiameseNetwork(object):
             self.criterion = nnloss.CrossEntropyLoss()
             self.number_classes = args.number_classes
             self.model = SiameseNetwork(
-                output_type=self.output_type, n_classes=self.number_classes
+                output_type=self.output_type,
+                n_classes=self.number_classes,
+                freeze=self.freeze,
             )
 
         self.transforms = {}

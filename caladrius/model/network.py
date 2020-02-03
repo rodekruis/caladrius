@@ -11,7 +11,7 @@ from utils import create_logger
 logger = create_logger(__name__)
 
 
-def get_pretrained_iv3(output_size):
+def get_pretrained_iv3(output_size, freeze=False):
     """
     Get the pretrained Inception_v3 model, and change it for our use
     Args:
@@ -39,7 +39,7 @@ def get_pretrained_iv3(output_size):
     # idea is that first few layers learn types of features that are the same in all types of images --> don't have to retrain
     ct = []
     for name, child in model_conv.named_children():
-        if "Conv2d_4a_3x3" in ct:
+        if "Conv2d_4a_3x3" in ct and not freeze:
             for params in child.parameters():
                 params.requires_grad = True
         ct.append(name)
@@ -102,6 +102,7 @@ class SiameseNetwork(nn.Module):
         dropout=0.5,
         output_type="regression",
         n_classes=None,
+        freeze=False,
     ):
         """
         Construct the Siamese network
@@ -112,8 +113,8 @@ class SiameseNetwork(nn.Module):
             n_classes (int): if output type is classification, this indicates the number of classes
         """
         super().__init__()
-        self.left_network = get_pretrained_iv3(output_size)
-        self.right_network = get_pretrained_iv3(output_size)
+        self.left_network = get_pretrained_iv3(output_size, freeze)
+        self.right_network = get_pretrained_iv3(output_size, freeze)
 
         similarity_layers = OrderedDict()
         # fully connected layer where input is concatenated features of the two inception models
