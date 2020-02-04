@@ -210,6 +210,13 @@ def configuration():
         help="If true, Inception part will not be retrained.",
     )
 
+    parser.add_argument(
+        "--augment",
+        type=bool,
+        default=True,
+        help="If False, no augmentations will be applied to the data.",
+    )
+
     args = parser.parse_args()
 
     arg_vars = vars(args)

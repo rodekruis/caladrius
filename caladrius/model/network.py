@@ -46,9 +46,10 @@ def get_pretrained_iv3(output_size, freeze=False):
     return model_conv
 
 
-def get_pretrained_iv3_transforms(set_name):
+def get_pretrained_iv3_transforms(set_name, augment=True):
     """
     Compose a series of image transformations to be performed on the input data
+    These augmentations are done per batch! So no extra data is generated, but the transformations for every epoch on the same images are different
     Args:
         set_name (str): the dataset you want the transformations for. Can be "train", "validation", "test", "inference"
 
@@ -59,22 +60,48 @@ def get_pretrained_iv3_transforms(set_name):
     std = [0.5, 0.5, 0.5]
     scale = 360
     input_shape = 299
-    train_transform = transforms.Compose(
-        [
-            # resize every image to scale x scale pixels
-            transforms.Resize(scale),
-            # crop every image to input_shape x input_shape pixels.
-            # This is needed for the inception model.
-            transforms.RandomResizedCrop(input_shape),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomVerticalFlip(),
-            transforms.RandomRotation(degrees=90),
-            # converts image to type Torch and normalizes [0,1]
-            transforms.ToTensor(),
-            # normalizes [-1,1]
-            transforms.Normalize(mean, std),
-        ]
-    )
+    if augment:
+        train_transform = transforms.Compose(
+            [
+                # resize every image to scale x scale pixels
+                transforms.Resize(scale),
+                # crop every image to input_shape x input_shape pixels.
+                # This is needed for the inception model.
+                # we first scale and then crop to have translation variation, i.e. buildings is not always in the centre.
+                # In this way model is less sensitive to translation variation in the test set.
+                transforms.RandomResizedCrop(input_shape),
+                # flips image horizontally with a probability of 0.5 (i.e. half of images are flipped)
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomVerticalFlip(),
+                # rotates image randomly between -90 and 90 degrees
+                transforms.RandomRotation(degrees=90),
+                # converts image to type Torch and normalizes [0,1]
+                transforms.ToTensor(),
+                # normalizes [-1,1]
+                transforms.Normalize(mean, std),
+            ]
+        )
+    else:
+        train_transform = transforms.Compose(
+            [
+                # resize every image to scale x scale pixels
+                transforms.Resize(scale),
+                # crop every image to input_shape x input_shape pixels.
+                # This is needed for the inception model.
+                # we first scale and then crop to have translation variation, i.e. buildings is not always in the centre.
+                # In this way model is less sensitive to translation variation in the test set.
+                transforms.RandomResizedCrop(input_shape),
+                # # flips image horizontally with a probability of 0.5 (i.e. half of images are flipped)
+                # transforms.RandomHorizontalFlip(),
+                # transforms.RandomVerticalFlip(),
+                # # rotates image randomly between -90 and 90 degrees
+                # transforms.RandomRotation(degrees=90),
+                # converts image to type Torch and normalizes [0,1]
+                transforms.ToTensor(),
+                # normalizes [-1,1]
+                transforms.Normalize(mean, std),
+            ]
+        )
 
     test_transform = transforms.Compose(
         [
