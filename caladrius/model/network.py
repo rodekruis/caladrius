@@ -46,7 +46,7 @@ def get_pretrained_iv3(output_size, freeze=False):
     return model_conv
 
 
-def get_pretrained_iv3_transforms(set_name, augment=True):
+def get_pretrained_iv3_transforms(set_name, no_augment=False):
     """
     Compose a series of image transformations to be performed on the input data
     These augmentations are done per batch! So no extra data is generated, but the transformations for every epoch on the same images are different
@@ -60,7 +60,7 @@ def get_pretrained_iv3_transforms(set_name, augment=True):
     std = [0.5, 0.5, 0.5]
     scale = 360
     input_shape = 299
-    if augment:
+    if not no_augment:
         train_transform = transforms.Compose(
             [
                 # resize every image to scale x scale pixels

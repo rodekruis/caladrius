@@ -32,7 +32,7 @@ class QuasiSiameseNetwork(object):
         self.output_type = args.output_type
         self.test_epoch = args.test_epoch
         self.freeze = args.freeze
-        self.augment = args.augment
+        self.no_augment = args.no_augment
 
         # define the loss measure
         if self.output_type == "regression":
@@ -54,7 +54,7 @@ class QuasiSiameseNetwork(object):
             self.model = torch.nn.DataParallel(self.model)
 
         for s in ("train", "validation", "test", "inference"):
-            self.transforms[s] = get_pretrained_iv3_transforms(s, self.augment)
+            self.transforms[s] = get_pretrained_iv3_transforms(s, self.no_augment)
 
         logger.debug("Num params: {}".format(len([_ for _ in self.model.parameters()])))
 

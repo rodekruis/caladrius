@@ -211,9 +211,10 @@ def configuration():
     )
 
     parser.add_argument(
-        "--augment",
-        type=bool,
-        default=True,
+        "--no-augment",
+        # type=bool,
+        default=False,
+        action="store_true",
         help="If False, no augmentations will be applied to the data.",
     )
 
