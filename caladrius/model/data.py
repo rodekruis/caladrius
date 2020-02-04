@@ -168,5 +168,23 @@ class Datasets(object):
                 # if (set_name == "train")
                 # else None,
             )
+            #
+            # if set_name == "train":
+            #     import matplotlib.pyplot as plt
+            #     def show(data_loader):
+            #         # print(next(iter(data_loader)))
+            #         filenames, before_images, after_images, labels = next(iter(data_loader))
+            #         # images = torch.stack([before_images,after_images],dim=0)
+            #         from torchvision.utils import make_grid
+            #         npimg = make_grid(after_images, normalize=True, pad_value=.5).numpy()
+            #         import matplotlib.pyplot as plt
+            #         fig, ax = plt.subplots(figsize=((13, 5)))
+            #         import numpy as np
+            #         ax.imshow(np.transpose(npimg, (1, 2, 0)))
+            #         plt.setp(ax, xticks=[], yticks=[])
+            #         plt.show()
+            #         return fig, ax
+            #     fig,ax=show(data_loader)
+            #     plt.show()
 
         return dataset, data_loader
