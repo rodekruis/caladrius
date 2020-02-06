@@ -59,7 +59,7 @@ def harmonic_score(scores):
     return len(scores) / sum((c + 1e-6) ** -1 for c in scores)
 
 
-def gen_score_overview(preds_filename):
+def gen_score_overview(preds_filename, binary=False):
     """
     Generate a dataframe with several performance measures
     Args:
@@ -131,7 +131,7 @@ def gen_score_overview(preds_filename):
         ].T.iterrows()
     ]
 
-    if len(unique_labels) == 4:
+    if not binary:
         damage_mapping = {
             "0": "No damage",
             "1": "Minor damage",
@@ -139,7 +139,7 @@ def gen_score_overview(preds_filename):
             "3": "Destroyed",
         }
 
-    elif len(unique_labels) == 2:
+    else:
         damage_mapping = {
             "0": "No damage",
             "1": "Damage",
