@@ -40,9 +40,9 @@ def create_confusionmatrix(y_true, y_pred, filename, labels, figsize=(10, 10)):
     )
     ax.margins(2, 2)
     plt.tight_layout()
-    plt.show()
+    # plt.show()
     # fig.savefig("../../DataAnalysis/Data/conf_matrix_7disasters.pdf")
-    print(filename)
+    # print(filename)
 
     fig.savefig(filename, bbox_inches="tight")
 
@@ -131,45 +131,74 @@ def gen_score_overview(preds_filename):
         ].T.iterrows()
     ]
 
-    damage_mapping = {
-        "0": "No damage",
-        "1": "Minor damage",
-        "2": "Major damage",
-        "3": "Destroyed",
-    }
-    score_overview.rename(index=damage_mapping, inplace=True)
-    return score_overview, df_pred
+    if len(unique_labels) == 4:
+        damage_mapping = {
+            "0": "No damage",
+            "1": "Minor damage",
+            "2": "Major damage",
+            "3": "Destroyed",
+        }
+
+    elif len(unique_labels) == 2:
+        damage_mapping = {
+            "0": "No damage",
+            "1": "Damage",
+        }
+
+    if damage_mapping:
+        score_overview.rename(index=damage_mapping, inplace=True)
+    return score_overview, df_pred, damage_mapping
 
 
-def create_overviewdict(df_overview):
-    scores_params = [
-        "harmonized_f1",
-        "macro recall",
-        "harmonized_recall_damage",
-        "weighted_recall_damage",
-        "macro_recall_damage",
-        "support damage",
-        "support all",
-        "percentage damage",
-    ]
+def create_overviewdict(df_overview, damage_mapping):
+    # scores_params = [
+    #     "harmonized_f1",
+    #     "macro f1"
+    #     "macro recall",
+    #     # "harmonized_recall_damage",
+    #     # "weighted_recall_damage",
+    #     # "macro_recall_damage",
+    #     # "support damage",
+    #     "number datapoints",
+    #     "percentages classes",
+    #     # "percentage damage",
+    # ]
 
-    scores_dict = dict.fromkeys(scores_params)
+    perc_dam = {}
+    scores_dict = {}  # dict.fromkeys(scores_params)
 
     # save overview params
+    scores_dict["macro_f1"] = df_overview.loc["macro avg", "f1-score"]
     scores_dict["harmonized_f1"] = df_overview.loc["harmonized avg", "f1-score"]
+
     scores_dict["macro recall"] = df_overview.loc["macro avg", "recall"]
-    scores_dict["harmonized_recall_damage"] = df_overview.loc[
-        "damage harmonized avg", "recall"
-    ]
-    scores_dict["weighted_recall_damage"] = df_overview.loc[
-        "damage weighted avg", "recall"
-    ]
-    scores_dict["macro_recall_damage"] = df_overview.loc["damage macro avg", "recall"]
-    scores_dict["support damage"] = int(df_overview.loc["damage macro avg", "support"])
-    scores_dict["support all"] = int(df_overview.loc["macro avg", "support"])
-    scores_dict["percentage damage"] = round(
-        scores_dict["support damage"] / scores_dict["support all"] * 100, 1
-    )
+    scores_dict["macro precision"] = df_overview.loc["macro avg", "precision"]
+    # scores_dict["harmonized_recall_damage"] = df_overview.loc[
+    #     "damage harmonized avg", "recall"
+    # ]
+    # scores_dict["weighted_recall_damage"] = df_overview.loc[
+    #     "damage weighted avg", "recall"
+    # ]
+    # scores_dict["macro_recall_damage"] = df_overview.loc["damage macro avg", "recall"]
+    # scores_dict["support damage"] = int(df_overview.loc["damage macro avg", "support"])
+
+    scores_dict = {
+        k: round(v, 3) if v is not None else "" for k, v in scores_dict.items()
+    }
+
+    for d in damage_mapping.values():
+        scores_dict["recall {}".format(d)] = round(df_overview.loc[d, "recall"], 3)
+        perc_dam[d] = round(
+            df_overview.loc[d, "support"]
+            / df_overview.loc["macro avg", "support"]
+            * 100,
+            1,
+        )
+    scores_dict["class percentage"] = "/".join(map(str, perc_dam.values()))
+    scores_dict["number datapoints"] = int(df_overview.loc["macro avg", "support"])
+    # scores_dict["percentage damage"] = round(
+    #     scores_dict["support damage"] / scores_dict["support all"] * 100, 1
+    # )
     return scores_dict
 
 
@@ -189,9 +218,9 @@ def save_overviewfile(
     overview_path = os.path.join(output_path, filename)
     fh, abs_path = mkstemp()
     replicate = False
-    scores_dict_rounded = {
-        k: round(v, 3) if v is not None else "" for k, v in overview_dict.items()
-    }
+    # scores_dict_rounded = {
+    #     k: round(v, 3) if v is not None else "" for k, v in overview_dict.items()
+    # }
     with fdopen(fh, "w+") as new_file:
         new_file.write(
             "run_name,{}\n".format(
@@ -208,8 +237,7 @@ def save_overviewfile(
                             "{},{}\n".format(
                                 run_name,
                                 ",".join(
-                                    str(item)
-                                    for item in list(scores_dict_rounded.values())
+                                    str(item) for item in list(overview_dict.values())
                                 ),
                             )
                         )
@@ -219,7 +247,7 @@ def save_overviewfile(
             new_file.write(
                 "{},{}\n".format(
                     run_name,
-                    ",".join(str(item) for item in list(scores_dict_rounded.values())),
+                    ",".join(str(item) for item in list(overview_dict.values())),
                 )
             )
     if os.path.isfile(overview_path):
@@ -282,11 +310,12 @@ def main():
         [preds_model, preds_random, preds_average, preds_validation],
         ["model", "random", "average", "validation"],
     ):
-        print(preds_filename)
+        # print(preds_filename)
         # check if file for preds type exists
         if os.path.exists(preds_filename):
             # generate overview with performance measures
-            score_overview, df_pred = gen_score_overview(preds_filename)
+            score_overview, df_pred, damage_mapping = gen_score_overview(preds_filename)
+
             score_overview.to_csv(
                 "{}{}_overview_{}.csv".format(
                     score_overviews_path, args.run_name, preds_type
@@ -294,7 +323,7 @@ def main():
             )
 
             if preds_type == "model":
-                scores_dict = create_overviewdict(score_overview)
+                scores_dict = create_overviewdict(score_overview, damage_mapping)
                 save_overviewfile(
                     scores_dict,
                     args.run_name,
