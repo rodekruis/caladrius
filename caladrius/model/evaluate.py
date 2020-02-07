@@ -1,13 +1,5 @@
-import time
-import json
-import numpy as np
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 import torch
-from sklearn.metrics import (
-    f1_score,
-    recall_score,
-    confusion_matrix,
-    classification_report,
-)
 
 from utils import create_logger
 
@@ -16,63 +8,73 @@ logger = create_logger(__name__)
 
 
 class RollingEval(object):
-    def __init__(self):
-        self.y_true = []
-        self.y_pred = []
+    def __init__(self, output_type):
+        self.output_type = output_type
+        self.labels = torch.Tensor([])
+        self.predictions = torch.Tensor([])
+        self.total_loss = 0.0
 
-    def add(self, y_t, y_p):
-        self.y_true.extend(y_t.cpu().detach().numpy())
-        self.y_pred.extend(y_p.cpu().detach().numpy())
+        # default damage class boundaries
+        self.upper_bound = 0.7
+        self.lower_bound = 0.3
 
-    def f1_score(self):
-        #look at different types of average. average="weighted" is used by xview2_baseline. Averaged="micro" was used by caladrius
-        return f1_score(self.y_true, self.y_pred, average="macro")
+    def add(self, labels, predictions, loss):
+        self.labels = self.labels.to(labels.device)
+        self.predictions = self.predictions.to(predictions.device)
+        if self.output_type == "regression":
+            self.labels = self.labels.float()
+            self.predictions = self.predictions.float()
+            labels = labels.float()
+            predictions = predictions.float()
+        else:
+            self.labels = self.labels.long()
+            self.predictions = self.predictions.long()
+            labels = labels.long()
+            predictions = predictions.long()
+        self.labels = torch.cat([self.labels, labels], dim=0)
+        self.predictions = torch.cat([self.predictions, predictions], dim=0)
+        self.total_loss += loss * predictions.size(0)
+        batch_score = self.score((labels, predictions))
+        return batch_score
 
+    def to_classes(self, score):
+        score[score >= self.upper_bound] = 2
+        score[(score > self.lower_bound) & (score < self.upper_bound)] = 1
+        score[score <= self.lower_bound] = 0
+        return score
 
+    def score(self, labels_predictions=None):
+        if labels_predictions is None:
+            labels_predictions = (self.labels, self.predictions)
+        labels, predictions = labels_predictions
+        if self.output_type == "regression":
+            labels = self.to_classes(labels)
+            predictions = self.to_classes(predictions)
+        return self.precision_recall_fscore_support_accuracy(labels, predictions)
 
-    # def recall(self):
-    #     return recall_score(self.y_true, self.y_pred, average="weighted")
+    def loss(self):
+        return self.total_loss / self.predictions.size(0)
 
-    # def every_measure(self):
-    #     return classification_report(self.y_true, self.y_pred)
-
-
-# class Evaluator(object):
-#     def __init__(self, model, sets):
-#
-#         self.model = model
-#         # sets is a dictionary (set_name -> dataloader)
-#         self.datasets = sets
-#
-#     def evaluate_set(self, set_name):
-#         assert set_name in self.datasets.keys()
-#         logger.info("Starting evaluation of model")
-#         y_true, y_pred = self.gather_outputs(self.model, self.datasets[set_name])
-#         micro_f1_score = f1_score(y_true, y_pred, average="micro")
-#
-#         logger.info("F1-Score ({}) : {}".format(set_name, micro_f1_score))
-#         return micro_f1_score
-#
-#     def gather_outputs(self, model, dataset):
-#         y_true = []
-#         y_pred = []
-#         logger.info(
-#             "Gathering inputs. Total number of datapoints: {}".format(len(dataset))
-#         )
-#         with torch.no_grad():
-#             for idx, (image1, image2, y_true_batch) in enumerate(dataset):
-#                 y_pred_batch = model(image1, image2)
-#
-#                 y_pred_batch = y_pred_batch.argmax(1)
-#                 y_pred_batch.extend(y_pred_batch.detach().numpy())
-#                 y_true.extend(y_true_batch.detach().numpy())
-#
-#         return y_true, y_pred
-#
-#     def evaluate(self, results_path):
-#         results = {}
-#         for set_name, dataset in self.datasets.items():
-#             results[set_name] = self.evaluate_set(set_name)
-#
-#         with open(results_path, "w") as writer:
-#             json.dump(writer, results, indent=2)
+    def precision_recall_fscore_support_accuracy(self, labels, predictions):
+        labels = labels.cpu().detach()
+        predictions = predictions.cpu().detach()
+        accuracy_value = accuracy_score(labels, predictions, normalize=True)
+        number_of_correct = accuracy_score(labels, predictions, normalize=False)
+        total_number = len(predictions)
+        micro_precision_recall_fscore_support_values = precision_recall_fscore_support(
+            labels, predictions, average="micro"
+        )
+        macro_precision_recall_fscore_support_values = precision_recall_fscore_support(
+            labels, predictions, average="macro"
+        )
+        weighted_precision_recall_fscore_support_values = precision_recall_fscore_support(
+            labels, predictions, average="weighted"
+        )
+        return (
+            accuracy_value,
+            number_of_correct,
+            total_number,
+            micro_precision_recall_fscore_support_values,
+            macro_precision_recall_fscore_support_values,
+            weighted_precision_recall_fscore_support_values,
+        )

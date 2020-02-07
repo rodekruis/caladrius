@@ -1,3 +1,13 @@
+0.6.5 (2020-02-07)
+------------------
+- Remove accuracy threshold
+- Log all metrics
+- Set default metric to F1 macro
+- Add experiment results to repository
+- Save classification prediction probabilities to file
+- Add jupyter notebook for inspecting Caladrius datasets
+- Add dataset version argument to Sint-Maarten-2017 script
+
 0.6.4 (2019-12-30)
 ------------------
 - Show table of models instead of dropdown
