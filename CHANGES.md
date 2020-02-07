@@ -1,3 +1,8 @@
+0.6.6 (2020-MM-DD)
+------------------
+- [ ] Light Network
+- [ ] Results for St. Maarten Digital Globe dataset
+
 0.6.5 (2020-02-07)
 ------------------
 - Remove accuracy threshold
