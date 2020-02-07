@@ -6,10 +6,17 @@ import os
 from os import fdopen, remove
 from tempfile import mkstemp
 from shutil import move
+import pickle
 
 import seaborn as sns
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
+from sklearn.metrics import (
+    confusion_matrix,
+    recall_score,
+    classification_report,
+    roc_curve,
+    auc,
+    accuracy_score,
+)
 import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
 
@@ -80,8 +87,6 @@ def gen_score_overview(preds_filename, binary=False):
 
     preds = np.array(df_pred.pred)
     labels = np.array(df_pred.label)
-    # print(list(map(str,np.unique(labels))))
-    # print(list(map(str,np.where(np.unique(labels) > 0))))
     unique_labels = np.unique(labels)
     damage_labels = [i for i in unique_labels if i != 0]
     # print(sorted(df_pred.label.unique())>0)
@@ -168,6 +173,7 @@ def create_overviewdict(df_overview, damage_mapping):
     scores_dict = {}  # dict.fromkeys(scores_params)
 
     # save overview params
+    # scores_dict["accuracy"] = df_overview.loc["accuracy","precision"]
     scores_dict["macro_f1"] = df_overview.loc["macro avg", "f1-score"]
     scores_dict["harmonized_f1"] = df_overview.loc["harmonized avg", "f1-score"]
 
@@ -200,6 +206,88 @@ def create_overviewdict(df_overview, damage_mapping):
     #     scores_dict["support damage"] / scores_dict["support all"] * 100, 1
     # )
     return scores_dict
+
+
+def plot_distrs(outputs, df_pred):
+    # plot probability distribution for binary labels
+    fig = plt.figure(figsize=(12, 9), constrained_layout=True)
+    sns.distplot(
+        outputs[df_pred.index[(np.array(df_pred.label) == 0)]][:, 0],
+        label="No damage",
+        hist=False,
+        kde=True,
+        kde_kws={"shade": True, "linewidth": 3},
+        bins=int(180 / 5),
+        color="darkgreen",
+    )
+    sns.distplot(
+        outputs[df_pred.index[(np.array(df_pred.label) == 1)]][:, 1],
+        label="Damage",
+        hist=False,
+        kde=True,
+        kde_kws={"shade": True, "linewidth": 3},
+        bins=int(180 / 5),
+        color="red",
+    )
+    return fig
+
+
+def calc_prob(preds_filename_prob, df_pred, binary=False):
+
+    preds_file_probability = open(preds_filename_prob, "rb")
+    outputs = pickle.load(preds_file_probability)
+    outputs = np.array(outputs)
+    preds_file_probability.close()
+
+    preds = np.array(df_pred.pred)
+    labels = np.array(df_pred.label)
+    df_bin = df_pred.copy()
+    if not binary:
+
+        df_bin.label = df_bin.label.replace([2, 3], 1)
+        df_bin.pred = df_bin.pred.replace([2, 3], 1)
+        labels_bin = np.array(df_bin.label)
+        preds_bin = np.array(df_bin.pred)
+        outputs_bin = np.empty([len(outputs), 2])
+        outputs_bin[:, 0] = outputs[:, 0]
+        outputs_bin[:, 1] = outputs[:, 1:].sum(axis=1)
+
+    else:
+        labels_bin = labels
+        outputs_bin = outputs
+        preds_bin = preds
+
+    accuracy = accuracy_score(labels_bin, preds_bin, normalize=True)
+
+    fpr, tpr, thresholds = roc_curve(labels_bin, outputs_bin[:, 1])
+    roc_auc = auc(fpr, tpr)
+    fig_roc, axes = plt.subplots(1, 1, figsize=(12, 9), constrained_layout=True)
+    plt.plot(fpr, tpr, label="ROC curve (area = %0.2f)" % roc_auc)
+    plt.plot([0, 1], [0, 1], "k--")
+    plt.legend(loc="lower right")
+    plt.setp(
+        axes,
+        xlim=[0.0, 1.0],
+        ylim=[0.0, 1.05],
+        xlabel="False Positive Rate",
+        ylabel="True Positive Rate",
+    )
+
+    # ax.margins(2, 2)
+    # plt.tight_layout()
+    # plt.show()
+
+    scores_dict = {}
+    scores_dict["accuracy"] = round(accuracy, 3)
+    scores_dict["auc"] = round(roc_auc, 3)
+    scores_dict["recall damage"] = round(recall_score(labels_bin, preds_bin), 3)
+
+    fig_distr = plot_distrs(outputs_bin, df_bin)
+    # plt.show()
+    # fig.savefig("../../DataAnalysis/Data/conf_matrix_7disasters.pdf")
+    # print(filename)
+
+    return df_bin, scores_dict, fig_roc, fig_distr
 
 
 def save_overviewfile(
@@ -277,6 +365,10 @@ def main():
         help="runs path",
     )
 
+    parser.add_argument(
+        "--binary", default=False, action="store_true", help="If input data is binary",
+    )
+
     args = parser.parse_args()
     if not args.run_folder:
         args.run_folder = os.path.join(
@@ -295,40 +387,89 @@ def main():
     preds_average = "{}/predictions/{}-split_test-epoch_001-model_average-predictions.txt".format(
         args.run_folder, args.run_name
     )
+    preds_probability = "{}/predictions/{}-split_test-epoch_001-model_probability-predictions.txt".format(
+        args.run_folder, args.run_name
+    )
     preds_validation = "{}/predictions/{}-split_validation-epoch_100-model_siamese-predictions.txt".format(
         args.run_folder, args.run_name
     )
     output_path = "./performance/"
     score_overviews_path = os.path.join(output_path, "score_overviews/")
     confusion_matrices_path = os.path.join(output_path, "confusion_matrices/")
+    confusion_matrices_path_bin = os.path.join(
+        output_path, "confusion_matrices_binary/"
+    )
+    roc_curves_path = os.path.join(output_path, "roc_curves/")
+    distr_plots_path = os.path.join(output_path, "distribution_plots/")
 
-    for p in [output_path, score_overviews_path, confusion_matrices_path]:
+    for p in [
+        output_path,
+        score_overviews_path,
+        confusion_matrices_path,
+        confusion_matrices_path_bin,
+        roc_curves_path,
+        distr_plots_path,
+    ]:
         if not os.path.exists(p):
             os.makedirs(p)
 
     for preds_filename, preds_type in zip(
-        [preds_model, preds_random, preds_average, preds_validation],
-        ["model", "random", "average", "validation"],
+        [preds_model, preds_random, preds_average, preds_probability, preds_validation],
+        ["model", "random", "average", "probability", "validation"],
     ):
         # print(preds_filename)
         # check if file for preds type exists
         if os.path.exists(preds_filename):
             # generate overview with performance measures
-            score_overview, df_pred, damage_mapping = gen_score_overview(preds_filename)
-
-            score_overview.to_csv(
-                "{}{}_overview_{}.csv".format(
-                    score_overviews_path, args.run_name, preds_type
+            if preds_type != "probability":
+                score_overview, df_pred, damage_mapping = gen_score_overview(
+                    preds_filename, args.binary
                 )
-            )
+
+                score_overview.to_csv(
+                    "{}{}_overview_{}.csv".format(
+                        score_overviews_path, args.run_name, preds_type
+                    )
+                )
+            else:
+                _, df_pred, _ = gen_score_overview(preds_model, args.binary)
+                df_pred_bin, prob_dict, roc_fig, dist_fig = calc_prob(
+                    preds_probability, df_pred, args.binary
+                )
+                unique_labels_bin = np.unique(np.array(df_pred_bin.label))
+                save_overviewfile(
+                    prob_dict,
+                    args.run_name,
+                    output_path,
+                    filename="allruns_scores_prob.txt",
+                )
+                create_confusionmatrix(
+                    df_pred_bin.label,
+                    df_pred_bin.pred,
+                    "{}{}_confusion".format(confusion_matrices_path_bin, args.run_name),
+                    unique_labels_bin,
+                    figsize=(9, 12),
+                )
+                roc_fig.savefig(
+                    "{}{}_roccurve".format(roc_curves_path, args.run_name),
+                    bbox_inches="tight",
+                )
+                dist_fig.savefig(
+                    "{}{}_distribution".format(distr_plots_path, args.run_name),
+                    bbox_inches="tight",
+                )
 
             if preds_type == "model":
                 scores_dict = create_overviewdict(score_overview, damage_mapping)
+                if args.binary:
+                    filename_allscores = "allruns_scores_binary.txt"
+                else:
+                    filename_allscores = "allruns_scores.txt"
                 save_overviewfile(
                     scores_dict,
                     args.run_name,
                     output_path,
-                    filename="allruns_scores.txt",
+                    filename=filename_allscores,
                 )
             if preds_type in ["model", "validation"]:
                 print(preds_type)
