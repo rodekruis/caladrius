@@ -43,7 +43,7 @@ DAMAGE_TYPES = ["destroyed", "significant", "partial", "none"]
 NONZERO_PIXEL_THRESHOLD = 0.90
 
 # input
-ROOT_DIRECTORY = os.path.join("../../data", "RC Challenge 1", "1")
+ROOT_DIRECTORY = os.path.join("data", "RC Challenge 1", "1")
 
 BEFORE_FOLDER = os.path.join(ROOT_DIRECTORY, "Before")
 AFTER_FOLDER = os.path.join(ROOT_DIRECTORY, "After")
@@ -54,7 +54,9 @@ ALL_BUILDINGS_GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, "AllBuildingOutline.ge
 GEOJSON_FILE = os.path.join(GEOJSON_FOLDER, "TrainingDataset.geojson")
 
 # output
-TARGET_DATA_FOLDER = os.path.join("../../data", "Sint-Maarten-2017")
+VERSION_FILE_NAME = "VERSION"
+
+TARGET_DATA_FOLDER = os.path.join("data", "Sint-Maarten-2017-Test")
 os.makedirs(TARGET_DATA_FOLDER, exist_ok=True)
 
 # cache
@@ -416,6 +418,14 @@ def create_geojson_for_visualization(df):
     admin_regions.to_file(admin_regions_file, driver="GeoJSON")
 
 
+def create_version_file(version_number):
+    with open(
+        os.path.join(TARGET_DATA_FOLDER, VERSION_FILE_NAME), "w+"
+    ) as version_file:
+        version_file.write("{0}".format(version_number))
+    return version_number
+
+
 def main():
     logging.basicConfig(
         handlers=[
@@ -433,12 +443,10 @@ def main():
     )
 
     parser.add_argument(
-        "--run-all",
-        action="store_true",
-        default=False,
-        help="Run all of the steps: create and split image stamps, "
-        "query for addresses, and create information file for the "
-        "report. Overrides individual step flags.",
+        "--version",
+        type=str,
+        required=True,
+        help="set a version number to identify dataset",
     )
     parser.add_argument(
         "--create-image-stamps",
@@ -482,7 +490,7 @@ def main():
         type=str,
         choices=["regression", "classification"],
         metavar="label_type",
-        help="How the damage label should be produced, on a continuous scale or in classes.",
+        help="Sets whether the damage label should be produced on a continuous scale or in classes.",
     )
 
     args = parser.parse_args()
@@ -503,7 +511,7 @@ def main():
         "Creating Sint-Maarten-2017 dataset using {} datapoints.".format(len(df))
     )
 
-    if args.create_image_stamps or args.run_all:
+    if args.create_image_stamps:
         logger.info("Creating training dataset.")
         createDatapoints(df, args.label_type)
         splitDatapoints(LABELS_FILE)
@@ -511,7 +519,7 @@ def main():
     else:
         logger.info("Skipping creation of training dataset.")
 
-    if args.query_address_api or args.run_all:
+    if args.query_address_api:
         logger.info("Fetching map addresses.")
         query_address_api(
             df, address_api=args.address_api, address_api_key=args.address_api_key
@@ -519,11 +527,17 @@ def main():
     else:
         logger.info("Skipping fetching of map addresses.")
 
-    if args.create_report_info_file or args.run_all:
+    if args.create_report_info_file:
         logger.info("Creating geojson for visualization.")
         create_geojson_for_visualization(df)
     else:
         logger.info("Skipping creation of geojson for visualization.")
+
+    logger.info(
+        "Created a Caladrius Dataset at {}v{}".format(
+            TARGET_DATA_FOLDER, create_version_file(args.version)
+        )
+    )
 
 
 if __name__ == "__main__":
