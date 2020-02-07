@@ -1,9 +1,9 @@
 0.6.5 (YYYY-MM-DD)
 ------------------
-- [ ] Remove accuracy threshold
-- [ ] Log all metrics
-- [ ] Set default metric to F1 macro
-- [ ] Add experiment results to repository
+- [x] Remove accuracy threshold
+- [x] Log all metrics
+- [x] Set default metric to F1 macro
+- [x] Add experiment results to repository
 - [x] Save classification prediction probabilities to file
 - [ ] Add jupyter notebook for inspecting Caladrius datasets
 

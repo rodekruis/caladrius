@@ -1,5 +1,7 @@
 import * as React from "react";
 
+const PRECISION = 4;
+
 class Table extends React.Component {
     render() {
         return (
@@ -29,8 +31,8 @@ export class BuildingStatsTable extends Table {
             label = this.props.selected_datum.label;
         }
 
-        prediction = parseFloat(prediction).toFixed(2);
-        label = parseFloat(label).toFixed(2);
+        prediction = parseFloat(prediction).toFixed(PRECISION);
+        label = parseFloat(label).toFixed(PRECISION);
 
         return (
             <tbody>
@@ -60,7 +62,7 @@ export class ClassificationStatsTable extends Table {
         data,
         damage_boundary_a,
         damage_boundary_b,
-        predcition_class
+        prediction_class
     ) => {
         return data.filter(datum => {
             const low = datum.prediction <= damage_boundary_a;
@@ -68,19 +70,35 @@ export class ClassificationStatsTable extends Table {
                 datum.prediction > damage_boundary_a &&
                 datum.prediction < damage_boundary_b;
             const high = datum.prediction >= damage_boundary_b;
-            return this.class_condition(low, medium, high, predcition_class);
+            return this.class_condition(low, medium, high, prediction_class);
         });
     };
 
-    class_condition(low, medium, high, predcition_class) {
+    label_filter = (
+        data,
+        damage_boundary_a,
+        damage_boundary_b,
+        prediction_class
+    ) => {
+        return data.filter(datum => {
+            const low = datum.label <= damage_boundary_a;
+            const medium =
+                datum.label > damage_boundary_a &&
+                datum.label < damage_boundary_b;
+            const high = datum.label >= damage_boundary_b;
+            return this.class_condition(low, medium, high, prediction_class);
+        });
+    };
+
+    class_condition(low, medium, high, prediction_class) {
         let condition_result = false;
-        if (predcition_class === "low") {
+        if (prediction_class === "low") {
             condition_result = low;
-        } else if (predcition_class === "medium") {
+        } else if (prediction_class === "medium") {
             condition_result = medium;
-        } else if (predcition_class === "high") {
+        } else if (prediction_class === "high") {
             condition_result = high;
-        } else if (predcition_class === "all") {
+        } else if (prediction_class === "all") {
             condition_result = low || medium || high;
         }
         return condition_result;
@@ -90,13 +108,13 @@ export class ClassificationStatsTable extends Table {
         data,
         damage_boundary_a,
         damage_boundary_b,
-        predcition_class
+        prediction_class
     ) => {
         return this.class_filter(
             data,
             damage_boundary_a,
             damage_boundary_b,
-            predcition_class
+            prediction_class
         ).length;
     };
 
@@ -104,13 +122,13 @@ export class ClassificationStatsTable extends Table {
         data,
         damage_boundary_a,
         damage_boundary_b,
-        predcition_class
+        prediction_class
     ) => {
         const filtered_data = this.class_filter(
             data,
             damage_boundary_a,
             damage_boundary_b,
-            predcition_class
+            prediction_class
         ).map(datum => datum.prediction);
 
         const total_damage = filtered_data.reduce(
@@ -125,7 +143,7 @@ export class ClassificationStatsTable extends Table {
             average = total_damage / filtered_data.length;
         }
 
-        average = parseFloat(average).toFixed(2);
+        average = parseFloat(average).toFixed(PRECISION);
         return average;
     };
 
@@ -133,7 +151,7 @@ export class ClassificationStatsTable extends Table {
         datum,
         damage_boundary_a,
         damage_boundary_b,
-        predcition_class
+        prediction_class
     ) => {
         const low =
             datum.label <= damage_boundary_a &&
@@ -144,30 +162,30 @@ export class ClassificationStatsTable extends Table {
             datum.prediction > damage_boundary_a &&
             datum.prediction < damage_boundary_b;
         const high =
-            datum.label >= damage_boundary_a &&
+            datum.label >= damage_boundary_b &&
             datum.prediction >= damage_boundary_b;
-        return this.class_condition(low, medium, high, predcition_class);
+        return this.class_condition(low, medium, high, prediction_class);
     };
 
     class_accuracy = (
         data,
         damage_boundary_a,
         damage_boundary_b,
-        predcition_class
+        prediction_class
     ) => {
         let are_predictions_correct = [];
         this.class_filter(
             data,
             damage_boundary_a,
             damage_boundary_b,
-            predcition_class
+            prediction_class
         ).map(datum => {
             are_predictions_correct.push(
                 this.accuracy_condition(
                     datum,
                     damage_boundary_a,
                     damage_boundary_b,
-                    predcition_class
+                    prediction_class
                 )
             );
             return datum;
@@ -178,7 +196,7 @@ export class ClassificationStatsTable extends Table {
                 are_predictions_correct.filter(x => x).length /
                 are_predictions_correct.length;
         }
-        accuracy = parseFloat(accuracy).toFixed(2);
+        accuracy = parseFloat(accuracy).toFixed(PRECISION);
         return accuracy;
     };
 
@@ -205,12 +223,12 @@ export class ClassificationStatsTable extends Table {
                 {Object.entries(calculator).map(([name, calculate]) => {
                     return this.render_row(
                         name,
-                        categories.map(predcition_class => {
+                        categories.map(prediction_class => {
                             return calculate(
                                 this.props.data,
                                 this.props.damage_boundary_a,
                                 this.props.damage_boundary_b,
-                                predcition_class
+                                prediction_class
                             );
                         })
                     );
