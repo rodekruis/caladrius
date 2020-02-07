@@ -207,17 +207,17 @@ optional arguments:
                         (default: regression)
 ```
 ---
-# Development
+## Development
 
-## How to setup code for developement?
+### How to setup code for developement?
 
 After cloning the repo, run `pre-commit install` to enable format checking when committing changes.
 
-## How to manage versions?
+### How to manage versions?
 
 When making changes, increment version number in [VERSION](VERSION), [package.json](caladrius/interface/package.json), the badge in [README.md](README.md) and [package.json](caladrius/interface/client/package.json) according to [PEP 440](https://www.python.org/dev/peps/pep-0440/) and update [CHANGES.md](CHANGES.md).
 
-## How to build Docker image?
+### How to build Docker image?
 
 To build and tag the Docker image with [VERSION](VERSION),
 
