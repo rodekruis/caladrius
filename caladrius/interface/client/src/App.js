@@ -2,10 +2,12 @@ import * as React from "react";
 import { Auth } from "./auth/Auth";
 import { Login } from "./auth/Login";
 import { fetch_csv_data, fetch_admin_regions } from "./data.js";
-import { ModelSelector } from "./nav/ModelSelector";
 import { Nav } from "./nav/Nav";
+import { Breadcrumb } from "./breadcrumb/Breadcrumb";
+import { ModelList } from "./model-list/ModelList";
 import { Dashboard } from "./dashboard/Dashboard";
 import { Footer } from "./footer/Footer";
+import "./app.css";
 
 export class App extends React.Component {
     constructor(props) {
@@ -15,7 +17,7 @@ export class App extends React.Component {
             login_attempted: false,
             username: null,
             models: [],
-            selected_model: "",
+            selected_model: null,
             data: [],
             selected_datum: null,
             admin_regions: [],
@@ -41,20 +43,23 @@ export class App extends React.Component {
 
     load_admin_regions_and_models = () => {
         if (this.state.is_authenticated) {
-            this.setState({ loading: true }, () => {
-                fetch_admin_regions(admin_regions => {
-                    this.fetch_models(models => {
-                        if ("errno" in models) {
-                            models = [];
-                        }
-                        this.setState({
-                            admin_regions: admin_regions,
-                            models: models,
-                            loading: false,
+            this.setState(
+                { admin_regions: [], models: [], loading: true },
+                () => {
+                    fetch_admin_regions(admin_regions => {
+                        this.fetch_models(models => {
+                            if ("errno" in models) {
+                                models = [];
+                            }
+                            this.setState({
+                                admin_regions: admin_regions,
+                                models: models,
+                                loading: false,
+                            });
                         });
                     });
-                });
-            });
+                }
+            );
         }
     };
 
@@ -71,28 +76,75 @@ export class App extends React.Component {
             );
         };
 
-        this.setState({ loading: true, login_attempted: true }, () => {
+        this.setState({ login_attempted: true, loading: true }, () => {
             Auth.login(username, password, login_handler);
         });
     };
 
-    on_logout = () => {
-        Auth.logout(() => {
-            this.setState({ is_authenticated: false, username: null });
-        });
+    unselect_model = () => {
+        this.setState({ selected_model: null, selected_datum: null });
+    };
+
+    on_exit = () => {
+        if (this.state.selected_model) {
+            this.unselect_model();
+        } else {
+            Auth.logout(() => {
+                this.setState({
+                    is_authenticated: false,
+                    username: null,
+                    login_attempted: false,
+                });
+            });
+        }
     };
 
     load_model = model => {
-        this.setState({ loading: true }, () => {
-            const model_name = model.model_directory;
-            const prediction_filename = model.predictions.test[0];
-            fetch_csv_data(model_name, prediction_filename, data => {
-                this.setState({
-                    selected_model: model,
-                    data: data,
-                    loading: false,
-                });
-            });
+        this.setState(
+            {
+                selected_model: null,
+                selected_datum: null,
+                data: [],
+                loading: true,
+            },
+            () => {
+                const model_name = model.model_directory;
+                fetch_csv_data(
+                    {
+                        validation: [],
+                        test: [],
+                        inference: [],
+                    },
+                    model_name,
+                    data => {
+                        this.setState({
+                            selected_model: model,
+                            selected_datum: null,
+                            data: data,
+                            loading: false,
+                        });
+                    }
+                );
+            }
+        );
+    };
+
+    fetch_epoch_predictions = (epoch, callback) => {
+        this.setState({ loading: false }, () => {
+            fetch_csv_data(
+                this.state.data,
+                this.state.selected_model.model_directory,
+                data => {
+                    this.setState(
+                        {
+                            data: data,
+                            loading: false,
+                        },
+                        callback
+                    );
+                },
+                epoch
+            );
         });
     };
 
@@ -126,17 +178,6 @@ export class App extends React.Component {
         });
     };
 
-    render_model_selector = () => {
-        return (
-            <ModelSelector
-                models={this.state.models}
-                selected_model={this.state.selected_model}
-                load_model={this.load_model}
-                loading={this.state.loading}
-            />
-        );
-    };
-
     render_loader = () => {
         return (
             <section className="hero is-large">
@@ -156,12 +197,11 @@ export class App extends React.Component {
     render_nav = () => {
         return (
             <Nav
-                render_model_selector={this.render_model_selector}
                 data={this.state.data}
                 selected_model={this.state.selected_model}
                 get_datum_priority={this.state.get_datum_priority}
                 loading={this.state.loading}
-                on_logout={this.on_logout}
+                on_exit={this.on_exit}
                 is_authenticated={this.state.is_authenticated}
             />
         );
@@ -174,10 +214,18 @@ export class App extends React.Component {
                 selected_datum={this.state.selected_datum}
                 admin_regions={this.state.admin_regions}
                 set_datum={this.set_datum}
-                render_model_selector={this.render_model_selector}
-                selected_model={this.state.selected_model}
                 set_datum_priority={this.set_datum_priority}
                 get_datum_priority={this.state.get_datum_priority}
+                fetch_epoch_predictions={this.fetch_epoch_predictions}
+            />
+        );
+    };
+
+    render_model_list = () => {
+        return (
+            <ModelList
+                models={this.state.models}
+                load_model={this.load_model}
             />
         );
     };
@@ -196,14 +244,29 @@ export class App extends React.Component {
         );
     };
 
+    render_breadcrumb = () => {
+        return (
+            <Breadcrumb
+                loading={this.state.loading}
+                selected_model={this.state.selected_model}
+                unselect_model={this.unselect_model}
+                selected_datum={this.state.selected_datum}
+                set_datum={this.set_datum}
+            />
+        );
+    };
+
     render() {
         return (
             <div>
                 {this.render_nav(this.state.is_authenticated)}
+                {this.render_breadcrumb()}
                 {this.state.loading
                     ? this.render_loader()
                     : this.state.is_authenticated
-                    ? this.render_dashboard()
+                    ? this.state.selected_model
+                        ? this.render_dashboard()
+                        : this.render_model_list()
                     : this.render_login()}
                 {this.render_footer()}
             </div>
