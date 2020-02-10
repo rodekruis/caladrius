@@ -97,8 +97,8 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
                 # rotates image randomly between -90 and 90 degrees
                 transforms.RandomRotation(degrees=40),
                 transforms.RandomAffine(degrees=40, translate=(0.2, 0.2), shear=11.5),
-                transforms.RandomResizedCrop(input_shape, scale=(0.8, 1)),
                 transforms.RandomHorizontalFlip(),
+                transforms.RandomResizedCrop(input_shape, scale=(0.8, 1)),
                 # converts image to type Torch and normalizes [0,1]
                 transforms.ToTensor(),
                 # normalizes [-1,1]
