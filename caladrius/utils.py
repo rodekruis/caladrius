@@ -218,6 +218,14 @@ def configuration():
         help="If False, no augmentations will be applied to the data.",
     )
 
+    parser.add_argument(
+        "--augment-type",
+        type=str,
+        default="original",
+        choices=["original", "paper"],
+        help="choose which data augmentation steps should be applied",
+    )
+
     args = parser.parse_args()
 
     arg_vars = vars(args)
