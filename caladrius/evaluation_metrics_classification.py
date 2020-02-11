@@ -221,7 +221,7 @@ def plot_distrs(outputs, df_pred):
         color="darkgreen",
     )
     sns.distplot(
-        outputs[df_pred.index[(np.array(df_pred.label) == 1)]][:, 1],
+        outputs[df_pred.index[(np.array(df_pred.label) == 1)]][:, 0],
         label="Damage",
         hist=False,
         kde=True,
