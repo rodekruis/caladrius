@@ -237,6 +237,7 @@ def calc_prob(preds_filename_prob, df_pred, binary=False):
     preds_file_probability = open(preds_filename_prob, "rb")
     outputs = pickle.load(preds_file_probability)
     outputs = np.array(outputs)
+    print("shape outputs all", outputs.shape)
     preds_file_probability.close()
 
     preds = np.array(df_pred.pred)
@@ -257,7 +258,9 @@ def calc_prob(preds_filename_prob, df_pred, binary=False):
         outputs_bin = outputs
         preds_bin = preds
 
-    accuracy = accuracy_score(labels_bin, preds_bin, normalize=True)
+    print("shape outputs", outputs_bin.shape)
+    print("shape labels", labels_bin.shape)
+    # accuracy = accuracy_score(labels_bin, preds_bin, normalize=True)
 
     fpr, tpr, thresholds = roc_curve(labels_bin, outputs_bin[:, 1])
     roc_auc = auc(fpr, tpr)
@@ -277,11 +280,17 @@ def calc_prob(preds_filename_prob, df_pred, binary=False):
     # plt.tight_layout()
     # plt.show()
 
+    report = classification_report(labels_bin, preds_bin, digits=3, output_dict=True)
     scores_dict = {}
-    scores_dict["accuracy"] = round(accuracy, 3)
+    scores_dict["accuracy"] = round(report["accuracy"], 3)
     scores_dict["auc"] = round(roc_auc, 3)
-    scores_dict["recall damage"] = round(recall_score(labels_bin, preds_bin), 3)
+    scores_dict["recall_damage"] = round(report["1"]["recall"], 3)
+    scores_dict["macro_precision"] = round(report["macro avg"]["precision"], 3)
+    scores_dict["macro_recall"] = round(report["macro avg"]["recall"], 3)
+    scores_dict["macro_f1"] = round(report["macro avg"]["f1-score"], 3)
 
+    print(scores_dict)
+    # print(report)
     fig_distr = plot_distrs(outputs_bin, df_bin)
     # plt.show()
     # fig.savefig("../../DataAnalysis/Data/conf_matrix_7disasters.pdf")
