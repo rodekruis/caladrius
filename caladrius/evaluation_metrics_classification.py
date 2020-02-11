@@ -21,7 +21,9 @@ import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
 
 
-def create_confusionmatrix(y_true, y_pred, filename, labels, figsize=(10, 10)):
+def create_confusionmatrix(
+    y_true, y_pred, filename, labels, figsize=(10, 10), class_names=None
+):
     """
     Generate matrix plot of confusion matrix with pretty annotations.
     The plot image is saved to disk.
@@ -37,13 +39,15 @@ def create_confusionmatrix(y_true, y_pred, filename, labels, figsize=(10, 10)):
     """
 
     cm = confusion_matrix(y_true, y_pred, labels=labels)
+    if class_names is None:
+        class_names = labels
 
     fig, ax = plot_confusion_matrix(
         conf_mat=cm,
         colorbar=True,
         show_absolute=True,  # False,
         show_normed=True,
-        class_names=labels,
+        class_names=class_names,
     )
     ax.margins(2, 2)
     plt.tight_layout()
@@ -457,6 +461,7 @@ def main():
                     df_pred_bin.pred,
                     "{}{}_confusion".format(confusion_matrices_path_bin, args.run_name),
                     unique_labels_bin,
+                    class_names=["No damage", "Damage"],
                     figsize=(9, 12),
                 )
                 roc_fig.savefig(
