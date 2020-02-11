@@ -212,7 +212,7 @@ def plot_distrs(outputs, df_pred):
     # plot probability distribution for binary labels
     fig = plt.figure(figsize=(12, 9), constrained_layout=True)
     sns.distplot(
-        outputs[df_pred.index[(np.array(df_pred.label) == 0)]][:, 0],
+        outputs[df_pred.index[(np.array(df_pred.label) == 0)]][:, 1],
         label="No damage",
         hist=False,
         kde=True,
@@ -221,7 +221,7 @@ def plot_distrs(outputs, df_pred):
         color="darkgreen",
     )
     sns.distplot(
-        outputs[df_pred.index[(np.array(df_pred.label) == 1)]][:, 0],
+        outputs[df_pred.index[(np.array(df_pred.label) == 1)]][:, 1],
         label="Damage",
         hist=False,
         kde=True,
