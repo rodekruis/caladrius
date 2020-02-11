@@ -141,7 +141,7 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
         test_transform = transforms.Compose(
             [
                 # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
-                transforms.Resize(input_shape),
+                transforms.Resize((input_shape, input_shape)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
