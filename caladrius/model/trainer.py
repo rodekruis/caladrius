@@ -16,7 +16,8 @@ from torch import nn
 from model.network import get_pretrained_iv3_transforms, SiameseNetwork
 from utils import create_logger, readable_float, dynamic_report_key
 from model.evaluate import RollingEval
-from model.data import compute_class_weights
+
+# from model.data import compute_class_weights
 
 logger = create_logger(__name__)
 
@@ -35,11 +36,12 @@ class QuasiSiameseNetwork(object):
         self.freeze = args.freeze
         self.no_augment = args.no_augment
         self.augment_type = args.augment_type
-        self.weighted_loss = args.weighted_loss
+        # self.weighted_loss = args.weighted_loss
 
         # define the loss measure
         if self.output_type == "regression":
             self.model = SiameseNetwork()
+            self.criterion = nnloss.MSELoss()
         elif self.output_type == "classification":
             self.number_classes = args.number_classes
             self.model = SiameseNetwork(
@@ -47,6 +49,7 @@ class QuasiSiameseNetwork(object):
                 n_classes=self.number_classes,
                 freeze=self.freeze,
             )
+            self.criterion = nnloss.CrossEntropyLoss()
 
         self.transforms = {}
 
@@ -74,15 +77,16 @@ class QuasiSiameseNetwork(object):
         self.prediction_path = args.prediction_path
         self.model_type = args.model_type
 
-    def define_loss(self, dataset):
-        if self.output_type == "regression":
-            self.criterion = nnloss.MSELoss()
-        else:
-            if self.weighted_loss:
-                weights = compute_class_weights(dataset)
-            else:
-                weights = None
-            self.criterion = nnloss.CrossEntropyLoss(weight=weights)
+    # def define_loss(self, dataset):
+    #     if self.output_type == "regression":
+    #         self.criterion = nnloss.MSELoss()
+    #     else:
+    #         # if self.weighted_loss:
+    #         #     weights = compute_class_weights(dataset)
+    #         # else:
+    #         #     weights = None
+    #         # self.criterion = nnloss.CrossEntropyLoss(weight=weights)
+    #         self.criterion = nnloss.CrossEntropyLoss()
 
     def get_random_output_values(self, output_shape):
         return torch.rand(output_shape)
