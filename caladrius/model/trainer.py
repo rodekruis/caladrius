@@ -16,6 +16,7 @@ from torch import nn
 from model.network import get_pretrained_iv3_transforms, SiameseNetwork
 from utils import create_logger, readable_float, dynamic_report_key
 from model.evaluate import RollingEval
+from model.data import compute_class_weights
 
 logger = create_logger(__name__)
 
@@ -34,13 +35,12 @@ class QuasiSiameseNetwork(object):
         self.freeze = args.freeze
         self.no_augment = args.no_augment
         self.augment_type = args.augment_type
+        self.weighted_loss = args.weighted_loss
 
         # define the loss measure
         if self.output_type == "regression":
-            self.criterion = nnloss.MSELoss()
             self.model = SiameseNetwork()
         elif self.output_type == "classification":
-            self.criterion = nnloss.CrossEntropyLoss()
             self.number_classes = args.number_classes
             self.model = SiameseNetwork(
                 output_type=self.output_type,
@@ -73,6 +73,16 @@ class QuasiSiameseNetwork(object):
         self.model_path = args.model_path
         self.prediction_path = args.prediction_path
         self.model_type = args.model_type
+
+    def define_loss(self, dataset):
+        if self.output_type == "regression":
+            self.criterion = nnloss.MSELoss()
+        else:
+            if self.weighted_loss:
+                weights = compute_class_weights(dataset)
+            else:
+                weights = None
+            self.criterion = nnloss.CrossEntropyLoss(weight=weights)
 
     def get_random_output_values(self, output_shape):
         return torch.rand(output_shape)
@@ -175,7 +185,9 @@ class QuasiSiameseNetwork(object):
         prediction_file = self.create_prediction_file(phase, epoch)
 
         if self.model_type == "average":
-            self.average_label = self.calculate_average_label(train_set)
+            self.average_label = (
+                0  # Has to be changed back to: self.calculate_average_label(train_set)
+            )
 
         if self.model_type == "probability":
             output_probability_list = []
@@ -295,6 +307,8 @@ class QuasiSiameseNetwork(object):
         run_report.testrunning_loss = []
         run_report.testrunning_accuracy = []
 
+        # class_weights = compute_class_weights(train_set)
+
         for epoch in range(1, number_of_epochs + 1):
             # train network
             train_loss, train_accuracy = self.run_epoch(
@@ -368,9 +382,11 @@ class QuasiSiameseNetwork(object):
             run_report (dict): configuration parameters for testing with testing statistics
         """
         is_statistical_model = self.model_type not in ["siamese", "probability"]
-        if is_statistical_model:
-            train_set, _ = datasets.load("train")
-        else:
+        # Has to be changed back
+        # if is_statistical_model:
+        #     train_set, _ = datasets.load("train")
+        # else:
+        if not is_statistical_model:
             self.model.load_state_dict(
                 torch.load(self.model_path, map_location=self.device)
             )
@@ -383,7 +399,7 @@ class QuasiSiameseNetwork(object):
             1,
             test_loader,
             phase="test",
-            train_set=train_set if is_statistical_model else None,
+            train_set=None,  # Has to be changed back train_set if is_statistical_model else None,
         )
         run_report[
             dynamic_report_key("test_loss", self.model_type, is_statistical_model)
