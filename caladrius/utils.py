@@ -226,6 +226,14 @@ def configuration():
         help="choose which data augmentation steps should be applied",
     )
 
+    parser.add_argument(
+        "--weighted-loss",
+        # type=bool,
+        default=False,
+        action="store_true",
+        help="If True, the loss will be weighted according to the amount of data per damage category",
+    )
+
     args = parser.parse_args()
 
     arg_vars = vars(args)

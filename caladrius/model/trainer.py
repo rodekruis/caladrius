@@ -4,7 +4,7 @@ import time
 import pickle
 from datetime import datetime
 import torch
-from statistics import mode, mean
+from statistics import mode, mean, median
 
 from torch.optim import Adam
 from torch.nn.modules import loss as nnloss
@@ -16,8 +16,6 @@ from torch import nn
 from model.network import get_pretrained_iv3_transforms, SiameseNetwork
 from utils import create_logger, readable_float, dynamic_report_key
 from model.evaluate import RollingEval
-
-# from model.data import compute_class_weights
 
 logger = create_logger(__name__)
 
@@ -36,7 +34,7 @@ class QuasiSiameseNetwork(object):
         self.freeze = args.freeze
         self.no_augment = args.no_augment
         self.augment_type = args.augment_type
-        # self.weighted_loss = args.weighted_loss
+        self.weighted_loss = args.weighted_loss
 
         # define the loss measure
         if self.output_type == "regression":
@@ -77,16 +75,33 @@ class QuasiSiameseNetwork(object):
         self.prediction_path = args.prediction_path
         self.model_type = args.model_type
 
-    # def define_loss(self, dataset):
-    #     if self.output_type == "regression":
-    #         self.criterion = nnloss.MSELoss()
-    #     else:
-    #         # if self.weighted_loss:
-    #         #     weights = compute_class_weights(dataset)
-    #         # else:
-    #         #     weights = None
-    #         # self.criterion = nnloss.CrossEntropyLoss(weight=weights)
-    #         self.criterion = nnloss.CrossEntropyLoss()
+    def define_loss(self, dataset):
+        if self.output_type == "regression":
+            self.criterion = nnloss.MSELoss()
+        else:
+            if self.weighted_loss:
+                num_samples = len(dataset)
+
+                # distribution of classes in the dataset
+                label_to_count = {n: 0 for n in range(self.number_classes)}
+                for idx in list(range(num_samples)):
+                    label = dataset.load_datapoint(idx)[-1]
+                    label_to_count[label] += 1
+
+                label_percentage = {
+                    l: label_to_count[l] / num_samples for l in label_to_count.keys()
+                }
+                print("weights", label_percentage.values())
+                median_perc = median(list(label_percentage.values()))
+                class_weights = [
+                    median_perc / label_percentage[c] if label_percentage[c] != 0 else 0
+                    for c in range(self.number_classes)
+                ]
+                print("weights", class_weights)
+                weights = torch.FloatTensor(class_weights).to(self.device)
+            else:
+                weights = None
+            self.criterion = nnloss.CrossEntropyLoss(weight=weights)
 
     def get_random_output_values(self, output_shape):
         return torch.rand(output_shape)
@@ -297,6 +312,8 @@ class QuasiSiameseNetwork(object):
         train_set, train_loader = datasets.load("train")
         validation_set, validation_loader = datasets.load("validation")
         testrunning_set, testrunning_loader = datasets.load("test")
+
+        self.define_loss(train_set)
 
         best_accuracy, best_model_wts = 0.0, copy.deepcopy(self.model.state_dict())
 
