@@ -8,6 +8,9 @@ import torch
 import torch.utils.data
 import torchvision
 
+import imageio
+import numpy as np
+
 
 class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
     """Samples elements randomly from a given list of indices for imbalanced dataset
@@ -80,10 +83,12 @@ class CaladriusDataset(Dataset):
         labels_filename,
         transforms=None,
         max_data_points=None,
+        augment_type="original",
     ):
         self.set_name = set_name
         self.directory = os.path.join(directory, set_name)
         self.labels_filename = labels_filename
+        self.augment_type = augment_type
         if self.set_name == "inference":
             self.datapoints = [
                 filename
@@ -105,8 +110,16 @@ class CaladriusDataset(Dataset):
         datapoint = self.load_datapoint(idx)
 
         if self.transforms:
-            datapoint[1] = self.transforms(datapoint[1])
-            datapoint[2] = self.transforms(datapoint[2])
+            # datapoint[1] = self.transforms(imageio.imread(datapoint[1]))
+            # datapoint[2] = self.transforms(imageio.imread(datapoint[2]))
+            if self.augment_type == "equalization":
+                datapoint[1] = np.array(datapoint[1])
+                datapoint[2] = np.array(datapoint[2])
+                datapoint[1] = self.transforms(image=datapoint[1])["image"].float()
+                datapoint[2] = self.transforms(image=datapoint[2])["image"].float()
+            else:
+                datapoint[1] = self.transforms(datapoint[1])
+                datapoint[2] = self.transforms(datapoint[2])
 
         return tuple(datapoint)
 
@@ -116,6 +129,8 @@ class CaladriusDataset(Dataset):
             filename = line
         else:
             filename, damage = line.split(" ")
+        # before_image = imageio.imread(os.path.join(self.directory, "before", filename))
+        # after_image = imageio.imread(os.path.join(self.directory, "after", filename))
         before_image = Image.open(os.path.join(self.directory, "before", filename))
         after_image = Image.open(os.path.join(self.directory, "after", filename))
         if self.set_name == "inference":
@@ -135,6 +150,7 @@ class Datasets(object):
         self.max_data_points = args.max_data_points
         self.label_file = args.label_file
         self.sample_data = args.sample_data
+        self.augment_type = args.augment_type
 
     def load(self, set_name):
         assert set_name in {"train", "validation", "test", "inference"}
@@ -144,6 +160,7 @@ class Datasets(object):
             self.label_file,
             transforms=self.transforms[set_name],
             max_data_points=self.max_data_points,
+            augment_type=self.augment_type,
         )
 
         if self.sample_data:

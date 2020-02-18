@@ -222,7 +222,7 @@ def configuration():
         "--augment-type",
         type=str,
         default="original",
-        choices=["original", "paper"],
+        choices=["original", "paper", "equalization"],
         help="choose which data augmentation steps should be applied",
     )
 

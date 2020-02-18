@@ -6,7 +6,8 @@ from torch import nn
 import torchvision.transforms as transforms
 
 from utils import create_logger
-
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
 logger = create_logger(__name__)
 
@@ -105,6 +106,33 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
                 transforms.Normalize(mean, std),
             ]
         )
+
+    elif not no_augment and augment_type == "equalization":
+        train_transform = A.Compose(
+            [
+                A.Resize(scale, scale),
+                A.RandomResizedCrop(input_shape, input_shape),
+                A.HorizontalFlip(),
+                A.VerticalFlip(),
+                A.RandomRotate90(),
+                A.CLAHE(p=1),
+                # A.Equalize(mode="pil",p=1),
+                A.Normalize(mean=mean, std=std),
+                ToTensorV2(),
+            ]
+        )
+
+        test_transform = A.Compose(
+            [
+                A.Resize(scale, scale),
+                A.CenterCrop(input_shape, input_shape),
+                A.CLAHE(p=1),
+                # A.Equalize(p=1),
+                A.Normalize(mean=mean, std=std),
+                ToTensorV2(),
+            ]
+        )
+
     else:
         train_transform = transforms.Compose(
             [
