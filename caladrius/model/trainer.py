@@ -17,11 +17,6 @@ from model.network import get_pretrained_iv3_transforms, SiameseNetwork
 from utils import create_logger, readable_float, dynamic_report_key
 from model.evaluate import RollingEval
 
-# import line_profiler
-#
-#
-# profile = line_profiler.LineProfiler()
-
 logger = create_logger(__name__)
 
 
