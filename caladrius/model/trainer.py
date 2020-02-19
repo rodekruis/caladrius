@@ -75,7 +75,7 @@ class QuasiSiameseNetwork(object):
         self.prediction_path = args.prediction_path
         self.model_type = args.model_type
 
-    # @profile
+    @profile
     def define_loss(self, dataset):
         if self.output_type == "regression":
             self.criterion = nnloss.MSELoss()
@@ -139,7 +139,7 @@ class QuasiSiameseNetwork(object):
         else:
             return open(prediction_file_path, "wb")
 
-    # @profile
+    @profile
     def get_outputs_preds(
         self, image1, image2, random_target_shape, average_target_size
     ):
@@ -169,7 +169,7 @@ class QuasiSiameseNetwork(object):
 
         return outputs, preds
 
-    # @profile
+    @profile
     def run_epoch(self, epoch, loader, phase="train", train_set=None):
         """
         Run one epoch of the model
@@ -301,7 +301,7 @@ class QuasiSiameseNetwork(object):
 
         return epoch_loss, epoch_error_meas
 
-    # @profile
+    @profile
     def train(self, run_report, datasets, number_of_epochs):
         """
         Train the model
