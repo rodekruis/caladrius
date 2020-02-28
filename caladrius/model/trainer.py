@@ -59,8 +59,10 @@ class QuasiSiameseNetwork(object):
             logger.info("Using {} GPUs".format(torch.cuda.device_count()))
             self.model = torch.nn.DataParallel(self.model)
 
-        for s in ("train", "validation", "test", "inference"):
-            self.transforms[s] = network_architecture_transforms(s)
+        for dataset_split in ("train", "validation", "test", "inference"):
+            self.transforms[dataset_split] = network_architecture_transforms(
+                dataset_split
+            )
 
         logger.debug("Num params: {}".format(len([_ for _ in self.model.parameters()])))
 

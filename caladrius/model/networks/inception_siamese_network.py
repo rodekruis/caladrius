@@ -1,14 +1,103 @@
+import random
 from collections import OrderedDict
+
+import numpy as np
 
 import torch
 import torchvision
 from torch import nn
 import torchvision.transforms as transforms
+import torchvision.transforms.functional as F
 
 from utils import create_logger
 
 
 logger = create_logger(__name__)
+
+
+def pair_transforms(before_image, after_image):
+
+    if random.random() > 0.5:
+        before_image = np.flip(before_image, 0)
+        after_image = np.flip(after_image, 0)
+
+    if random.random() > 0.5:
+        before_image = np.flip(before_image, 1)
+        after_image = np.flip(after_image, 1)
+
+    if random.random() > 0.5:
+        before_image = np.rot90(before_image, axes=(0, 1))
+        after_image = np.rot90(after_image, axes=(0, 1))
+
+    return np.array(before_image).copy(), np.array(after_image).copy()
+
+
+def get_pretrained_iv3_transforms(set_name):
+    """
+    Compose a series of image transformations to be performed on the input data
+    Args:
+        set_name (str): the dataset you want the transformations for. Can be "train", "validation", "test", "inference"
+
+    Returns:
+        Composition of transformations for given set name
+    """
+    mean = [0.5, 0.5, 0.5]
+    std = [0.5, 0.5, 0.5]
+    scale = 360
+    input_shape = 299
+
+    resize_transform = transforms.Resize(scale)
+    random_resized_crop_transform = transforms.RandomResizedCrop(input_shape)
+
+    post_transforms = transforms.Compose(
+        [
+            transforms.ToPILImage(),
+            transforms.CenterCrop(input_shape),
+            # converts image to type Torch and normalizes [0,1]
+            transforms.ToTensor(),
+            # normalizes [-1,1]
+            transforms.Normalize(mean, std),
+        ]
+    )
+
+    def tranform_function(before_image, after_image):
+        # resize every image to scale x scale pixels
+        before_image = resize_transform(before_image)
+        after_image = resize_transform(after_image)
+
+        if set_name == "train":
+            # crop every image to input_shape x input_shape pixels
+            i, j, h, w = random_resized_crop_transform.get_params(
+                before_image,
+                random_resized_crop_transform.scale,
+                random_resized_crop_transform.ratio,
+            )
+            before_image = F.resized_crop(
+                before_image,
+                i,
+                j,
+                h,
+                w,
+                random_resized_crop_transform.size,
+                random_resized_crop_transform.interpolation,
+            )
+            after_image = F.resized_crop(
+                after_image,
+                i,
+                j,
+                h,
+                w,
+                random_resized_crop_transform.size,
+                random_resized_crop_transform.interpolation,
+            )
+            before_image, after_image = pair_transforms(before_image, after_image)
+
+        # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
+        before_image = post_transforms(before_image)
+        after_image = post_transforms(after_image)
+        return before_image, after_image
+
+    return tranform_function
 
 
 def get_pretrained_iv3(output_size):
@@ -44,54 +133,6 @@ def get_pretrained_iv3(output_size):
                 params.requires_grad = True
         ct.append(name)
     return model_conv
-
-
-def get_pretrained_iv3_transforms(set_name):
-    """
-    Compose a series of image transformations to be performed on the input data
-    Args:
-        set_name (str): the dataset you want the transformations for. Can be "train", "validation", "test", "inference"
-
-    Returns:
-        Composition of transformations for given set name
-    """
-    mean = [0.5, 0.5, 0.5]
-    std = [0.5, 0.5, 0.5]
-    scale = 360
-    input_shape = 299
-    train_transform = transforms.Compose(
-        [
-            # resize every image to scale x scale pixels
-            transforms.Resize(scale),
-            # crop every image to input_shape x input_shape pixels.
-            # This is needed for the inception model.
-            transforms.RandomResizedCrop(input_shape),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomVerticalFlip(),
-            transforms.RandomRotation(degrees=90),
-            # converts image to type Torch and normalizes [0,1]
-            transforms.ToTensor(),
-            # normalizes [-1,1]
-            transforms.Normalize(mean, std),
-        ]
-    )
-
-    test_transform = transforms.Compose(
-        [
-            # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
-            transforms.Resize(scale),
-            transforms.CenterCrop(input_shape),
-            transforms.ToTensor(),
-            transforms.Normalize(mean, std),
-        ]
-    )
-
-    return {
-        "train": train_transform,
-        "validation": test_transform,
-        "test": test_transform,
-        "inference": test_transform,
-    }[set_name]
 
 
 class InceptionSiameseNetwork(nn.Module):

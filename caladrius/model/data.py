@@ -28,8 +28,7 @@ class CaladriusDataset(Dataset):
         datapoint = self.load_datapoint(idx)
 
         if self.transforms:
-            datapoint[1] = self.transforms(datapoint[1])
-            datapoint[2] = self.transforms(datapoint[2])
+            datapoint[1], datapoint[2] = self.transforms(datapoint[1], datapoint[2])
 
         return tuple(datapoint)
 
