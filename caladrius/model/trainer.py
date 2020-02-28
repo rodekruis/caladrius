@@ -479,6 +479,8 @@ class QuasiSiameseNetwork(object):
         if self.model_type == "average":
             self.average_label = self.calculate_average_label(train_set)
 
+        torch.cuda.empty_cache()
+
         for idx, (filename, image1, image2) in enumerate(inference_loader, 1):
             image1 = image1.to(self.device)
             image2 = image2.to(self.device)

@@ -67,11 +67,11 @@ def dynamic_report_key(label, prefix, condition):
 
 def run_name_type(run_name):
     run_name = str(run_name)
-    pattern = re.compile(r"^[a-zA-Z0-9_\.]{3,30}$")
+    pattern = re.compile(r"^[a-zA-Z0-9_\.\-]{3,30}$")
     if not pattern.match(run_name):
         raise argparse.ArgumentTypeError(
             "Run name can contain only "
-            + "alphanumeric, underscore (_) and dot (.) characters. "
+            + "alphanumeric, minus (-), underscore (_) and dot (.) characters. "
             + "Must be at least 3 characters and at most 30 characters long."
         )
     return run_name
