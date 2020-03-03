@@ -61,7 +61,37 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
     std = [0.5, 0.5, 0.5]
     scale = 360
     input_shape = 299
-    if not no_augment and augment_type == "original":
+
+    if no_augment:
+        train_transform = transforms.Compose(
+            [
+                transforms.Resize((input_shape, input_shape)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ]
+        )
+
+        test_transform = transforms.Compose(
+            [
+                transforms.Resize((input_shape, input_shape)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ]
+        )
+
+        # #previous test with no_aug, but now realize there is some augmentation.
+        # #Leave here in case new no_aug does way worse
+        # train_transform = transforms.Compose(
+        #     [
+        #         # resize every image to scale x scale pixels
+        #         transforms.Resize(scale),
+        #         transforms.RandomResizedCrop(input_shape),
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(mean, std),
+        #     ]
+        # )
+
+    elif augment_type == "original":
         train_transform = transforms.Compose(
             [
                 # resize every image to scale x scale pixels
@@ -82,80 +112,7 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
                 transforms.Normalize(mean, std),
             ]
         )
-    elif not no_augment and augment_type == "paper":
-        train_transform = transforms.Compose(
-            [
-                # resize every image to scale x scale pixels
-                transforms.Resize(input_shape),
-                # crop every image to input_shape x input_shape pixels.
-                # This is needed for the inception model.
-                # we first scale and then crop to have translation variation, i.e. buildings is not always in the centre.
-                # In this way model is less sensitive to translation variation in the test set.
-                # transforms.RandomResizedCrop(input_shape),
-                # # flips image horizontally with a probability of 0.5 (i.e. half of images are flipped)
-                # transforms.RandomHorizontalFlip(),
-                # transforms.RandomVerticalFlip(),
-                # rotates image randomly between -90 and 90 degrees
-                transforms.RandomRotation(degrees=40),
-                transforms.RandomAffine(degrees=40, translate=(0.2, 0.2), shear=11.5),
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomResizedCrop(input_shape, scale=(0.8, 1)),
-                # converts image to type Torch and normalizes [0,1]
-                transforms.ToTensor(),
-                # normalizes [-1,1]
-                transforms.Normalize(mean, std),
-            ]
-        )
 
-    elif not no_augment and augment_type == "equalization":
-        train_transform = A.Compose(
-            [
-                A.Resize(scale, scale),
-                A.RandomResizedCrop(input_shape, input_shape),
-                A.HorizontalFlip(),
-                A.VerticalFlip(),
-                A.RandomRotate90(),
-                A.CLAHE(p=1),
-                # A.Equalize(mode="pil",p=1),
-                A.Normalize(mean=mean, std=std),
-                ToTensorV2(),
-            ]
-        )
-
-        test_transform = A.Compose(
-            [
-                A.Resize(scale, scale),
-                A.CenterCrop(input_shape, input_shape),
-                A.CLAHE(p=1),
-                # A.Equalize(p=1),
-                A.Normalize(mean=mean, std=std),
-                ToTensorV2(),
-            ]
-        )
-
-    else:
-        train_transform = transforms.Compose(
-            [
-                # resize every image to scale x scale pixels
-                transforms.Resize(scale),
-                # crop every image to input_shape x input_shape pixels.
-                # This is needed for the inception model.
-                # we first scale and then crop to have translation variation, i.e. buildings is not always in the centre.
-                # In this way model is less sensitive to translation variation in the test set.
-                transforms.RandomResizedCrop(input_shape),
-                # # flips image horizontally with a probability of 0.5 (i.e. half of images are flipped)
-                # transforms.RandomHorizontalFlip(),
-                # transforms.RandomVerticalFlip(),
-                # # rotates image randomly between -90 and 90 degrees
-                # transforms.RandomRotation(degrees=90),
-                # converts image to type Torch and normalizes [0,1]
-                transforms.ToTensor(),
-                # normalizes [-1,1]
-                transforms.Normalize(mean, std),
-            ]
-        )
-
-    if augment_type == "original":
         test_transform = transforms.Compose(
             [
                 # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
@@ -166,12 +123,51 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
             ]
         )
     elif augment_type == "paper":
+        train_transform = transforms.Compose(
+            [
+                transforms.Resize(input_shape),
+                # # accidentally added rotation twice, one of the tests was run with this
+                # transforms.RandomRotation(degrees=40),
+                transforms.RandomAffine(degrees=40, translate=(0.2, 0.2), shear=11.5),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomResizedCrop(input_shape, scale=(0.8, 1)),
+                # converts image to type Torch and normalizes [0,1]
+                transforms.ToTensor(),
+                # normalizes [-1,1]
+                transforms.Normalize(mean, std),
+            ]
+        )
+
         test_transform = transforms.Compose(
             [
                 # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
                 transforms.Resize((input_shape, input_shape)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
+            ]
+        )
+
+    elif augment_type == "equalization":
+        train_transform = A.Compose(
+            [
+                A.Resize(scale, scale),
+                A.RandomResizedCrop(input_shape, input_shape),
+                A.HorizontalFlip(),
+                A.VerticalFlip(),
+                A.RandomRotate90(),
+                A.CLAHE(p=1),
+                A.Normalize(mean=mean, std=std),
+                ToTensorV2(),
+            ]
+        )
+
+        test_transform = A.Compose(
+            [
+                A.Resize(scale, scale),
+                A.CenterCrop(input_shape, input_shape),
+                A.CLAHE(p=1),
+                A.Normalize(mean=mean, std=std),
+                ToTensorV2(),
             ]
         )
 

@@ -191,28 +191,34 @@ def configuration():
 
     parser.add_argument(
         "--test-epoch",
-        type=bool,
         default=False,
+        action="store_true",
         help="If true, run model on test set every epoch. For research purposes.",
     )
 
     parser.add_argument(
         "--sample-data",
-        type=bool,
         default=False,
+        action="store_true",
         help="If true, resample data such that classes are balanced. For research purposes.",
     )
 
     parser.add_argument(
-        "--freeze",
-        type=bool,
+        "--weighted-loss",
         default=False,
+        action="store_true",
+        help="If True, the loss will be weighted according to the amount of data per damage category",
+    )
+
+    parser.add_argument(
+        "--freeze",
+        default=False,
+        action="store_true",
         help="If true, Inception part will not be retrained.",
     )
 
     parser.add_argument(
         "--no-augment",
-        # type=bool,
         default=False,
         action="store_true",
         help="If False, no augmentations will be applied to the data.",
@@ -224,14 +230,6 @@ def configuration():
         default="original",
         choices=["original", "paper", "equalization"],
         help="choose which data augmentation steps should be applied",
-    )
-
-    parser.add_argument(
-        "--weighted-loss",
-        # type=bool,
-        default=False,
-        action="store_true",
-        help="If True, the loss will be weighted according to the amount of data per damage category",
     )
 
     args = parser.parse_args()

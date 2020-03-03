@@ -1,39 +1,27 @@
 import os
 from PIL import Image
 from tqdm import tqdm
+import numpy as np
 
 from torch.utils.data import Dataset, DataLoader
-from torch.utils.data.sampler import RandomSampler
 import torch
 import torch.utils.data
-import torchvision
-
-import imageio
-import numpy as np
 
 
 class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
-    """Samples elements randomly from a given list of indices for imbalanced dataset
+    """Samples elements such that all classes are equally represented
+    Adjusted from https://github.com/ufoym/imbalanced-dataset-sampler/blob/master/torchsampler/imbalanced.py
     Arguments:
-        indices (list, optional): a list of indices
-        num_samples (int, optional): number of samples to draw
-        callback_get_label func: a callback-like function which takes two arguments - dataset and index
+        dataset: the dataset from which to sample
     """
 
-    def __init__(
-        self, dataset, indices=None, num_samples=None, callback_get_label=None
-    ):
+    def __init__(self, dataset):
 
-        # if indices is not provided,
         # all elements in the dataset will be considered
-        self.indices = list(range(len(dataset))) if indices is None else indices
+        self.indices = list(range(len(dataset)))
 
-        # define custom callback
-        self.callback_get_label = callback_get_label
-
-        # if num_samples is not provided,
-        # draw `len(indices)` samples in each iteration
-        self.num_samples = len(self.indices) if num_samples is None else num_samples
+        # keep resampled dataset size the same as original
+        self.num_samples = len(self.indices)
 
         # distribution of classes in the dataset
         label_to_count = {}
@@ -44,10 +32,6 @@ class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
             else:
                 label_to_count[label] = 1
 
-        # print("label to count",label_to_count)
-        # self.n_classes=len(label_to_count.keys())
-        # print("number classes",self.n_classes)
-
         # weight for each sample
         weights = [
             1.0 / label_to_count[self._get_label(dataset, idx)] for idx in self.indices
@@ -56,14 +40,6 @@ class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
 
     def _get_label(self, dataset, idx):
         return dataset.load_datapoint(idx)[-1]
-        # if isinstance(dataset, torchvision.datasets.MNIST):
-        #     return dataset.train_labels[idx].item()
-        # elif isinstance(dataset, torchvision.datasets.ImageFolder):
-        #     return dataset.imgs[idx][1]
-        # elif self.callback_get_label:
-        #     return self.callback_get_label(dataset, idx)
-        # else:
-        #     raise NotImplementedError
 
     def __iter__(self):
         return (
@@ -110,8 +86,6 @@ class CaladriusDataset(Dataset):
         datapoint = self.load_datapoint(idx)
 
         if self.transforms:
-            # datapoint[1] = self.transforms(imageio.imread(datapoint[1]))
-            # datapoint[2] = self.transforms(imageio.imread(datapoint[2]))
             if self.augment_type == "equalization":
                 datapoint[1] = np.array(datapoint[1])
                 datapoint[2] = np.array(datapoint[2])
@@ -129,8 +103,6 @@ class CaladriusDataset(Dataset):
             filename = line
         else:
             filename, damage = line.split(" ")
-        # before_image = imageio.imread(os.path.join(self.directory, "before", filename))
-        # after_image = imageio.imread(os.path.join(self.directory, "after", filename))
         before_image = Image.open(os.path.join(self.directory, "before", filename))
         after_image = Image.open(os.path.join(self.directory, "after", filename))
         if self.set_name == "inference":
@@ -181,11 +153,9 @@ class Datasets(object):
                 shuffle=(set_name == "train"),
                 num_workers=self.number_of_workers,
                 drop_last=True,
-                # sampler=ImbalancedDatasetSampler(dataset)
-                # if (set_name == "train")
-                # else None,
             )
-            #
+
+            # function to plot some examples of the data augmentation. Used for testing and research purposes
             # if set_name == "train":
             #     import matplotlib.pyplot as plt
             #     def show(data_loader):
