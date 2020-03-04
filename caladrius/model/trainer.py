@@ -42,6 +42,7 @@ class QuasiSiameseNetwork(object):
         self.no_augment = args.no_augment
         self.augment_type = args.augment_type
         self.weighted_loss = args.weighted_loss
+        self.save_all = args.save_all
 
         # define the loss measure
         if self.output_type == "regression":
@@ -425,6 +426,8 @@ class QuasiSiameseNetwork(object):
             self.model.load_state_dict(
                 torch.load(self.model_path, map_location=self.device)
             )
+            if self.save_all:
+                torch.save(self.model, "{}_full.pkl".format(self.model_path[:-4]))
         test_set, test_loader = datasets.load("test")
         start_time = time.time()
         run_report[

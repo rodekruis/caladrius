@@ -232,6 +232,13 @@ def configuration():
         help="choose which data augmentation steps should be applied",
     )
 
+    parser.add_argument(
+        "--save-all",
+        default=False,
+        action="store_true",
+        help="If True, whole model will be saved not only state dict. Only for testing purposes",
+    )
+
     args = parser.parse_args()
 
     arg_vars = vars(args)
