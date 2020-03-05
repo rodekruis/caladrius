@@ -11,8 +11,9 @@ export class ModelList extends React.Component {
                     className="caladrius-clickable"
                 >
                     <td>{model.model_name}</td>
-                    <td>{model.test_accuracy}</td>
-                    <td>{model.validation_accuracy.slice(-1)[0]}</td>
+                    <td>{model.test_score}</td>
+                    <td>{model.random_model_test_score}</td>
+                    <td>{model.average_model_test_score}</td>
                     <td>{model.output_type}</td>
                     <td>{model.model_type}</td>
                     <td>{model.train_duration}</td>
@@ -28,7 +29,8 @@ export class ModelList extends React.Component {
                     <tr>
                         <th>Model Name</th>
                         <th>Test</th>
-                        <th>Validation</th>
+                        <th>Random</th>
+                        <th>Average</th>
                         <th>Output Type</th>
                         <th>Model Type</th>
                         <th>Training Time</th>

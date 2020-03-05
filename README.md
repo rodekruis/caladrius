@@ -1,4 +1,5 @@
-[![stable: 0.6.4](https://img.shields.io/badge/stable-0.6.4-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
+[![stable: 0.6.6](https://img.shields.io/badge/stable-0.6.6-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
+[![F.A.C.T.: 42](https://img.shields.io/badge/F\.A\.C\.T\.-42-291AE0.svg?style=flat-square)](https://rodekruis.sharepoint.com/sites/510-Team/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={FD66FFCB-C34C-433E-9706-F672A8EFAB3D})
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
@@ -6,10 +7,18 @@
 
 ## Created by: Artificial Incompetence for the Red Cross #1 Challenge in the 2018 Hackathon for Peace, Justice and Security
 
+*Note: Parts of this project are not made public for privacy and operational reasons. If you would like to access any restricted content, please send an email to grahman@rodekruis.nl with the relevant details (content url, purpose of request, et cetera).*
+
+## Documentation
+1. [Presentation 2020](https://rodekruis.sharepoint.com/sites/510-Team/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={0DCCBEB8-91CC-4021-A0DF-CC5239CC5EBD})
+2. [Project Specification Document](https://rodekruis.sharepoint.com/sites/510-Team/Gedeelde%20%20documenten/%5BPRJ%5D%20Automated%20Damage%20Assessment/DOCUMENTATION/caladrius.pdf)
+3. [Presentation 2019](https://rodekruis.sharepoint.com/sites/510-Team/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={CD3544E2-69A7-4389-AEA0-7349DCA2A6DD})
+4. [Performance Spreadsheet](https://rodekruis.sharepoint.com/sites/510-Team/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={5F134334-1E86-448D-BE78-BE76C1C7ED22})
+
 ## Network Architecture
 
-The network architecture is a pseudo-siamese network with two ImageNet
-pre-trained Inception_v3 models.
+The network architecture is a pseudo-[siamese network](http://papers.nips.cc/paper/769-signature-verification-using-a-siamese-time-delay-neural-network) with two [ImageNet](https://ieeexplore.ieee.org/abstract/document/5206848)
+pre-trained [Inception_v3](http://openaccess.thecvf.com/content_cvpr_2016/html/Szegedy_Rethinking_the_Inception_CVPR_2016_paper.html) models.
 
 ## Using Docker
 
@@ -69,7 +78,7 @@ tar -xvzf rc.tgz
 Transform the raw dataset to a training dataset using,
 
 ```
-python caladrius/sint_maarten_2017.py --run-all
+python caladrius/dataset/sint_maarten_2017.py --version 1.0.0 --create-image-stamps --query-address-api --address-api openmapquest --address-api-key <ADDRESS_API_KEY> --create-report-info-file
 ```
 
 The above command will create the dataset as per the
@@ -80,17 +89,16 @@ The above command will create the dataset as per the
 `sint_maarten_2017.py` accepts the command line arguments described below,
 
 ```
-usage: sint_maarten_2017.py [-h] [--run-all] [--create-image-stamps]
-                      [--query-address-api] [--address-api ADDRESS_API]
-                      [--address-api-key ADDRESS_API_KEY]
-                      [--create-report-info-file]
+usage: sint_maarten_2017.py [-h] --version VERSION [--create-image-stamps]
+                            [--query-address-api] [--address-api ADDRESS_API]
+                            [--address-api-key ADDRESS_API_KEY]
+                            [--create-report-info-file]
+                            [--label-type label_type]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --run-all             Run all of the steps: create and split image stamps,
-                        query for addresses, and create information file for
-                        the report. Overrides individual step flags. (default:
-                        False)
+  --version VERSION     set a version number to identify dataset (default:
+                        None)
   --create-image-stamps
                         For each building shape, creates a before and after
                         image stamp for the learning model, and places them in
@@ -110,6 +118,9 @@ optional arguments:
                         shapes of the buildings, their respective
                         administrative regions and addresses (if --query-
                         address-api has been run) (default: False)
+  --label-type label_type
+                        Sets whether the damage label should be produced on a
+                        continuous scale or in classes. (default: regression)
 ```
 
 ## Interface
@@ -195,14 +206,18 @@ optional arguments:
                         choose if want regression or classification model
                         (default: regression)
 ```
-
+---
 ## Development
+
+### How to setup code for developement?
 
 After cloning the repo, run `pre-commit install` to enable format checking when committing changes.
 
-When making changes, increment version number in [VERSION](VERSION), [package.json](caladrius/interface/package.json) and [package.json](caladrius/interface/client/package.json) according to [PEP 440](https://www.python.org/dev/peps/pep-0440/) and update [CHANGES.md](CHANGES.md).
+### How to manage versions?
 
-## Docker image
+When making changes, increment version number in [VERSION](VERSION), [package.json](caladrius/interface/package.json), the badge in [README.md](README.md) and [package.json](caladrius/interface/client/package.json) according to [PEP 440](https://www.python.org/dev/peps/pep-0440/) and update [CHANGES.md](CHANGES.md).
+
+### How to build Docker image?
 
 To build and tag the Docker image with [VERSION](VERSION),
 

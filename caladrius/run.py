@@ -20,17 +20,20 @@ def main():
     logger = create_logger(__name__)
     sys.excepthook = attach_exception_hook(logger)
 
+    logger.info("python {}".format(" ".join(sys.argv)))
     logger.info("START with Configuration:")
     for k, v in sorted(vars(args).items()):
         logger.info("{0}: {1}".format(k, v))
-        if (k == "model_type") and (v != "siamese"):
+        if (k == "model_type") and (args.test or args.inference):
             continue
         run_report[k] = v
 
     qsn = QuasiSiameseNetwork(args)
     datasets = Datasets(args, qsn.transforms)
-    if not (args.test or args.inference) and args.model_type == "siamese":
-        run_report = qsn.train(run_report, datasets, args.number_of_epochs)
+    if args.neural_model and not (args.test or args.inference):
+        run_report = qsn.train(
+            run_report, datasets, args.number_of_epochs, args.selection_metric
+        )
     logger.info("Evaluating on test dataset")
     run_report = qsn.test(run_report, datasets)
     if args.inference:
