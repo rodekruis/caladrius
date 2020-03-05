@@ -21,6 +21,9 @@ from model.networks.light_siamese_network import (
     get_light_siamese_transforms,
     LightSiameseNetwork,
 )
+
+from model.networks.inception_cnn_network import InceptionCNNNetwork
+
 from utils import create_logger, readable_float, dynamic_report_key
 from model.evaluate import RollingEval
 
@@ -54,16 +57,20 @@ class QuasiSiameseNetwork(object):
         if args.model_type == "light":
             network_architecture_class = LightSiameseNetwork
             network_architecture_transforms = get_light_siamese_transforms
+        if args.model_type == "after":
+            network_architecture_class = InceptionCNNNetwork
+            network_architecture_transforms = get_pretrained_iv3_transforms
 
         # define the loss measure
         if self.output_type == "regression":
-            self.model = SiameseNetwork()
             self.criterion = nnloss.MSELoss()
             self.model = network_architecture_class()
         elif self.output_type == "classification":
             self.number_classes = args.number_classes
             self.model = network_architecture_class(
-                output_type=self.output_type, n_classes=self.n_classes
+                output_type=self.output_type,
+                n_classes=self.number_classes,
+                freeze=self.freeze,
             )
             self.criterion = nnloss.CrossEntropyLoss()
 
@@ -74,7 +81,9 @@ class QuasiSiameseNetwork(object):
             self.model = torch.nn.DataParallel(self.model)
 
         for s in ("train", "validation", "test", "inference"):
-            self.transforms[s] = network_architecture_transforms(s)
+            self.transforms[s] = network_architecture_transforms(
+                s, self.no_augment, self.augment_type
+            )
             # handle imbalance
             # self.transforms[s] = get_pretrained_iv3_transforms(
             #     s, self.no_augment, self.augment_type
@@ -339,12 +348,14 @@ class QuasiSiameseNetwork(object):
 
         if self.model_type == "probability":
             pickle.dump(output_probability_list, prediction_file)
-        else:
-            prediction_file.write(
-                "Epoch {:03d} ({}) {}: {:.4f}\n".format(
-                    epoch, first_index_key, second_index_key, epoch_main_metric
-                )
-            )
+        # I don't want to write last line in prediction_file, only want labels and preds in prediction_file
+        # else messes up other evaluation code
+        # else:
+        #     prediction_file.write(
+        #         "Epoch {:03d} ({}) {}: {:.4f}\n".format(
+        #             epoch, first_index_key, second_index_key, epoch_main_metric
+        #         )
+        #     )
 
         prediction_file.close()
 
@@ -434,6 +445,7 @@ class QuasiSiameseNetwork(object):
                     epoch,
                     testrunning_loader,
                     phase="test",  # might have to do phase=val here?
+                    selection_metric=selection_metric,
                 )
                 run_report.testrunning_loss.append(readable_float(testrunning_loss))
                 run_report.testrunning_accuracy.append(
@@ -469,7 +481,7 @@ class QuasiSiameseNetwork(object):
         logger.info("Best validation score: {:4f}.".format(best_validation_score))
         return run_report
 
-    def test(self, run_report, datasets):
+    def test(self, run_report, datasets, selection_metric):
         """
         Test the model
         Args:
@@ -499,6 +511,7 @@ class QuasiSiameseNetwork(object):
             test_loader,
             phase="test",
             train_set=train_set if self.is_statistical_model else None,
+            selection_metric=selection_metric,
         )
         run_report[
             dynamic_report_key("test_loss", self.model_type, self.is_statistical_model)

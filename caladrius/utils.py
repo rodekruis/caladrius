@@ -9,7 +9,7 @@ import json
 
 import torch
 
-NEURAL_MODELS = ["inception", "light", "probability"]
+NEURAL_MODELS = ["inception", "light", "probability", "after"]
 STATISTICAL_MODELS = ["average", "random"]
 
 # logging
