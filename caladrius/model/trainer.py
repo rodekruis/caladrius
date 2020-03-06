@@ -16,6 +16,7 @@ from torch import nn
 from model.networks.inception_siamese_network import (
     get_pretrained_iv3_transforms,
     InceptionSiameseNetwork,
+    InceptionSiameseShared,
 )
 from model.networks.light_siamese_network import (
     get_light_siamese_transforms,
@@ -54,6 +55,9 @@ class QuasiSiameseNetwork(object):
 
         network_architecture_class = InceptionSiameseNetwork
         network_architecture_transforms = get_pretrained_iv3_transforms
+        if args.model_type == "shared":
+            network_architecture_class = InceptionSiameseShared
+            network_architecture_transforms = get_pretrained_iv3_transforms
         if args.model_type == "light":
             network_architecture_class = LightSiameseNetwork
             network_architecture_transforms = get_light_siamese_transforms
