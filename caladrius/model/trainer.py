@@ -22,6 +22,10 @@ from model.networks.light_siamese_network import (
     get_light_siamese_transforms,
     LightSiameseNetwork,
 )
+from model.networks.vgg_siamese_network import (
+    VggSiameseNetwork,
+    get_pretrained_vgg_transforms,
+)
 
 from model.networks.inception_cnn_network import InceptionCNNNetwork
 
@@ -64,6 +68,10 @@ class QuasiSiameseNetwork(object):
         if args.model_type == "after":
             network_architecture_class = InceptionCNNNetwork
             network_architecture_transforms = get_pretrained_iv3_transforms
+
+        if args.model_type == "vgg":
+            network_architecture_class = VggSiameseNetwork
+            network_architecture_transforms = get_pretrained_vgg_transforms
 
         # define the loss measure
         if self.output_type == "regression":
