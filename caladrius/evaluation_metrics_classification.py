@@ -357,6 +357,9 @@ def save_overviewfile(
 
 
 def main():
+    NEURAL_MODELS = ["siamese", "inception", "light", "probability", "after", "shared"]
+    STATISTICAL_MODELS = ["average", "random"]
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -380,6 +383,14 @@ def main():
 
     parser.add_argument(
         "--binary", default=False, action="store_true", help="If input data is binary",
+    )
+
+    parser.add_argument(
+        "--model-type",
+        type=str,
+        default=NEURAL_MODELS[0],
+        choices=NEURAL_MODELS + STATISTICAL_MODELS,
+        help="type of model",
     )
 
     args = parser.parse_args()
