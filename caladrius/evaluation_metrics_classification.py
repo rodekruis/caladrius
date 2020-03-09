@@ -401,8 +401,8 @@ def main():
         )
 
     # define all file names and paths
-    test_file_name = "{}-split_test-epoch_001-model_siamese-predictions.txt".format(
-        args.run_name
+    test_file_name = "{}-split_test-epoch_001-model_{}-predictions.txt".format(
+        args.run_name, args.model_type
     )
     preds_model = "{}/predictions/{}".format(args.run_folder, test_file_name)
     preds_random = "{}/predictions/{}-split_test-epoch_001-model_random-predictions.txt".format(
@@ -414,8 +414,8 @@ def main():
     preds_probability = "{}/predictions/{}-split_test-epoch_001-model_probability-predictions.txt".format(
         args.run_folder, args.run_name
     )
-    preds_validation = "{}/predictions/{}-split_validation-epoch_100-model_siamese-predictions.txt".format(
-        args.run_folder, args.run_name
+    preds_validation = "{}/predictions/{}-split_validation-epoch_100-model_{}-predictions.txt".format(
+        args.run_folder, args.run_name, args.model_type
     )
     output_path = "./performance/"
     score_overviews_path = os.path.join(output_path, "score_overviews/")
