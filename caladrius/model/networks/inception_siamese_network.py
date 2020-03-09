@@ -2,6 +2,7 @@ import random
 from collections import OrderedDict
 
 import numpy as np
+from PIL import Image
 
 import torch
 import torchvision
@@ -51,7 +52,7 @@ def get_pretrained_iv3_transforms(set_name):
 
     post_transforms = transforms.Compose(
         [
-            transforms.ToPILImage(),
+            # transforms.ToPILImage(),
             transforms.CenterCrop(input_shape),
             # converts image to type Torch and normalizes [0,1]
             transforms.ToTensor(),
@@ -91,7 +92,9 @@ def get_pretrained_iv3_transforms(set_name):
                 random_resized_crop_transform.interpolation,
             )
             before_image, after_image = pair_transforms(before_image, after_image)
-
+            before_image = Image.fromarray(before_image)
+            after_image = Image.fromarray(after_image)
+        print(type(before_image))
         # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
         before_image = post_transforms(before_image)
         after_image = post_transforms(after_image)
