@@ -73,6 +73,7 @@ class QuasiSiameseNetwork(object):
             network_architecture_class = VggSiameseNetwork
             network_architecture_transforms = get_pretrained_vgg_transforms
 
+        print(network_architecture_class)
         # define the loss measure
         if self.output_type == "regression":
             self.criterion = nnloss.MSELoss()
@@ -84,6 +85,9 @@ class QuasiSiameseNetwork(object):
                 n_classes=self.number_classes,
                 freeze=self.freeze,
             )
+
+            print(sum(p.numel() for p in self.model.parameters() if p.requires_grad))
+
             self.criterion = nnloss.CrossEntropyLoss()
 
         self.transforms = {}
@@ -260,6 +264,7 @@ class QuasiSiameseNetwork(object):
             output_probability_list = []
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
+            print(sum(p.numel() for p in self.model.parameters() if p.requires_grad))
             image1 = image1.to(self.device)
             image2 = image2.to(self.device)
             if self.output_type == "regression":
