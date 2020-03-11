@@ -80,6 +80,21 @@ def gen_score_overview(preds_filename, binary=False):
         score_overview (pd.DataFrame): dataframe with several performance measures
         df_pred (pd.DataFrame): dataframe with the predictions and true labels
     """
+
+    if not binary:
+        damage_mapping = {
+            "0": "No damage",
+            "1": "Minor damage",
+            "2": "Major damage",
+            "3": "Destroyed",
+        }
+
+    else:
+        damage_mapping = {
+            "0": "No damage",
+            "1": "Damage",
+        }
+
     preds_file = open(preds_filename)
     lines = preds_file.readlines()[1:]
     pred_info = []
@@ -95,7 +110,9 @@ def gen_score_overview(preds_filename, binary=False):
     damage_labels = [i for i in unique_labels if i != 0]
     # print(sorted(df_pred.label.unique())>0)
 
-    report = classification_report(labels, preds, digits=3, output_dict=True)
+    report = classification_report(
+        labels, preds, digits=3, output_dict=True, labels=damage_mapping.keys()
+    )
     score_overview = pd.DataFrame(report).transpose()
     # print(score_overview)
     score_overview = score_overview.append(pd.Series(name="harmonized avg"))
@@ -139,20 +156,6 @@ def gen_score_overview(preds_filename, binary=False):
             list(map(str, damage_labels)), ["precision", "recall", "f1-score"]
         ].T.iterrows()
     ]
-
-    if not binary:
-        damage_mapping = {
-            "0": "No damage",
-            "1": "Minor damage",
-            "2": "Major damage",
-            "3": "Destroyed",
-        }
-
-    else:
-        damage_mapping = {
-            "0": "No damage",
-            "1": "Damage",
-        }
 
     if damage_mapping:
         score_overview.rename(index=damage_mapping, inplace=True)
@@ -204,6 +207,7 @@ def create_overviewdict(df_overview, damage_mapping):
             * 100,
             1,
         )
+
     scores_dict["class percentage"] = "/".join(map(str, perc_dam.values()))
     scores_dict["number datapoints"] = int(df_overview.loc["macro avg", "support"])
     # scores_dict["percentage damage"] = round(
