@@ -220,6 +220,7 @@ class QuasiSiameseNetwork(object):
 
         return outputs, preds
 
+    @profile
     def run_epoch(
         self,
         epoch,
