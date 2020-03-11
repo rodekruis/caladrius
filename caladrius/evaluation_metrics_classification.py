@@ -113,7 +113,11 @@ def gen_score_overview(preds_filename, binary=False):
     print(damage_mapping.keys())
     print(list(map(int, damage_mapping.keys())))
     report = classification_report(
-        labels, preds, digits=3, output_dict=True, labels=damage_mapping.keys()
+        labels,
+        preds,
+        digits=3,
+        output_dict=True,
+        labels=list(map(int, damage_mapping.keys())),
     )
     score_overview = pd.DataFrame(report).transpose()
     # print(score_overview)
