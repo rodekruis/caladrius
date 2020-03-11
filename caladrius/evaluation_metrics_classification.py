@@ -107,11 +107,9 @@ def gen_score_overview(preds_filename, binary=False):
     preds = np.array(df_pred.pred)
     labels = np.array(df_pred.label)
     unique_labels = np.unique(labels)
-    damage_labels = [i for i in unique_labels if i != 0]
+    damage_labels = [i for i in list(map(int, damage_mapping.keys())) if i != 0]
     # print(sorted(df_pred.label.unique())>0)
-    print(unique_labels)
-    print(damage_mapping.keys())
-    print(list(map(int, damage_mapping.keys())))
+
     report = classification_report(
         labels,
         preds,
