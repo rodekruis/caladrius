@@ -111,6 +111,7 @@ def gen_score_overview(preds_filename, binary=False):
     # print(sorted(df_pred.label.unique())>0)
     print(unique_labels)
     print(damage_mapping.keys())
+    print(list(map(int, damage_mapping.keys())))
     report = classification_report(
         labels, preds, digits=3, output_dict=True, labels=damage_mapping.keys()
     )
