@@ -195,7 +195,7 @@ def create_overviewdict(df_overview, damage_mapping):
     scores_dict = {
         k: round(v, 3) if v is not None else "" for k, v in scores_dict.items()
     }
-
+    print(df_overview)
     for d in damage_mapping.values():
         scores_dict["recall {}".format(d)] = round(df_overview.loc[d, "recall"], 3)
         perc_dam[d] = round(
