@@ -365,7 +365,15 @@ def save_overviewfile(
 
 
 def main():
-    NEURAL_MODELS = ["siamese", "inception", "light", "probability", "after", "shared"]
+    NEURAL_MODELS = [
+        "siamese",
+        "inception",
+        "light",
+        "probability",
+        "after",
+        "shared",
+        "vgg",
+    ]
     STATISTICAL_MODELS = ["average", "random"]
 
     parser = argparse.ArgumentParser(
