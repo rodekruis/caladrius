@@ -94,7 +94,6 @@ def get_pretrained_iv3_transforms(set_name):
             before_image, after_image = pair_transforms(before_image, after_image)
             before_image = Image.fromarray(before_image)
             after_image = Image.fromarray(after_image)
-        print(type(before_image))
         # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
         before_image = post_transforms(before_image)
         after_image = post_transforms(after_image)
