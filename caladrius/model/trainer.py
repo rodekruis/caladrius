@@ -194,7 +194,9 @@ class QuasiSiameseNetwork(object):
     def get_outputs_preds(
         self, image1, image2, random_target_shape, average_target_size
     ):
-        if self.is_neural_model:
+        if self.model_type == "probability":
+            outputs = nn.functional.softmax(self.model(image1, image2), dim=1).squeeze()
+        elif self.is_neural_model:
             outputs = self.model(image1, image2).squeeze()
         elif self.model_type == "random":
             output_shape = (
@@ -208,11 +210,8 @@ class QuasiSiameseNetwork(object):
                 average_target_size, self.average_label
             )
 
-        elif self.model_type == "probability":
-            outputs = nn.functional.softmax(self.model(image1, image2), dim=1).squeeze()
-
         outputs = outputs.to(self.device)
-
+        print(outputs)
         if self.output_type == "classification":
             _, preds = torch.max(outputs, 1)
         else:
