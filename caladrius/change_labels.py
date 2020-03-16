@@ -17,7 +17,6 @@ def binary_labels(directory_path, file_label_in, file_label_out, switch=False):
             df.damage = (df.damage >= 1).astype(int)
         else:
             df.damage = (df.damage < 1).astype(int)
-        print(df)
         df.to_csv(
             os.path.join(directory_path, set_name, file_label_out),
             sep=" ",
