@@ -211,7 +211,6 @@ class QuasiSiameseNetwork(object):
             )
 
         outputs = outputs.to(self.device)
-        print(outputs)
         if self.output_type == "classification":
             _, preds = torch.max(outputs, 1)
         else:
