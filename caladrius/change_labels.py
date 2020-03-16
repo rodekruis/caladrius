@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 
 
-def binary_labels(directory_path, file_label_in, file_label_out):
+def binary_labels(directory_path, file_label_in, file_label_out, switch=False):
     for set_name in ["train", "validation", "test"]:
         df = pd.read_csv(
             os.path.join(directory_path, set_name, file_label_in),
@@ -13,7 +13,11 @@ def binary_labels(directory_path, file_label_in, file_label_out):
             header=None,
             names=["filename", "damage"],
         )
-        df.damage = (df.damage >= 1).astype(int)
+        if not switch:
+            df.damage = (df.damage >= 1).astype(int)
+        else:
+            df.damage = (df.damage < 1).astype(int)
+        print(df)
         df.to_csv(
             os.path.join(directory_path, set_name, file_label_out),
             sep=" ",
@@ -75,7 +79,13 @@ def main():
         default="binary",
         type=str,
         metavar="label_type",
-        choices=["binary", "regression", "regression_noise", "disaster"],
+        choices=[
+            "binary",
+            "regression",
+            "regression_noise",
+            "disaster",
+            "binary_switch",
+        ],
         help="type of output labels",
     )
 
@@ -90,12 +100,12 @@ def main():
     args = parser.parse_args()
 
     if args.label_type == "binary":
-        binary_labels(
-            args.data_path, args.file_in, args.file_out
-        )  # , args.label_values)
+        binary_labels(args.data_path, args.file_in, args.file_out)
+    if args.label_type == "binary_switch":
+        binary_labels(args.data_path, args.file_in, args.file_out, switch=True)
     elif args.label_type == "disaster":
         disaster_labels(
-            args.disaster_names, args.data_path, args.file_in, args.file_out
+            args.disaster_names, args.data_path, args.file_in, args.file_out,
         )
 
 
