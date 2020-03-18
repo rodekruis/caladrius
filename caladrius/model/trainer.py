@@ -140,13 +140,13 @@ class QuasiSiameseNetwork(object):
                 label_percentage = {
                     l: label_to_count[l] / num_samples for l in label_to_count.keys()
                 }
-                print("weights", label_percentage.values())
+                # print("weights", label_percentage.values())
                 median_perc = median(list(label_percentage.values()))
                 class_weights = [
                     median_perc / label_percentage[c] if label_percentage[c] != 0 else 0
                     for c in range(self.number_classes)
                 ]
-                print("weights", class_weights)
+                # print("weights", class_weights)
                 weights = torch.FloatTensor(class_weights).to(self.device)
                 # print(weights)
                 # weights=class_weights#.to(self.device)

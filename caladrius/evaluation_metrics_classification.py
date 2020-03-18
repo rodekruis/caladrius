@@ -99,7 +99,9 @@ def gen_score_overview(preds_filename, binary=False):
     lines = preds_file.readlines()[1:]
     pred_info = []
     for l in lines:
-        pred_info.extend([l.rstrip().split(" ")])
+        split_list = l.rstrip().split(" ")
+        if len(split_list) == 3:
+            pred_info.append(split_list)
     df_pred = pd.DataFrame(pred_info, columns=["OBJECTID", "label", "pred"])
     df_pred.label = df_pred.label.astype(int)
     df_pred.pred = df_pred.pred.astype(int)
