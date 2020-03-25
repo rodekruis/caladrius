@@ -89,6 +89,7 @@ def main():
             "regression_noise",
             "disaster",
             "binary_switch",
+            "binary_des",
         ],
         help="type of output labels",
     )
