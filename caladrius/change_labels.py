@@ -5,7 +5,9 @@ import logging
 import pandas as pd
 
 
-def binary_labels(directory_path, file_label_in, file_label_out, switch=False):
+def binary_labels(
+    directory_path, file_label_in, file_label_out, switch=False, destroyed=False
+):
     for set_name in ["train", "validation", "test"]:
         df = pd.read_csv(
             os.path.join(directory_path, set_name, file_label_in),
@@ -13,10 +15,13 @@ def binary_labels(directory_path, file_label_in, file_label_out, switch=False):
             header=None,
             names=["filename", "damage"],
         )
-        if not switch:
-            df.damage = (df.damage >= 1).astype(int)
-        else:
+        if switch:
             df.damage = (df.damage < 1).astype(int)
+        elif destroyed:
+            df.damge = (df.damage == 3).astype(int)
+        else:
+            df.damage = (df.damage >= 1).astype(int)
+
         df.to_csv(
             os.path.join(directory_path, set_name, file_label_out),
             sep=" ",
@@ -102,6 +107,8 @@ def main():
         binary_labels(args.data_path, args.file_in, args.file_out)
     if args.label_type == "binary_switch":
         binary_labels(args.data_path, args.file_in, args.file_out, switch=True)
+    if args.label_type == "binary_des":
+        binary_labels(args.data_path, args.file_in, args.file_out, destroyed=True)
     elif args.label_type == "disaster":
         disaster_labels(
             args.disaster_names, args.data_path, args.file_in, args.file_out,
