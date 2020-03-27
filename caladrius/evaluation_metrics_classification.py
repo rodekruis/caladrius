@@ -473,6 +473,23 @@ def main():
                         score_overviews_path, args.run_name, preds_type
                     )
                 )
+
+                scores_dict = create_overviewdict(score_overview, damage_mapping)
+                if preds_type != "model":
+                    filemodel = ""
+                else:
+                    filemodel = "_{}".format(preds_type)
+                if args.binary:
+                    filename_allscores = "allruns_scores{}_binary.txt".format(filemodel)
+                else:
+                    filename_allscores = "allruns_scores{}.txt".format(filemodel)
+                save_overviewfile(
+                    scores_dict,
+                    args.run_name,
+                    output_path,
+                    filename=filename_allscores,
+                )
+
             else:
                 _, df_pred, _ = gen_score_overview(preds_model, args.binary)
                 df_pred_bin, prob_dict, roc_fig, dist_fig = calc_prob(
@@ -514,6 +531,7 @@ def main():
                     output_path,
                     filename=filename_allscores,
                 )
+
             if preds_type in ["model", "validation"]:
                 print(preds_type)
                 unique_labels = np.unique(np.array(df_pred.label))
