@@ -475,7 +475,7 @@ def main():
                 )
 
                 scores_dict = create_overviewdict(score_overview, damage_mapping)
-                if preds_type != "model":
+                if preds_type == "model":
                     filemodel = ""
                 else:
                     filemodel = "_{}".format(preds_type)
