@@ -186,7 +186,6 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
     }[set_name]
 
 
-@profile
 class InceptionSiameseNetwork(nn.Module):
     def __init__(
         self,
