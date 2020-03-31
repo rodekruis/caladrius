@@ -11,6 +11,13 @@ from albumentations.pytorch import ToTensorV2
 
 logger = create_logger(__name__)
 
+try:
+    profile  # throws an exception when profile isn't defined
+except NameError:
+    # profile = lambda x: x  # if it's not defined simply ignore the decorator.
+    def profile(x):
+        return x
+
 
 def get_pretrained_iv3(output_size, freeze=False):
     """
@@ -179,6 +186,7 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
     }[set_name]
 
 
+@profile
 class InceptionSiameseNetwork(nn.Module):
     def __init__(
         self,
@@ -230,6 +238,7 @@ class InceptionSiameseNetwork(nn.Module):
         elif output_type == "classification":
             self.output = nn.Linear(hidden, n_classes)
 
+    @profile
     def forward(self, image_1, image_2):
         """
         Define the feedforward sequence
