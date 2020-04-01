@@ -18,7 +18,7 @@ def binary_labels(
         if switch:
             df.damage = (df.damage < 1).astype(int)
         elif destroyed:
-            df.damage = (df.damage == 3).astype(int)
+            df.damage = (df.damage > 2).astype(int)
         else:
             df.damage = (df.damage >= 1).astype(int)
 
