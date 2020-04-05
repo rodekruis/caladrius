@@ -70,7 +70,7 @@ def harmonic_score(scores):
     return len(scores) / sum((c + 1e-6) ** -1 for c in scores)
 
 
-def gen_score_overview(preds_filename, binary=False):
+def gen_score_overview(preds_filename, binary=False, switch=False):
     """
     Generate a dataframe with several performance measures
     Args:
@@ -105,6 +105,10 @@ def gen_score_overview(preds_filename, binary=False):
     df_pred = pd.DataFrame(pred_info, columns=["OBJECTID", "label", "pred"])
     df_pred.label = df_pred.label.astype(int)
     df_pred.pred = df_pred.pred.astype(int)
+
+    if binary and switch:
+        df_pred.label = abs(df_pred.label - 1)
+        df_pred.pred = abs(df_pred.pred - 1)
 
     preds = np.array(df_pred.pred)
     labels = np.array(df_pred.label)
@@ -246,7 +250,7 @@ def plot_distrs(outputs, df_pred):
     return fig
 
 
-def calc_prob(preds_filename_prob, df_pred, binary=False):
+def calc_prob(preds_filename_prob, df_pred, binary=False, switch=False):
 
     preds_file_probability = open(preds_filename_prob, "rb")
     outputs = pickle.load(preds_file_probability)
@@ -267,6 +271,10 @@ def calc_prob(preds_filename_prob, df_pred, binary=False):
         outputs_bin[:, 0] = outputs[:, 0]
         outputs_bin[:, 1] = outputs[:, 1:].sum(axis=1)
 
+    elif binary and switch:
+        outputs_bin = np.empty([len(outputs), 2])
+        outputs_bin[:, 0] = outputs[:, 1]
+        outputs_bin[:, 1] = outputs[:, 0]
     else:
         labels_bin = labels
         outputs_bin = outputs
@@ -404,6 +412,13 @@ def main():
     )
 
     parser.add_argument(
+        "--switch",
+        default=False,
+        action="store_true",
+        help="If labels and preds are switched around, only possible if binary",
+    )
+
+    parser.add_argument(
         "--model-type",
         type=str,
         default=NEURAL_MODELS[0],
@@ -465,7 +480,7 @@ def main():
             # generate overview with performance measures
             if preds_type != "probability":
                 score_overview, df_pred, damage_mapping = gen_score_overview(
-                    preds_filename, args.binary
+                    preds_filename, args.binary, args.switch
                 )
 
                 score_overview.to_csv(
@@ -491,9 +506,11 @@ def main():
                 )
 
             else:
-                _, df_pred, _ = gen_score_overview(preds_model, args.binary)
+                _, df_pred, _ = gen_score_overview(
+                    preds_model, args.binary, args.switch
+                )
                 df_pred_bin, prob_dict, roc_fig, dist_fig = calc_prob(
-                    preds_probability, df_pred, args.binary
+                    preds_probability, df_pred, args.binary, args.switch
                 )
                 unique_labels_bin = np.unique(np.array(df_pred_bin.label))
                 save_overviewfile(
