@@ -20,6 +20,17 @@ from sklearn.metrics import (
 import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
 
+import matplotlib.pylab as pylab
+
+params = {
+    "legend.fontsize": "xx-large",
+    "axes.labelsize": "xx-large",
+    # 'axes.titlesize':'xx-large',
+    "xtick.labelsize": "xx-large",
+    "ytick.labelsize": "xx-large",
+}
+pylab.rcParams.update(params)
+
 
 def create_confusionmatrix(
     y_true, y_pred, filename, labels, figsize=(10, 10), class_names=None
@@ -229,7 +240,7 @@ def create_overviewdict(df_overview, damage_mapping):
 def plot_distrs(outputs, df_pred):
     # plot probability distribution for binary labels
     fig = plt.figure(figsize=(12, 9), constrained_layout=True)
-    sns.set(font_scale=3)
+    # sns.set(font_scale=3)
     sns.distplot(
         outputs[df_pred.index[(np.array(df_pred.label) == 0)]][:, 1],
         label="No damage",
