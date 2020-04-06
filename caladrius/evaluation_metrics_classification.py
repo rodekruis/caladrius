@@ -229,6 +229,7 @@ def create_overviewdict(df_overview, damage_mapping):
 def plot_distrs(outputs, df_pred):
     # plot probability distribution for binary labels
     fig = plt.figure(figsize=(12, 9), constrained_layout=True)
+    sns.set(font_scale=3)
     sns.distplot(
         outputs[df_pred.index[(np.array(df_pred.label) == 0)]][:, 1],
         label="No damage",
