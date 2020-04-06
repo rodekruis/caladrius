@@ -271,14 +271,16 @@ def calc_prob(preds_filename_prob, df_pred, binary=False, switch=False):
         outputs_bin[:, 0] = outputs[:, 0]
         outputs_bin[:, 1] = outputs[:, 1:].sum(axis=1)
 
-    elif binary and switch:
-        outputs_bin = np.empty([len(outputs), 2])
-        outputs_bin[:, 0] = outputs[:, 1]
-        outputs_bin[:, 1] = outputs[:, 0]
     else:
+        # labels already switched in gen_score_overview
         labels_bin = labels
-        outputs_bin = outputs
         preds_bin = preds
+        if switch:
+            outputs_bin = np.empty([len(outputs), 2])
+            outputs_bin[:, 0] = outputs[:, 1]
+            outputs_bin[:, 1] = outputs[:, 0]
+        else:
+            outputs_bin = outputs
 
     print("shape outputs", outputs_bin.shape)
     print("shape labels", labels_bin.shape)
