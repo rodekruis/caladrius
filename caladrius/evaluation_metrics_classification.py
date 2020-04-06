@@ -126,13 +126,13 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
     unique_labels = np.unique(labels)
     damage_labels = [i for i in list(map(int, damage_mapping.keys())) if i != 0]
     # print(sorted(df_pred.label.unique())>0)
-
     report = classification_report(
         labels,
         preds,
         digits=3,
         output_dict=True,
         labels=list(map(int, damage_mapping.keys())),
+        zero_division=1,
     )
     score_overview = pd.DataFrame(report).transpose()
     # print(score_overview)
