@@ -29,7 +29,7 @@ dependencies:
   - libgfortran-ng=7.3.0
   - libpng=1.6.37
   - libprotobuf=3.10.1
-  - libspatialindex=1.8.5
+  - libspatialindex=1.9.0
   - libssh2=1.8.2
   - libstdcxx-ng=9.1.0
   - libtiff=4.0.10
