@@ -67,7 +67,7 @@ dependencies:
   - xz=5.2.4
   - zlib=1.2.11
   - zstd=1.3.7
-  - mlxtend=0.17.0
+#  - mlxtend=0.17.0
   - pip:
     - affine==2.3.0
     - appdirs==1.4.3
