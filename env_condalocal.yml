@@ -191,4 +191,3 @@ dependencies:
           - utm==0.5.0
           - virtualenv==16.7.6
           - zipp==0.6.0
-prefix: /home/pim/bin/miniconda3/envs/conda_caladrius
