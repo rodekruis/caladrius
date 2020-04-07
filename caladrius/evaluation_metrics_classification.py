@@ -134,6 +134,10 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
         labels=list(map(int, damage_mapping.keys())),
         zero_division=1,
     )
+
+    # for i in damage_labels:
+    #     if np.sum(labels==i)+np.sum(preds==i)==0:
+    #         report[]
     score_overview = pd.DataFrame(report).transpose()
     # print(score_overview)
     score_overview = score_overview.append(pd.Series(name="harmonized avg"))
@@ -147,7 +151,7 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
 
     # create report only for damage categories (represented by 1,2,3)
     dam_report = classification_report(
-        labels, preds, labels=damage_labels, output_dict=True
+        labels, preds, labels=damage_labels, output_dict=True, zero_division=1
     )
     dam_report = pd.DataFrame(dam_report).transpose()
 
@@ -316,7 +320,9 @@ def calc_prob(preds_filename_prob, df_pred, binary=False, switch=False):
     # plt.tight_layout()
     # plt.show()
 
-    report = classification_report(labels_bin, preds_bin, digits=3, output_dict=True)
+    report = classification_report(
+        labels_bin, preds_bin, digits=3, output_dict=True, zero_division=1
+    )
     scores_dict = {}
     scores_dict["accuracy"] = round(report["accuracy"], 3)
     scores_dict["auc"] = round(roc_auc, 3)
