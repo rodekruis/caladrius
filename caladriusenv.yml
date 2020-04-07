@@ -21,7 +21,7 @@ dependencies:
   - intel-openmp=2019.4
   - joblib=0.14.0
   - jpeg=9b
-  - krb5=1.16.2
+  - krb5=1.16.3
   - libcurl=7.65.3
   - libedit=3.1.20181209
   - libffi=3.2.1
