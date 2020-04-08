@@ -600,7 +600,7 @@ def main():
                         confusion_matrices_path, args.run_name, preds_type
                     ),
                     unique_labels,
-                    class_names=damage_mapping.values(),
+                    class_names=[damage_mapping[str(k)] for k in unique_labels],
                     figsize=(9, 12),
                 )
 
