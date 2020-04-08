@@ -282,8 +282,8 @@ def calc_prob(
     if not binary:
         outputs_bin = np.empty([len(outputs), 2])
         if destroyed:
-            df_bin.label = df_bin.label.replace([2, 3], 1)
-            df_bin.pred = df_bin.pred.replace([2, 3], 1)
+            df_bin.label = df_bin.label.replace([2, 3], 0)
+            df_bin.pred = df_bin.pred.replace([2, 3], 0)
             outputs_bin[:, 0] = outputs[:, :-1].sum(axis=1)
             outputs_bin[:, 1] = outputs[:, -1]
         else:
