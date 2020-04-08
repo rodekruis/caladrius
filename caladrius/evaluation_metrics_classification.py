@@ -266,7 +266,9 @@ def plot_distrs(outputs, df_pred):
     return fig
 
 
-def calc_prob(preds_filename_prob, df_pred, binary=False, switch=False):
+def calc_prob(
+    preds_filename_prob, df_pred, binary=False, switch=False, destroyed=False
+):
 
     preds_file_probability = open(preds_filename_prob, "rb")
     outputs = pickle.load(preds_file_probability)
@@ -278,14 +280,19 @@ def calc_prob(preds_filename_prob, df_pred, binary=False, switch=False):
     labels = np.array(df_pred.label)
     df_bin = df_pred.copy()
     if not binary:
-
-        df_bin.label = df_bin.label.replace([2, 3], 1)
-        df_bin.pred = df_bin.pred.replace([2, 3], 1)
+        outputs_bin = np.empty([len(outputs), 2])
+        if destroyed:
+            df_bin.label = df_bin.label.replace([2, 3], 1)
+            df_bin.pred = df_bin.pred.replace([2, 3], 1)
+            outputs_bin[:, 0] = outputs[:, :-1].sum(axis=1)
+            outputs_bin[:, 1] = outputs[:, -1]
+        else:
+            df_bin.label = df_bin.label.replace([2, 3], 1)
+            df_bin.pred = df_bin.pred.replace([2, 3], 1)
+            outputs_bin[:, 0] = outputs[:, 0]
+            outputs_bin[:, 1] = outputs[:, 1:].sum(axis=1)
         labels_bin = np.array(df_bin.label)
         preds_bin = np.array(df_bin.pred)
-        outputs_bin = np.empty([len(outputs), 2])
-        outputs_bin[:, 0] = outputs[:, 0]
-        outputs_bin[:, 1] = outputs[:, 1:].sum(axis=1)
 
     else:
         # labels already switched in gen_score_overview
