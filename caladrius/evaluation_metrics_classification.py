@@ -446,6 +446,13 @@ def main():
     )
 
     parser.add_argument(
+        "--destroyed",
+        default=False,
+        action="store_true",
+        help="If True it binarizes to destroyed vs rest, else no damage vs rest",
+    )
+
+    parser.add_argument(
         "--model-type",
         type=str,
         default=NEURAL_MODELS[0],
@@ -537,29 +544,35 @@ def main():
                     preds_model, args.binary, args.switch
                 )
                 df_pred_bin, prob_dict, roc_fig, dist_fig = calc_prob(
-                    preds_probability, df_pred, args.binary, args.switch
+                    preds_probability, df_pred, args.binary, args.switch, args.destroyed
                 )
+                if args.destroyed:
+                    des = "_destroyed"
+                else:
+                    des = ""
                 unique_labels_bin = np.unique(np.array(df_pred_bin.label))
                 save_overviewfile(
                     prob_dict,
                     args.run_name,
                     output_path,
-                    filename="allruns_scores_prob.txt",
+                    filename="allruns_scores_prob{}.txt".format(des),
                 )
                 create_confusionmatrix(
                     df_pred_bin.label,
                     df_pred_bin.pred,
-                    "{}{}_confusion".format(confusion_matrices_path_bin, args.run_name),
+                    "{}{}_confusion{}".format(
+                        confusion_matrices_path_bin, args.run_name, des
+                    ),
                     unique_labels_bin,
                     class_names=["No damage", "Damage"],
                     figsize=(9, 12),
                 )
                 roc_fig.savefig(
-                    "{}{}_roccurve".format(roc_curves_path, args.run_name),
+                    "{}{}_roccurve{}".format(roc_curves_path, args.run_name, des),
                     bbox_inches="tight",
                 )
                 dist_fig.savefig(
-                    "{}{}_distribution".format(distr_plots_path, args.run_name),
+                    "{}{}_distribution{}".format(distr_plots_path, args.run_name, des),
                     bbox_inches="tight",
                 )
 
