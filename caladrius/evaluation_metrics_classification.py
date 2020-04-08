@@ -29,7 +29,7 @@ params = {
     "xtick.labelsize": "xx-large",
     "ytick.labelsize": "xx-large",
 }
-# pylab.rcParams.update(params)
+pylab.rcParams.update(params)
 
 
 def create_confusionmatrix(
