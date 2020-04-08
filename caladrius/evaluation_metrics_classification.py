@@ -580,6 +580,7 @@ def main():
                         confusion_matrices_path, args.run_name, preds_type
                     ),
                     unique_labels,
+                    class_names=damage_mapping.values(),
                     figsize=(9, 12),
                 )
 
