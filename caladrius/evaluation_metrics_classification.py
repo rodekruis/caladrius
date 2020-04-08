@@ -557,6 +557,7 @@ def main():
                     output_path,
                     filename="allruns_scores_prob{}.txt".format(des),
                 )
+                print(unique_labels_bin)
                 create_confusionmatrix(
                     df_pred_bin.label,
                     df_pred_bin.pred,
