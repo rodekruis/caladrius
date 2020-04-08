@@ -592,6 +592,7 @@ def main():
             if preds_type in ["model", "validation"]:
                 print(preds_type)
                 unique_labels = np.unique(np.array(df_pred.label))
+                print([damage_mapping[str(k)] for k in unique_labels])
                 # generate and save confusion matrix
                 create_confusionmatrix(
                     df_pred.label,
