@@ -364,8 +364,8 @@ class QuasiSiameseNetwork(object):
         ]
 
         if self.model_type == "probability" or self.probability:
-            print("pred file", prediction_file)
             print("output list", output_probability_list)
+            print("pred file", prediction_file)
             pickle.dump(output_probability_list, prediction_file)
         # I don't want to write last line in prediction_file, only want labels and preds in prediction_file
         # else messes up other evaluation code
