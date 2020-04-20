@@ -190,7 +190,7 @@ class QuasiSiameseNetwork(object):
             )
         prediction_file_path = os.path.join(self.prediction_path, prediction_file_name)
         if self.model_type != "probability" or not self.probability:
-            prediction_file = open(prediction_file_path, "w+")
+            prediction_file = open(prediction_file_path, "wb+")
             prediction_file.write("filename label prediction\n")
             return prediction_file
         else:
