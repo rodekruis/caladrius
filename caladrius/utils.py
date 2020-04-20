@@ -247,6 +247,13 @@ def configuration():
         help="If True, whole model will be saved not only state dict. Only for testing purposes",
     )
 
+    parser.add_argument(
+        "--probability",
+        default=False,
+        action="store_true",
+        help="If True, probabilistic predictions will be given",
+    )
+
     args = parser.parse_args()
 
     arg_vars = vars(args)

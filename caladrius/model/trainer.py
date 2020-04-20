@@ -56,6 +56,7 @@ class QuasiSiameseNetwork(object):
         self.augment_type = args.augment_type
         self.weighted_loss = args.weighted_loss
         self.save_all = args.save_all
+        self.probability = args.probability
 
         network_architecture_class = InceptionSiameseNetwork
         network_architecture_transforms = get_pretrained_iv3_transforms
@@ -183,7 +184,7 @@ class QuasiSiameseNetwork(object):
             self.run_name, phase, epoch, self.model_type
         )
         prediction_file_path = os.path.join(self.prediction_path, prediction_file_name)
-        if self.model_type != "probability":
+        if self.model_type != "probability" or not self.probability:
             prediction_file = open(prediction_file_path, "w+")
             prediction_file.write("filename label prediction\n")
             return prediction_file
@@ -194,7 +195,7 @@ class QuasiSiameseNetwork(object):
     def get_outputs_preds(
         self, image1, image2, random_target_shape, average_target_size
     ):
-        if self.model_type == "probability":
+        if self.model_type == "probability" or self.probability:
             outputs = nn.functional.softmax(self.model(image1, image2), dim=1).squeeze()
         elif self.is_neural_model:
             outputs = self.model(image1, image2).squeeze()
@@ -259,7 +260,7 @@ class QuasiSiameseNetwork(object):
                 0  # Has to be changed back to: self.calculate_average_label(train_set)
             )
 
-        if self.model_type == "probability":
+        if self.model_type == "probability" or self.probability:
             output_probability_list = []
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
@@ -286,7 +287,7 @@ class QuasiSiameseNetwork(object):
                     loss.backward()
                     self.optimizer.step()
 
-                if self.model_type == "probability":
+                if self.model_type == "probability" or self.probability:
                     output_probability_list.extend(outputs.tolist())
                 else:
                     prediction_file.writelines(
@@ -362,7 +363,7 @@ class QuasiSiameseNetwork(object):
             second_index[second_index_key]
         ]
 
-        if self.model_type == "probability":
+        if self.model_type == "probability" or self.probability:
             pickle.dump(output_probability_list, prediction_file)
         # I don't want to write last line in prediction_file, only want labels and preds in prediction_file
         # else messes up other evaluation code
