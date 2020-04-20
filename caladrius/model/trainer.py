@@ -180,9 +180,14 @@ class QuasiSiameseNetwork(object):
         return average_label
 
     def create_prediction_file(self, phase, epoch):
-        prediction_file_name = "{}-split_{}-epoch_{:03d}-model_{}-predictions.txt".format(
-            self.run_name, phase, epoch, self.model_type
-        )
+        if not self.probability:
+            prediction_file_name = "{}-split_{}-epoch_{:03d}-model_{}-predictions.txt".format(
+                self.run_name, phase, epoch, self.model_type
+            )
+        else:
+            prediction_file_name = "{}-split_{}-epoch_{:03d}-model_{}-predictions_probability.txt".format(
+                self.run_name, phase, epoch, self.model_type
+            )
         prediction_file_path = os.path.join(self.prediction_path, prediction_file_name)
         if self.model_type != "probability" or not self.probability:
             prediction_file = open(prediction_file_path, "w+")
