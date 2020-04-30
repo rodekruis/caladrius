@@ -314,7 +314,7 @@ def calc_prob(
 
     fpr, tpr, thresholds = roc_curve(labels_bin, outputs_bin[:, 1])
     roc_auc = auc(fpr, tpr)
-    fig_roc, axes = plt.subplots(1, 1, figsize=(12, 9), constrained_layout=True)
+    fig_roc, axes = plt.subplots(1, 1, figsize=(9, 9), constrained_layout=True)
     plt.plot(fpr, tpr, label="ROC curve (area = %0.2f)" % roc_auc)
     plt.plot([0, 1], [0, 1], "k--")
     plt.legend(loc="lower right")
