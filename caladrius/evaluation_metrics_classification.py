@@ -61,8 +61,10 @@ def create_confusionmatrix(
         class_names=class_names,
     )
     ax.margins(2, 2)
-    for item in ax.get_xticklabels() + ax.get_yticklabels():
-        item.set_fontsize(15)
+    for item in (
+        [ax.xaxis.label, ax.yaxis.label] + ax.get_xticklabels() + ax.get_yticklabels()
+    ):
+        item.set_fontsize(10)
     plt.tight_layout()
     # plt.show()
     # fig.savefig("../../DataAnalysis/Data/conf_matrix_7disasters.pdf")
