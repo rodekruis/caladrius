@@ -61,6 +61,8 @@ def create_confusionmatrix(
         class_names=class_names,
     )
     ax.margins(2, 2)
+    for item in ax.get_xticklabels() + ax.get_yticklabels():
+        item.set_fontsize(15)
     plt.tight_layout()
     # plt.show()
     # fig.savefig("../../DataAnalysis/Data/conf_matrix_7disasters.pdf")
@@ -315,7 +317,7 @@ def calc_prob(
     fpr, tpr, thresholds = roc_curve(labels_bin, outputs_bin[:, 1])
     roc_auc = auc(fpr, tpr)
     fig_roc, axes = plt.subplots(1, 1, figsize=(9, 9), constrained_layout=True)
-    plt.plot(fpr, tpr, label="ROC curve (area = %0.2f)" % roc_auc)
+    plt.plot(fpr, tpr, label="ROC curve (AUC = %0.2f)" % roc_auc)
     plt.plot([0, 1], [0, 1], "k--")
     plt.legend(loc="lower right")
     plt.setp(
