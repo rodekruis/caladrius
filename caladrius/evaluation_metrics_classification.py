@@ -1,3 +1,5 @@
+# this file was used for Tinka's thesis to evaluate performance
+# it works but is rather messy ;)
 import pandas as pd
 import numpy as np
 import re
@@ -9,14 +11,7 @@ from shutil import move
 import pickle
 
 import seaborn as sns
-from sklearn.metrics import (
-    confusion_matrix,
-    recall_score,
-    classification_report,
-    roc_curve,
-    auc,
-    accuracy_score,
-)
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
 import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
 
@@ -25,7 +20,6 @@ import matplotlib.pylab as pylab
 params = {
     "legend.fontsize": "xx-large",
     "axes.labelsize": "xx-large",
-    # 'axes.titlesize':'xx-large',
     "xtick.labelsize": "xx-large",
     "ytick.labelsize": "xx-large",
 }
@@ -56,7 +50,7 @@ def create_confusionmatrix(
     fig, ax = plot_confusion_matrix(
         conf_mat=cm,
         colorbar=True,
-        show_absolute=True,  # False,
+        show_absolute=True,
         show_normed=True,
         class_names=class_names,
     )
@@ -66,9 +60,6 @@ def create_confusionmatrix(
     ):
         item.set_fontsize(10)
     plt.tight_layout()
-    # plt.show()
-    # fig.savefig("../../DataAnalysis/Data/conf_matrix_7disasters.pdf")
-    # print(filename)
 
     fig.savefig(filename, bbox_inches="tight")
 
@@ -129,7 +120,6 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
     labels = np.array(df_pred.label)
     unique_labels = np.unique(labels)
     damage_labels = [i for i in list(map(int, damage_mapping.keys())) if i != 0]
-    # print(sorted(df_pred.label.unique())>0)
     report = classification_report(
         labels,
         preds,
@@ -139,11 +129,7 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
         zero_division=1,
     )
 
-    # for i in damage_labels:
-    #     if np.sum(labels==i)+np.sum(preds==i)==0:
-    #         report[]
     score_overview = pd.DataFrame(report).transpose()
-    # print(score_overview)
     score_overview = score_overview.append(pd.Series(name="harmonized avg"))
 
     score_overview.loc["harmonized avg", ["precision", "recall", "f1-score"]] = [
@@ -192,42 +178,20 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
 
 
 def create_overviewdict(df_overview, damage_mapping):
-    # scores_params = [
-    #     "harmonized_f1",
-    #     "macro f1"
-    #     "macro recall",
-    #     # "harmonized_recall_damage",
-    #     # "weighted_recall_damage",
-    #     # "macro_recall_damage",
-    #     # "support damage",
-    #     "number datapoints",
-    #     "percentages classes",
-    #     # "percentage damage",
-    # ]
 
     perc_dam = {}
-    scores_dict = {}  # dict.fromkeys(scores_params)
+    scores_dict = {}
 
     # save overview params
-    # scores_dict["accuracy"] = df_overview.loc["accuracy","precision"]
     scores_dict["macro_f1"] = df_overview.loc["macro avg", "f1-score"]
     scores_dict["harmonized_f1"] = df_overview.loc["harmonized avg", "f1-score"]
 
     scores_dict["macro recall"] = df_overview.loc["macro avg", "recall"]
     scores_dict["macro precision"] = df_overview.loc["macro avg", "precision"]
-    # scores_dict["harmonized_recall_damage"] = df_overview.loc[
-    #     "damage harmonized avg", "recall"
-    # ]
-    # scores_dict["weighted_recall_damage"] = df_overview.loc[
-    #     "damage weighted avg", "recall"
-    # ]
-    # scores_dict["macro_recall_damage"] = df_overview.loc["damage macro avg", "recall"]
-    # scores_dict["support damage"] = int(df_overview.loc["damage macro avg", "support"])
 
     scores_dict = {
         k: round(v, 3) if v is not None else "" for k, v in scores_dict.items()
     }
-    # print(df_overview)
     for d in damage_mapping.values():
         scores_dict["recall {}".format(d)] = round(df_overview.loc[d, "recall"], 3)
         perc_dam[d] = round(
@@ -239,16 +203,12 @@ def create_overviewdict(df_overview, damage_mapping):
 
     scores_dict["class percentage"] = "/".join(map(str, perc_dam.values()))
     scores_dict["number datapoints"] = int(df_overview.loc["macro avg", "support"])
-    # scores_dict["percentage damage"] = round(
-    #     scores_dict["support damage"] / scores_dict["support all"] * 100, 1
-    # )
     return scores_dict
 
 
 def plot_distrs(outputs, df_pred):
     # plot probability distribution for binary labels
     fig = plt.figure(figsize=(12, 9), constrained_layout=True)
-    # sns.set(font_scale=3)
     ax = sns.distplot(
         outputs[df_pred.index[(np.array(df_pred.label) == 0)]][:, 1],
         label="Not destroyed",
@@ -314,7 +274,6 @@ def calc_prob(
 
     print("shape outputs", outputs_bin.shape)
     print("shape labels", labels_bin.shape)
-    # accuracy = accuracy_score(labels_bin, preds_bin, normalize=True)
 
     fpr, tpr, thresholds = roc_curve(labels_bin, outputs_bin[:, 1])
     roc_auc = auc(fpr, tpr)
@@ -330,10 +289,6 @@ def calc_prob(
         ylabel="true positive rate",
     )
 
-    # ax.margins(2, 2)
-    # plt.tight_layout()
-    # plt.show()
-
     report = classification_report(
         labels_bin, preds_bin, digits=3, output_dict=True, zero_division=1
     )
@@ -345,12 +300,7 @@ def calc_prob(
     scores_dict["macro_recall"] = round(report["macro avg"]["recall"], 3)
     scores_dict["macro_f1"] = round(report["macro avg"]["f1-score"], 3)
 
-    print(scores_dict)
-    # print(report)
     fig_distr = plot_distrs(outputs_bin, df_bin)
-    # plt.show()
-    # fig.savefig("../../DataAnalysis/Data/conf_matrix_7disasters.pdf")
-    # print(filename)
 
     return df_bin, scores_dict, fig_roc, fig_distr
 
@@ -371,9 +321,7 @@ def save_overviewfile(
     overview_path = os.path.join(output_path, filename)
     fh, abs_path = mkstemp()
     replicate = False
-    # scores_dict_rounded = {
-    #     k: round(v, 3) if v is not None else "" for k, v in overview_dict.items()
-    # }
+
     with fdopen(fh, "w+") as new_file:
         new_file.write(
             "run_name,{}\n".format(
@@ -515,7 +463,6 @@ def main():
         [preds_model, preds_random, preds_average, preds_probability, preds_validation],
         ["model", "random", "average", "probability", "validation"],
     ):
-        # print(preds_filename)
         # check if file for preds type exists
         if os.path.exists(preds_filename):
             # generate overview with performance measures
@@ -598,10 +545,7 @@ def main():
                 )
 
             if preds_type in ["model", "validation"]:
-                print(preds_type)
                 unique_labels = np.unique(np.array(df_pred.label))
-                print([damage_mapping[str(k)] for k in unique_labels])
-                print(unique_labels)
                 # generate and save confusion matrix
                 create_confusionmatrix(
                     df_pred.label,
