@@ -28,19 +28,6 @@ def get_pretrained_vgg(output_size, freeze=False):
     # fetch pretrained vgg16 model
     model_conv = torchvision.models.vgg16(pretrained=True)
 
-    # requires_grad indicates if parameter is learnable
-    # so here set all parameters to non-learnable
-    # for i, param in model_conv.named_parameters():
-    #     param.requires_grad = False
-
-    # want to create own fully connected layer instead of using pretrained layer
-    # get number of input features to fully connected layer
-    # num_ftrs = model_conv.classifier[0].in_features
-    # # print(num_ftrs)
-    # model_conv.classifier[0].out_features=output_size
-    # creaty fully connected layer
-    # model_conv.fc = nn.Linear(num_ftrs, output_size)
-
     model_conv.classifier = nn.Sequential(
         nn.Linear(512 * 7 * 7, 4096),
         nn.ReLU(True),
@@ -50,16 +37,6 @@ def get_pretrained_vgg(output_size, freeze=False):
         nn.Dropout(),
         nn.Linear(4096, output_size),
     )
-
-    # # want almost all parameters learnable except for first few layers
-    # # so here set most parameters to learnable
-    # # idea is that first few layers learn types of features that are the same in all types of images --> don't have to retrain
-    # ct = []
-    # for name, child in model_conv.named_children():
-    #     if "Conv2d_4a_3x3" in ct and not freeze:
-    #         for params in child.parameters():
-    #             params.requires_grad = True
-    #     ct.append(name)
     return model_conv
 
 
@@ -94,18 +71,6 @@ def get_pretrained_vgg_transforms(set_name, no_augment=False, augment_type="orig
                 transforms.Normalize(mean, std),
             ]
         )
-
-        # #previous test with no_aug, but now realize there is some augmentation.
-        # #Leave here in case new no_aug does way worse
-        # train_transform = transforms.Compose(
-        #     [
-        #         # resize every image to scale x scale pixels
-        #         transforms.Resize(scale),
-        #         transforms.RandomResizedCrop(input_shape),
-        #         transforms.ToTensor(),
-        #         transforms.Normalize(mean, std),
-        #     ]
-        # )
 
     elif augment_type == "original":
         train_transform = transforms.Compose(
@@ -259,15 +224,6 @@ class VggSiameseNetwork(nn.Module):
         """
         left_features = self.left_network(image_1)
         right_features = self.right_network(image_2)
-        # print("left feat",left_features.size())
-        # print("right feat", right_features.size())
-
-        # # for some weird reason, iv3 returns both
-        # # the 1000 class softmax AND the n_classes softmax
-        # # if train = True, so this is filthy, but necessary
-        # if self.training:
-        #     left_features = left_features[0]
-        #     right_features = right_features[0]
 
         features = torch.cat([left_features, right_features], 1)
         sim_features = self.similarity(features)

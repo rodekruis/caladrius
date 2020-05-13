@@ -79,18 +79,6 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
             ]
         )
 
-        # #previous test with no_aug, but now realize there is some augmentation.
-        # #Leave here in case new no_aug does way worse
-        # train_transform = transforms.Compose(
-        #     [
-        #         # resize every image to scale x scale pixels
-        #         transforms.Resize(scale),
-        #         transforms.RandomResizedCrop(input_shape),
-        #         transforms.ToTensor(),
-        #         transforms.Normalize(mean, std),
-        #     ]
-        # )
-
     elif augment_type == "original":
         train_transform = transforms.Compose(
             [

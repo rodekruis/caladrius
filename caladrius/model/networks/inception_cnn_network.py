@@ -62,7 +62,6 @@ class InceptionCNNNetwork(nn.Module):
             n_classes (int): if output type is classification, this indicates the number of classes
         """
         super().__init__()
-        # self.left_network = get_pretrained_iv3(output_size, freeze)
         self.right_network = get_pretrained_iv3(output_size, freeze)
 
         similarity_layers = OrderedDict()
@@ -104,17 +103,15 @@ class InceptionCNNNetwork(nn.Module):
         Returns:
             Predicted output
         """
-        # left_features = self.left_network(image_1)
         right_features = self.right_network(image_2)
 
         # for some weird reason, iv3 returns both
         # the 1000 class softmax AND the n_classes softmax
         # if train = True, so this is filthy, but necessary
         if self.training:
-            # left_features = left_features[0]
             right_features = right_features[0]
 
-        features = right_features  # torch.cat([left_features, right_features], 1)
+        features = right_features
         sim_features = self.similarity(features)
         output = self.output(sim_features)
         return output
