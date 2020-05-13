@@ -8,7 +8,6 @@ from statistics import mode, mean, median
 
 from torch.optim import Adam
 from torch.nn.modules import loss as nnloss
-import torchvision.transforms as transforms
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
 from torch import nn
@@ -34,10 +33,11 @@ from model.evaluate import RollingEval
 
 logger = create_logger(__name__)
 
+# for debugging, to profile how long different parts of trainer take
 try:
     profile  # throws an exception when profile isn't defined
 except NameError:
-    # profile = lambda x: x  # if it's not defined simply ignore the decorator.
+
     def profile(x):
         return x
 
@@ -57,7 +57,6 @@ class QuasiSiameseNetwork(object):
         self.weighted_loss = args.weighted_loss
         self.save_all = args.save_all
         self.probability = args.probability
-        print("probability", self.probability)
         network_architecture_class = InceptionSiameseNetwork
         network_architecture_transforms = get_pretrained_iv3_transforms
         if args.model_type == "shared":
@@ -69,12 +68,10 @@ class QuasiSiameseNetwork(object):
         if args.model_type == "after":
             network_architecture_class = InceptionCNNNetwork
             network_architecture_transforms = get_pretrained_iv3_transforms
-
         if args.model_type == "vgg":
             network_architecture_class = VggSiameseNetwork
             network_architecture_transforms = get_pretrained_vgg_transforms
 
-        # print(network_architecture_class)
         # define the loss measure
         if self.output_type == "regression":
             self.criterion = nnloss.MSELoss()
@@ -86,8 +83,6 @@ class QuasiSiameseNetwork(object):
                 n_classes=self.number_classes,
                 freeze=self.freeze,
             )
-
-            # print(sum(p.numel() for p in self.model.parameters() if p.requires_grad))
 
             self.criterion = nnloss.CrossEntropyLoss()
 
@@ -101,10 +96,6 @@ class QuasiSiameseNetwork(object):
             self.transforms[s] = network_architecture_transforms(
                 s, self.no_augment, self.augment_type
             )
-            # handle imbalance
-            # self.transforms[s] = get_pretrained_iv3_transforms(
-            #     s, self.no_augment, self.augment_type
-            # )
 
         logger.debug("Num params: {}".format(len([_ for _ in self.model.parameters()])))
 
@@ -141,16 +132,12 @@ class QuasiSiameseNetwork(object):
                 label_percentage = {
                     l: label_to_count[l] / num_samples for l in label_to_count.keys()
                 }
-                # print("weights", label_percentage.values())
                 median_perc = median(list(label_percentage.values()))
                 class_weights = [
                     median_perc / label_percentage[c] if label_percentage[c] != 0 else 0
                     for c in range(self.number_classes)
                 ]
-                # print("weights", class_weights)
                 weights = torch.FloatTensor(class_weights).to(self.device)
-                # print(weights)
-                # weights=class_weights#.to(self.device)
 
             else:
                 weights = None
@@ -256,24 +243,17 @@ class QuasiSiameseNetwork(object):
         if phase == "train":
             self.model.train()  # Set model to training mode
 
-        # to check if weights are changing with inception freezed
-        # print('print inception weight and last layer of inception (which should be retrained):')
-        # print(self.model.left_network.Mixed_7c.branch3x3dbl_3b.conv.weight[0][0])
-        # print(self.model.left_network.fc.weight)
         rolling_eval = RollingEval(self.output_type)
 
         prediction_file = self.create_prediction_file(phase, epoch)
 
         if self.model_type == "average":
-            self.average_label = (
-                0  # Has to be changed back to: self.calculate_average_label(train_set)
-            )
+            self.average_label = self.calculate_average_label(train_set)
 
         if self.probability:
             output_probability_list = []
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
-            # print(sum(p.numel() for p in self.model.parameters() if p.requires_grad))
             image1 = image1.to(self.device)
             image2 = image2.to(self.device)
             if self.output_type == "regression":
@@ -374,14 +354,6 @@ class QuasiSiameseNetwork(object):
 
         if self.probability:
             pickle.dump(output_probability_list, prediction_file)
-        # I don't want to write last line in prediction_file, only want labels and preds in prediction_file
-        # else messes up other evaluation code
-        # else:
-        #     prediction_file.write(
-        #         "Epoch {:03d} ({}) {}: {:.4f}\n".format(
-        #             epoch, first_index_key, second_index_key, epoch_main_metric
-        #         )
-        #     )
 
         prediction_file.close()
 
@@ -438,8 +410,6 @@ class QuasiSiameseNetwork(object):
         run_report.train_score = []
         run_report.validation_loss = []
         run_report.validation_score = []
-
-        # class_weights = compute_class_weights(train_set)
 
         for epoch in range(1, number_of_epochs + 1):
             # train network
