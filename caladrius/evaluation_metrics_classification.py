@@ -326,8 +326,8 @@ def calc_prob(
         axes,
         xlim=[0.0, 1.0],
         ylim=[0.0, 1.05],
-        xlabel="False Positive Rate",
-        ylabel="True Positive Rate",
+        xlabel="false positive rate",
+        ylabel="true positive rate",
     )
 
     # ax.margins(2, 2)
