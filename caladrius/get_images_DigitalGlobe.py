@@ -20,7 +20,7 @@ def reporthook(count, block_size, total_size):
     sys.stdout.flush()
 
 def main():
-    output_dir = './data/digital-globe/'
+    output_dir = '/mnt/data/digital-globe/'
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
         os.mkdir(output_dir+'pre-event/')
@@ -31,14 +31,13 @@ def main():
     opts.headless = True
     assert opts.headless  # operating in headless mode
 
-    binary = r'C:\Program Files\Mozilla Firefox\firefox.exe'
+    # binary = r'C:\Program Files\Mozilla Firefox\firefox.exe'
     options = Options()
     options.set_headless(headless=True)
-    options.binary = binary
+    # options.binary = binary
     cap = DesiredCapabilities().FIREFOX
     cap["marionette"] = True  # optional
-    browser = Firefox(firefox_options=options, capabilities=cap,
-                 executable_path="C:\\geckodriver\\geckodriver.exe")
+    browser = Firefox(firefox_options=options, capabilities=cap) #,executable_path="C:\\geckodriver\\geckodriver.exe")
     print("Headless Firefox Initialized")
     base_url = 'view-source:https://www.digitalglobe.com/ecosystem/open-data/typhoon-mangkhut'
     browser.get(base_url)
@@ -53,6 +52,7 @@ def main():
         name = url.split('/')[-1]
         if not name.endswith('.tif'):
             continue
+        cat = url.split('/')[-2]
 
         if 'pre-event' in url:
             urllib.request.urlretrieve(url, output_dir+'pre-event/'+cat+'-'+name, reporthook)
