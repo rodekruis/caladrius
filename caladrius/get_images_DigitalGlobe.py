@@ -42,6 +42,9 @@ def main():
     base_url = 'view-source:https://www.digitalglobe.com/ecosystem/open-data/typhoon-mangkhut'
     browser.get(base_url)
 
+    pre_event = open("pre-event.txt", "w")
+    post_event = open("post-event.txt", "w")
+
     # find all images
     image_elements = browser.find_elements_by_css_selector('a')
     image_urls = [el.get_attribute('text') for el in image_elements]
@@ -55,9 +58,14 @@ def main():
         cat = url.split('/')[-2]
 
         if 'pre-event' in url:
-            urllib.request.urlretrieve(url, output_dir+'pre-event/'+cat+'-'+name, reporthook)
+            # urllib.request.urlretrieve(url, output_dir+'pre-event/'+cat+'-'+name, reporthook)
+            pre_event.write(url)
         elif 'post-event' in url:
-            urllib.request.urlretrieve(url, output_dir+'post-event/'+cat+'-'+name, reporthook)
+            # urllib.request.urlretrieve(url, output_dir+'post-event/'+cat+'-'+name, reporthook)
+            post_event.write(url)
+
+    pre_event.close()
+    post_event.close()
 
 if __name__ == "__main__":
     main()
