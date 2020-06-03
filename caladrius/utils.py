@@ -96,6 +96,12 @@ def configuration():
         help="data path",
     )
     parser.add_argument(
+        "--model-path",
+        type=str,
+        default=os.path.join(".", "trained-models", "best_model_wts.pkl"),
+        help="data path",
+    )
+    parser.add_argument(
         "--run-name",
         type=run_name_type,
         default="{:.0f}".format(time.time()),
@@ -219,9 +225,9 @@ def configuration():
     arg_vars["prediction_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], "predictions")
     )
-    arg_vars["model_path"] = os.path.join(
-        arg_vars["checkpoint_path"], "best_model_wts.pkl"
-    )
+    # arg_vars["model_path"] = os.path.join(
+    #     arg_vars["checkpoint_path"], "best_model_wts.pkl"
+    # )
     arg_vars["run_report_path"] = os.path.join(
         arg_vars["checkpoint_path"], "run_report.json"
     )

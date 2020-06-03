@@ -6,7 +6,7 @@ from shapely.geometry import Point, Polygon, LineString
 from osgeo import gdal
 import re
 
-image_folder = '../data/digital-globe/pre-event'
+image_folder = './data/digital-globe/pre-event'
 api = overpy.Overpass()
 
 geopandas_dataframe = gpd.GeoDataFrame()
@@ -52,7 +52,7 @@ for image in os.listdir(image_folder):
         geopandas_dataframe.loc[index_start+index, 'OBJECTID'] = id.findall(str(way).strip())
 
 geopandas_dataframe.crs = {'init': 'epsg:4326'}
-name = '../data/digital-globe/AllBuildingOutline.geojson'
+name = './data/digital-globe/AllBuildingOutline.geojson'
 
 print('Saving as a geoJSON file as {name}'.format(name=name))
 with open(name, 'w') as file:
