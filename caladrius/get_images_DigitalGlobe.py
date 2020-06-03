@@ -53,16 +53,11 @@ def main():
         name = url.split('/')[-1]
         if not name.endswith('.tif'):
             continue
-        cat = url.split('/')[-2]
-        # try:
-        time.sleep(1)
+
         if 'pre-event' in url:
             urllib.request.urlretrieve(url, output_dir+'pre-event/'+cat+'-'+name, reporthook)
-            break
         elif 'post-event' in url:
             urllib.request.urlretrieve(url, output_dir+'post-event/'+cat+'-'+name, reporthook)
-        # except:
-        #     continue
 
 if __name__ == "__main__":
     main()
