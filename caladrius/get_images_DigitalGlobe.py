@@ -59,10 +59,10 @@ def main():
 
         if 'pre-event' in url:
             # urllib.request.urlretrieve(url, output_dir+'pre-event/'+cat+'-'+name, reporthook)
-            pre_event.write(url)
+            pre_event.write(url+" \n")
         elif 'post-event' in url:
             # urllib.request.urlretrieve(url, output_dir+'post-event/'+cat+'-'+name, reporthook)
-            post_event.write(url)
+            post_event.write(url+" \n")
 
     pre_event.close()
     post_event.close()
