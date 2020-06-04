@@ -319,7 +319,10 @@ def calc_prob(
     )
     print(report)
     scores_dict = {}
-    scores_dict["accuracy"] = round(report["accuracy"], 3)
+    if "accuracy" in report:
+        scores_dict["accuracy"] = round(report["accuracy"], 3)
+    else:
+        scores_dict["accuracy"] = 1.000
     scores_dict["auc"] = round(roc_auc, 3)
     scores_dict["recall_damage"] = round(report["1"]["recall"], 3)
     scores_dict["macro_precision"] = round(report["macro avg"]["precision"], 3)
