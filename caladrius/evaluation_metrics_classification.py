@@ -310,7 +310,12 @@ def calc_prob(
     )
 
     report = classification_report(
-        labels_bin, preds_bin, digits=3, output_dict=True, zero_division=1
+        labels_bin,
+        preds_bin,
+        labels=[0, 1],
+        digits=3,
+        output_dict=True,
+        zero_division=1,
     )
     scores_dict = {}
     scores_dict["accuracy"] = round(report["accuracy"], 3)
