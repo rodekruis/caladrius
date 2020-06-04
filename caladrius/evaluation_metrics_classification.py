@@ -120,6 +120,7 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
     labels = np.array(df_pred.label)
     unique_labels = np.unique(labels)
     damage_labels = [i for i in list(map(int, damage_mapping.keys())) if i != 0]
+    print(damage_labels)
     report = classification_report(
         labels,
         preds,
