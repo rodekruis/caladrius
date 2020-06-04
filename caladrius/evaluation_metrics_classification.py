@@ -119,10 +119,7 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
     preds = np.array(df_pred.pred)
     labels = np.array(df_pred.label)
     unique_labels = np.unique(labels)
-    damage_labels = [
-        i for i in list(map(int, damage_mapping.keys())) if i in unique_labels
-    ]
-    # damage_labels = [i for i in list(map(int, damage_mapping.keys())) if i != 0]
+    damage_labels = [i for i in list(map(int, damage_mapping.keys())) if i != 0]
     print(damage_labels)
     report = classification_report(
         labels,
@@ -143,38 +140,45 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
         ].T.iterrows()
     ]
 
-    # create report only for damage categories (represented by 1,2,3)
-    dam_report = classification_report(
-        labels, preds, output_dict=True, zero_division=1
-    )  #
-    dam_report = pd.DataFrame(dam_report).transpose()
+    if any(x in damage_labels for x in unique_labels):
+        # create report only for damage categories (represented by 1,2,3)
+        dam_report = classification_report(
+            labels, preds, labels=damage_labels, output_dict=True, zero_division=1
+        )
+        dam_report = pd.DataFrame(dam_report).transpose()
 
-    score_overview = score_overview.append(pd.Series(name="damage macro avg"))
-    score_overview = score_overview.append(pd.Series(name="damage weighted avg"))
-    score_overview = score_overview.append(pd.Series(name="damage harmonized avg"))
+        score_overview = score_overview.append(pd.Series(name="damage macro avg"))
+        score_overview = score_overview.append(pd.Series(name="damage weighted avg"))
+        score_overview = score_overview.append(pd.Series(name="damage harmonized avg"))
 
-    score_overview.loc[
-        "damage macro avg", ["precision", "recall", "f1-score", "support"]
-    ] = (
-        dam_report.loc[["macro avg"], ["precision", "recall", "f1-score", "support"]]
-        .values.flatten()
-        .tolist()
-    )
+        score_overview.loc[
+            "damage macro avg", ["precision", "recall", "f1-score", "support"]
+        ] = (
+            dam_report.loc[
+                ["macro avg"], ["precision", "recall", "f1-score", "support"]
+            ]
+            .values.flatten()
+            .tolist()
+        )
 
-    score_overview.loc[
-        "damage weighted avg", ["precision", "recall", "f1-score", "support"]
-    ] = (
-        dam_report.loc[["weighted avg"], ["precision", "recall", "f1-score", "support"]]
-        .values.flatten()
-        .tolist()
-    )
+        score_overview.loc[
+            "damage weighted avg", ["precision", "recall", "f1-score", "support"]
+        ] = (
+            dam_report.loc[
+                ["weighted avg"], ["precision", "recall", "f1-score", "support"]
+            ]
+            .values.flatten()
+            .tolist()
+        )
 
-    score_overview.loc["damage harmonized avg", ["precision", "recall", "f1-score"]] = [
-        harmonic_score(r)
-        for i, r in score_overview.loc[
-            list(map(str, damage_labels)), ["precision", "recall", "f1-score"]
-        ].T.iterrows()
-    ]
+        score_overview.loc[
+            "damage harmonized avg", ["precision", "recall", "f1-score"]
+        ] = [
+            harmonic_score(r)
+            for i, r in score_overview.loc[
+                list(map(str, damage_labels)), ["precision", "recall", "f1-score"]
+            ].T.iterrows()
+        ]
 
     if damage_mapping:
         score_overview.rename(index=damage_mapping, inplace=True)
