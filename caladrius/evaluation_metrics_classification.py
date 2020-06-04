@@ -541,6 +541,10 @@ def main():
                     filename="allruns_scores_prob{}.txt".format(des),
                 )
                 print(unique_labels_bin)
+                damage_mapping_bin = {
+                    "0": "No damage",
+                    "1": "Damage",
+                }
                 create_confusionmatrix(
                     df_pred_bin.label,
                     df_pred_bin.pred,
@@ -548,7 +552,7 @@ def main():
                         confusion_matrices_path_bin, args.run_name, des
                     ),
                     unique_labels_bin,
-                    class_names=["No damage", "Damage"],
+                    class_names=[damage_mapping_bin[str(k)] for k in unique_labels_bin],
                     figsize=(9, 12),
                 )
                 roc_fig.savefig(
