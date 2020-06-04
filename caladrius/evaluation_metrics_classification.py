@@ -119,7 +119,10 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
     preds = np.array(df_pred.pred)
     labels = np.array(df_pred.label)
     unique_labels = np.unique(labels)
-    damage_labels = [i for i in list(map(int, damage_mapping.keys())) if i != 0]
+    damage_labels = [
+        i for i in list(map(int, damage_mapping.keys())) if i in unique_labels
+    ]
+    # damage_labels = [i for i in list(map(int, damage_mapping.keys())) if i != 0]
     print(damage_labels)
     report = classification_report(
         labels,
@@ -142,8 +145,8 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
 
     # create report only for damage categories (represented by 1,2,3)
     dam_report = classification_report(
-        labels, preds, labels=damage_labels, output_dict=True, zero_division=1
-    )
+        labels, preds, output_dict=True, zero_division=1
+    )  #
     dam_report = pd.DataFrame(dam_report).transpose()
 
     score_overview = score_overview.append(pd.Series(name="damage macro avg"))
