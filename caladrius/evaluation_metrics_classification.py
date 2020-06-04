@@ -317,6 +317,7 @@ def calc_prob(
         output_dict=True,
         zero_division=1,
     )
+    print(report)
     scores_dict = {}
     scores_dict["accuracy"] = round(report["accuracy"], 3)
     scores_dict["auc"] = round(roc_auc, 3)
