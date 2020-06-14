@@ -325,12 +325,14 @@ def createDatapoints(
     return filepath_labels
 
 
-def xbd_preprocess(json_labels_path, output_folder, disaster_types=None):
+def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaster_types=None):
     """
     Read labels and transform to dataframe with one row per building and needed additional information
     Args:
-        labels_path: path to folder where labels (json files) are saved
-
+        json_labels_path: path to folder where labels (json files) are saved
+        output_folder: path to folder where to save the dataframe
+        disaster_names: names of disasters to include
+        disaster_types: types of disasters to include
     Returns:
         df (pd.DataFrame): dataframe containing all the polygons with related information
     """
@@ -338,15 +340,27 @@ def xbd_preprocess(json_labels_path, output_folder, disaster_types=None):
 
     # if we only want to take into account certain types or occurences of disasters
     # might be a faster way to do this though..
-    if disaster_types:
-        disaster_types_list = [item for item in disaster_types.split(",")]
+    if disaster_names:
+        disaster_names_list = [item for item in disaster_names.split(",")]
         json_files_selection = [
-            j for j in json_files if any(d in j for d in disaster_types_list)
+            j for j in json_files if any(d in j for d in disaster_names_list)
         ]
         if len(json_files_selection) == 0:
-            logger.info("No files match your disaster types")
+            logger.info("No files match your disaster names")
     else:
         json_files_selection = json_files
+    if disaster_types:
+        disaster_types_list = [item for item in disaster_types.split(",")]
+        json_files_selection_new = []
+        for json_file in json_files_selection:
+            with open(os.path.join(json_labels_path, json_file)) as d:
+                data = json.load(d)
+                if any(d in data['metadata']['disaster_type'] for d in disaster_types_list):
+                    json_files_selection_new.append(json_file)
+        json_files_selection = json_files_selection_new
+        if len(json_files_selection) == 0:
+            logger.info("No files match your disaster types")
+
     json_files_selection.sort()
 
     post_df = pd.DataFrame()
@@ -430,6 +444,8 @@ def create_folders(input_folder, output_folder):
     AFTER_FOLDER = os.path.join(input_folder, "After")
     JSON_FOLDER = os.path.join(input_folder, "labels")
 
+    # if before/after folders do no exist, reate them and
+
     # output
     os.makedirs(output_folder, exist_ok=True)
 
@@ -496,11 +512,20 @@ def main():
     )
 
     parser.add_argument(
-        "--disaster",
+        "--disaster-names",
         default=None,
         type=str,
-        metavar="disaster_types",
-        help="List of disasters to be included, as a delimited string. E.g. 'typhoon','flood' This can be types or specific occurences, as long as the json and image files contain these names.",
+        metavar="disaster_names",
+        help="List of disasters to be included, as a delimited string. E.g. 'typhoon','flood'."
+             "This can be types or specific occurences, as long as the json and image files contain these names.",
+    )
+
+    parser.add_argument(
+        "--disaster-types",
+        default=None,
+        type=str,
+        metavar="disaster-types",
+        help="List of disaster_types to be included, as a delimited string. E.g. 'wind', 'flooding'.",
     )
 
     parser.add_argument(
@@ -546,7 +571,8 @@ def main():
         BEFORE_FOLDER, AFTER_FOLDER, JSON_FOLDER, TEMP_DATA_FOLDER = create_folders(
             args.input, args.output
         )
-        df = xbd_preprocess(JSON_FOLDER, args.output, disaster_types=args.disaster)
+        df = xbd_preprocess(JSON_FOLDER, args.output, disaster_names=args.disaster_names,
+                            disaster_types=args.disaster_types)
         LABELS_FILE = createDatapoints(
             df,
             BEFORE_FOLDER,
