@@ -43,8 +43,10 @@ DAMAGE_TYPES = ["destroyed", "significant", "partial", "none"]
 # Fraction of image pixels that must be non-zero
 NONZERO_PIXEL_THRESHOLD = 0.70
 
+disaster_name = 'typhoon-mangkhut'
+
 # input
-ROOT_DIRECTORY = os.path.join("data", "digital-globe").replace("\\","/")
+ROOT_DIRECTORY = os.path.join("data", disaster_name).replace("\\","/")
 
 BEFORE_FOLDER = os.path.join(ROOT_DIRECTORY, "pre-event").replace("\\","/")
 AFTER_FOLDER = os.path.join(ROOT_DIRECTORY, "post-event").replace("\\","/")
@@ -54,7 +56,7 @@ GEOJSON_FILE = os.path.join(ROOT_DIRECTORY, "AllBuildingOutline.geojson").replac
 # output
 VERSION_FILE_NAME = "VERSION"
 
-TARGET_DATA_FOLDER = os.path.join("data", "Typhoon-Mangkhut-Digital-Globe-2018").replace("\\","/")
+TARGET_DATA_FOLDER = os.path.join("data", disaster_name+"-processed").replace("\\","/")
 os.makedirs(TARGET_DATA_FOLDER, exist_ok=True)
 
 # cache
@@ -488,7 +490,7 @@ def main():
     logger.info("Removed {} empty datapoints.".format(number_of_empty_datapoints))
 
     logger.info(
-        "Creating Sint-Maarten-Digital-Globe-2017 dataset using {} datapoints.".format(
+        "Creating dataset using {} datapoints.".format(
             len(df)
         )
     )
