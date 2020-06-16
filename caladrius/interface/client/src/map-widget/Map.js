@@ -10,12 +10,9 @@ import "leaflet/dist/leaflet.css";
 import "./map.css";
 import { get_prediction_colour, contrast_color_array } from "../colours";
 
-const MAPBOX_ACCESS_TOKEN =
-    "pk.eyJ1IjoiZ3VsZmFyYXoiLCJhIjoiY2p6NW10bmxhMGRidzNldDQ1ZmwxZ2gwbCJ9.tqPa766Wzm0xwy0p9_T3Jg";
-const MAPBOX_BASE_URL = "https://api.tiles.mapbox.com/v4";
-const DEFAULT_MAP_ID = "mapbox.satellite";
+const MAP_BASE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 const ATTRIBUTION =
-    'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>';
+    '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
 const DEFAULT_ZOOM_LEVEL = 13;
 const INTERACTION_ZOOM_LEVEL = 18;
 let DEFAULT_CENTER_COORDINATES = [18.035, -63.07];
@@ -59,20 +56,11 @@ export class Map extends React.Component {
         );
     }
 
-    get_mapbox_layer(
-        map_id,
-        layer_name,
-        attribution,
-        base_url,
-        mapbox_access_token
-    ) {
-        const street_map_url = `${MAPBOX_BASE_URL}/${map_id}/{z}/{x}/{y}.png?access_token=${mapbox_access_token}`;
+    get_mapbox_layer(layer_name, attribution, base_url) {
+        const street_map_url = base_url;
         return (
-            <LayersControl.BaseLayer
-                name={layer_name}
-                checked={map_id === DEFAULT_MAP_ID}
-            >
-                <TileLayer url={street_map_url} attribution={ATTRIBUTION} />
+            <LayersControl.BaseLayer name={layer_name} checked={true}>
+                <TileLayer url={street_map_url} attribution={attribution} />
             </LayersControl.BaseLayer>
         );
     }
@@ -112,18 +100,9 @@ export class Map extends React.Component {
             <LeafletMap center={center_coordinates} zoom={zoom_level}>
                 <LayersControl>
                     {this.get_mapbox_layer(
-                        "mapbox.streets",
-                        "Street",
+                        "Open Street Map",
                         ATTRIBUTION,
-                        MAPBOX_BASE_URL,
-                        MAPBOX_ACCESS_TOKEN
-                    )}
-                    {this.get_mapbox_layer(
-                        "mapbox.satellite",
-                        "Satellite",
-                        ATTRIBUTION,
-                        MAPBOX_BASE_URL,
-                        MAPBOX_ACCESS_TOKEN
+                        MAP_BASE_URL
                     )}
                     {this.get_admin_regions()}
                     {this.get_building_shape_array(
