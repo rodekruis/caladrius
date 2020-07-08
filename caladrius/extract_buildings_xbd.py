@@ -1,7 +1,7 @@
 import os
 import sys
 import argparse
-
+import glob
 import json
 import numpy as np
 
@@ -444,7 +444,16 @@ def create_folders(input_folder, output_folder):
     AFTER_FOLDER = os.path.join(input_folder, "After")
     JSON_FOLDER = os.path.join(input_folder, "labels")
 
-    # if before/after folders do no exist, reate them and
+    # if only a folder 'images' exists, move all images to before/after folders and delete it
+    IMAGES_FOLDER = os.path.join(input_folder, "images")
+    if not os.path.exists(BEFORE_FOLDER) and os.path.exists(IMAGES_FOLDER):
+        os.makedirs(BEFORE_FOLDER, exist_ok=True)
+        os.makedirs(AFTER_FOLDER, exist_ok=True)
+        for file in glob.glob(IMAGES_FOLDER+'/*_pre_*.png'):
+            move(file, BEFORE_FOLDER)
+        for file in glob.glob(IMAGES_FOLDER+'/*_post_*.png'):
+            move(file, AFTER_FOLDER)
+        rmtree(IMAGES_FOLDER)
 
     # output
     os.makedirs(output_folder, exist_ok=True)
