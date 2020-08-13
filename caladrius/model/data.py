@@ -2,7 +2,7 @@ import os
 from PIL import Image
 from tqdm import tqdm
 import numpy as np
-
+from time import sleep
 from torch.utils.data import Dataset, DataLoader
 import torch
 import torch.utils.data
@@ -103,8 +103,17 @@ class CaladriusDataset(Dataset):
             filename = line
         else:
             filename, damage = line.split(" ")
-        before_image = Image.open(os.path.join(self.directory, "before", filename))
-        after_image = Image.open(os.path.join(self.directory, "after", filename))
+        try:
+            before_image = Image.open(os.path.join(self.directory, "before", filename))
+            after_image = Image.open(os.path.join(self.directory, "after", filename))
+        except FileNotFoundError:
+            sleep(1)
+            try:
+                before_image = Image.open(os.path.join(self.directory, "before", filename))
+                after_image = Image.open(os.path.join(self.directory, "after", filename))
+            except FileNotFoundError:
+                self.load_datapoint(idx-1)
+
         if self.set_name == "inference":
             datapoint = [filename, before_image, after_image]
         else:
