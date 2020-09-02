@@ -438,9 +438,9 @@ def create_folders(input_folder, output_folder):
     if not os.path.exists(BEFORE_FOLDER) and os.path.exists(IMAGES_FOLDER):
         os.makedirs(BEFORE_FOLDER, exist_ok=True)
         os.makedirs(AFTER_FOLDER, exist_ok=True)
-        for file in glob.glob(IMAGES_FOLDER+'/*_pre_*.png'):
+        for file in glob.glob(IMAGES_FOLDER + "/*_pre_*.png"):
             move(file, BEFORE_FOLDER)
-        for file in glob.glob(IMAGES_FOLDER+'/*_post_*.png'):
+        for file in glob.glob(IMAGES_FOLDER + "/*_post_*.png"):
             move(file, AFTER_FOLDER)
         rmtree(IMAGES_FOLDER)
 
