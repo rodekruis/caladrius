@@ -1,4 +1,4 @@
-name: caladriusenv
+name: cal
 channels:
   - pytorch
   - conda-forge
