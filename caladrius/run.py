@@ -34,8 +34,9 @@ def main():
         run_report = qsn.train(
             run_report, datasets, args.number_of_epochs, args.selection_metric
         )
-    logger.info("Evaluating on test dataset")
-    run_report = qsn.test(run_report, datasets, args.selection_metric)
+    if args.test:
+        logger.info("Evaluating on test dataset")
+        run_report = qsn.test(run_report, datasets, args.selection_metric)
     if args.inference:
         logger.info("Inference started")
         qsn.inference(datasets)
