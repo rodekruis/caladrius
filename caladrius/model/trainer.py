@@ -5,6 +5,7 @@ import pickle
 from datetime import datetime
 import torch
 from statistics import mode, mean, median
+from collections import OrderedDict
 
 from torch.optim import Adam
 from torch.nn.modules import loss as nnloss
@@ -552,9 +553,18 @@ class QuasiSiameseNetwork(object):
         if self.is_statistical_model:
             train_set, _ = datasets.load("train")
         else:
-            self.model.load_state_dict(
-                torch.load(self.model_path, map_location=self.device)
-            )
+            state_dict = torch.load(self.model_path, map_location=self.device)
+            new_state_dict = OrderedDict()
+            for k, v in state_dict.items():
+                if 'module' not in k:
+                    k = 'module.' + k
+                else:
+                    k = k.replace('features.module.', 'module.features.')
+                new_state_dict[k] = v
+            self.model.load_state_dict(new_state_dict)
+            # self.model.load_state_dict(
+            #     torch.load(self.model_path, map_location=self.device)
+            # )
         inference_set, inference_loader = datasets.load("inference")
         start_time = time.time()
 
