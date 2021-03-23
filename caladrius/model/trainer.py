@@ -110,6 +110,7 @@ class QuasiSiameseNetwork(object):
 
         self.device = args.device
         self.model_path = args.model_path
+        self.trained_model_path = args.trained_model_path
         self.prediction_path = args.prediction_path
         self.model_type = args.model_type
         self.is_statistical_model = args.statistical_model
@@ -461,10 +462,10 @@ class QuasiSiameseNetwork(object):
 
                 logger.info(
                     "Epoch {:03d} Checkpoint: Saving to {}".format(
-                        epoch, self.model_path
+                        epoch, self.trained_model_path
                     )
                 )
-                torch.save(best_model_wts, self.model_path)
+                torch.save(best_model_wts, self.trained_model_path)
 
         time_elapsed = time.time() - start_time
         run_report.train_end_time = datetime.utcnow().replace(microsecond=0).isoformat()
@@ -562,9 +563,6 @@ class QuasiSiameseNetwork(object):
                     k = k.replace('features.module.', 'module.features.')
                 new_state_dict[k] = v
             self.model.load_state_dict(new_state_dict)
-            # self.model.load_state_dict(
-            #     torch.load(self.model_path, map_location=self.device)
-            # )
         inference_set, inference_loader = datasets.load("inference")
         start_time = time.time()
 
