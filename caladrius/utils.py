@@ -287,6 +287,9 @@ def configuration():
     arg_vars["checkpoint_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], arg_vars["model_directory"])
     )
+    arg_vars["trained_model_path"] = os.path.join(
+        arg_vars["checkpoint_path"], "best_model_wts.pkl"
+    )
     arg_vars["prediction_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], "predictions")
     )
