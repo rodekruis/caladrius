@@ -448,13 +448,17 @@ def create_folders(input_folder, output_folder, image_extension):
 
     # if only a folder 'images' exists, move all images to before/after folders and delete it
     IMAGES_FOLDER = os.path.join(input_folder, "images")
+    print(output_folder)
+    print(BEFORE_FOLDER)
+    print(AFTER_FOLDER)
+    print(IMAGES_FOLDER+'/*_pre_*.'+image_extension)
     if not os.path.exists(BEFORE_FOLDER) and os.path.exists(IMAGES_FOLDER):
-        logger.info("Splitting images in before/after disaster.")
+        print("Splitting images in before/after disaster.")
         os.makedirs(BEFORE_FOLDER, exist_ok=True)
         os.makedirs(AFTER_FOLDER, exist_ok=True)
-        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_pre_*.'+image_extension)):
+        for file in glob.glob(IMAGES_FOLDER+'/*_pre_*.'+image_extension):
             copy(file, BEFORE_FOLDER)
-        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_post_*.'+image_extension)):
+        for file in glob.glob(IMAGES_FOLDER+'/*_post_*.'+image_extension):
             copy(file, AFTER_FOLDER)
         #rmtree(IMAGES_FOLDER)
 
