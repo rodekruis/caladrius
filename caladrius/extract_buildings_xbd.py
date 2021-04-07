@@ -6,7 +6,7 @@ import json
 import numpy as np
 
 import pandas as pd
-from pandas.io.json import json_normalize
+from pandas import json_normalize
 import rasterio
 
 from tqdm import tqdm
@@ -290,36 +290,36 @@ def createDatapoints(
             # identify data point
             objectID = row["OBJECTID"]
 
-            try:
-                # call function to crop the image to the building, which in turn calls function to save the cropped image
-                before_file = getImage(
-                    os.path.join(path_images_before, row["file_pre"]),
-                    geoms_pre,
-                    "before",
-                    "{}.png".format(objectID),
-                    path_temp_data,
-                )
-                after_file = getImage(
-                    os.path.join(path_images_after, row["file_post"]),
-                    geoms_post,
-                    "after",
-                    "{}.png".format(objectID),
-                    path_temp_data,
-                )
-                if (
-                    (before_file is not None)
-                    and os.path.isfile(before_file)
-                    and (after_file is not None)
-                    and os.path.isfile(after_file)
-                ):
-                    labels_file.write(
-                        "{0}.png {1:.4f}\n".format(
-                            objectID, damage_quantifier(damage, label_type)
-                        )
+            # try:
+            # call function to crop the image to the building, which in turn calls function to save the cropped image
+            before_file = getImage(
+                os.path.join(path_images_before, row["file_pre"]),
+                geoms_pre,
+                "before",
+                "{}.png".format(objectID),
+                path_temp_data,
+            )
+            after_file = getImage(
+                os.path.join(path_images_after, row["file_post"]),
+                geoms_post,
+                "after",
+                "{}.png".format(objectID),
+                path_temp_data,
+            )
+            if (
+                (before_file is not None)
+                and os.path.isfile(before_file)
+                and (after_file is not None)
+                and os.path.isfile(after_file)
+            ):
+                labels_file.write(
+                    "{0}.png {1:.4f}\n".format(
+                        objectID, damage_quantifier(damage, label_type)
                     )
-                    count += 1
-            except ValueError:  # as ve:
-                continue
+                )
+                count += 1
+            # except ValueError:  # as ve:
+            #     continue
 
     logger.info("Created {} Datapoints".format(count))
     return filepath_labels
@@ -448,18 +448,12 @@ def create_folders(input_folder, output_folder, image_extension):
 
     # if only a folder 'images' exists, move all images to before/after folders and delete it
     IMAGES_FOLDER = os.path.join(input_folder, "images")
-    print(output_folder)
-    print(BEFORE_FOLDER)
-    print(AFTER_FOLDER)
-    print(IMAGES_FOLDER+'/*_pre_*.'+image_extension)
-    print(len(os.listdir(BEFORE_FOLDER)))
     if len(os.listdir(BEFORE_FOLDER)) == 0:
-        print("Splitting images in before/after disaster.")
-        os.makedirs(BEFORE_FOLDER, exist_ok=True)
-        os.makedirs(AFTER_FOLDER, exist_ok=True)
-        for file in glob.glob(IMAGES_FOLDER+'/*_pre_*.'+image_extension):
+        logger.info("Splitting images: images --> before")
+        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_pre_*.'+image_extension)):
             copy(file, BEFORE_FOLDER)
-        for file in glob.glob(IMAGES_FOLDER+'/*_post_*.'+image_extension):
+        logger.info("Splitting images: images --> after")
+        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_post_*.'+image_extension)):
             copy(file, AFTER_FOLDER)
         #rmtree(IMAGES_FOLDER)
 
