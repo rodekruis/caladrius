@@ -325,7 +325,7 @@ def createDatapoints(
     return filepath_labels
 
 
-def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaster_types=None):
+def xbd_preprocess(json_labels_path, output_folder, image_extension, disaster_names=None, disaster_types=None):
     """
     Read labels and transform to dataframe with one row per building and needed additional information
     Args:
@@ -380,7 +380,7 @@ def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaste
 
         # if pre file, only get coordinates for creating before image stamps
         elif "pre" in file:
-            df_temp["file_pre"] = file[0:-4] + "png"
+            df_temp["file_pre"] = file[0:-4] + image_extension
             # wkt/geomotry_pre contains the coordinates
             df_temp = df_temp.rename(
                 columns={
@@ -406,7 +406,7 @@ def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaste
                     "properties.uid": "uid",
                 }
             )
-            df_temp.insert(1, "file_post", file[0:-4] + "png", True)
+            df_temp.insert(1, "file_post", file[0:-4] + image_extension, True)
 
             post_df = post_df.append(df_temp, ignore_index=True)
 
@@ -434,7 +434,7 @@ def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaste
     return df
 
 
-def create_folders(input_folder, output_folder):
+def create_folders(input_folder, output_folder, image_extension):
 
     # define before, after and label folders
     BEFORE_FOLDER = os.path.join(output_folder, "before")
@@ -452,9 +452,9 @@ def create_folders(input_folder, output_folder):
         logger.info("Splitting images in before/after disaster.")
         os.makedirs(BEFORE_FOLDER, exist_ok=True)
         os.makedirs(AFTER_FOLDER, exist_ok=True)
-        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_pre_*.png')):
+        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_pre_*.'+image_extension)):
             copy(file, BEFORE_FOLDER)
-        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_post_*.png')):
+        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_post_*.'+image_extension)):
             copy(file, AFTER_FOLDER)
         #rmtree(IMAGES_FOLDER)
 
@@ -502,6 +502,13 @@ def main():
         default=os.path.join("../data", "xBD"),
         metavar="/path/to/dataset",
         help="Full path to the directory with /Before , /After and /labels",
+    )
+
+    parser.add_argument(
+        "--image-extension",
+        default="png",
+        type=str,
+        help="Input image extension: png or tif",
     )
 
     parser.add_argument(
@@ -578,9 +585,10 @@ def main():
     if args.create_image_stamps or args.run_all:
         logger.info("Creating training dataset.")
         BEFORE_FOLDER, AFTER_FOLDER, JSON_FOLDER, TEMP_DATA_FOLDER = create_folders(
-            args.input, args.output
+            args.input, args.output, args.image_extension
         )
-        df = xbd_preprocess(JSON_FOLDER, args.output, disaster_names=args.disaster_names,
+        df = xbd_preprocess(JSON_FOLDER, args.output, args.image_extension,
+                            disaster_names=args.disaster_names,
                             disaster_types=args.disaster_types)
         LABELS_FILE = createDatapoints(
             df,
