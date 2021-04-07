@@ -452,7 +452,8 @@ def create_folders(input_folder, output_folder, image_extension):
     print(BEFORE_FOLDER)
     print(AFTER_FOLDER)
     print(IMAGES_FOLDER+'/*_pre_*.'+image_extension)
-    if not os.path.exists(BEFORE_FOLDER) and os.path.exists(IMAGES_FOLDER):
+    print(len(os.listdir(BEFORE_FOLDER)))
+    if len(os.listdir(BEFORE_FOLDER)) == 0:
         print("Splitting images in before/after disaster.")
         os.makedirs(BEFORE_FOLDER, exist_ok=True)
         os.makedirs(AFTER_FOLDER, exist_ok=True)
