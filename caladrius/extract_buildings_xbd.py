@@ -15,7 +15,7 @@ import rasterio.mask
 import rasterio.features
 import rasterio.warp
 
-from shutil import move, rmtree
+from shutil import move, rmtree, copy
 
 import shapely.wkt
 import logging
@@ -436,27 +436,27 @@ def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaste
 
 def create_folders(input_folder, output_folder):
 
-    # supported damage types. These are the xBD classification.
-    # xBD also contains the category "un-classified" but we want them to be ignored, so not in this list
-    # DAMAGE_TYPES = ["destroyed", "major-damage", "minor-damage", "no-damage"]
-
-    BEFORE_FOLDER = os.path.join(input_folder, "Before")
-    AFTER_FOLDER = os.path.join(input_folder, "After")
+    # define before, after and label folders
+    BEFORE_FOLDER = os.path.join(output_folder, "before")
+    AFTER_FOLDER = os.path.join(output_folder, "after")
     JSON_FOLDER = os.path.join(input_folder, "labels")
+
+    # make output folder
+    os.makedirs(output_folder, exist_ok=True)
+    os.makedirs(BEFORE_FOLDER, exist_ok=True)
+    os.makedirs(AFTER_FOLDER, exist_ok=True)
 
     # if only a folder 'images' exists, move all images to before/after folders and delete it
     IMAGES_FOLDER = os.path.join(input_folder, "images")
     if not os.path.exists(BEFORE_FOLDER) and os.path.exists(IMAGES_FOLDER):
+        logger.info("Splitting images in before/after disaster.")
         os.makedirs(BEFORE_FOLDER, exist_ok=True)
         os.makedirs(AFTER_FOLDER, exist_ok=True)
-        for file in glob.glob(IMAGES_FOLDER+'/*_pre_*.png'):
-            move(file, BEFORE_FOLDER)
-        for file in glob.glob(IMAGES_FOLDER+'/*_post_*.png'):
-            move(file, AFTER_FOLDER)
-        rmtree(IMAGES_FOLDER)
-
-    # output
-    os.makedirs(output_folder, exist_ok=True)
+        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_pre_*.png')):
+            copy(file, BEFORE_FOLDER)
+        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_post_*.png')):
+            copy(file, AFTER_FOLDER)
+        #rmtree(IMAGES_FOLDER)
 
     # cache
     TEMP_DATA_FOLDER = os.path.join(output_folder, "temp")
