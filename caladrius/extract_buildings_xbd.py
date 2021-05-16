@@ -115,18 +115,16 @@ def makesquare(minx, miny, maxx, maxy, extension_factor=20):
     return geoms
 
 
-def saveImage(image, transform, out_meta, folder, name, path_temp_data):
+def saveImage(image, transform, out_meta, img_path):
     """
     Saves the cropped building to a file
     Args:
         image: rasterio mask object that contains the image
         transform: transformation for mapping pixels from whole image to cropped building
         out_meta: meta information of image
-        folder (str): which folder image is located. Either "before" or "after"
-        name (str): image name
-
+        img_path (str): path where image is saved
     Returns:
-        file_path (str): path where image is saved
+        img_path (str): path where image is saved
     """
     out_meta.update(
         {
@@ -136,12 +134,9 @@ def saveImage(image, transform, out_meta, folder, name, path_temp_data):
             "transform": transform,
         }
     )
-    directory = os.path.join(path_temp_data, folder)
-    os.makedirs(directory, exist_ok=True)
-    file_path = os.path.join(directory, name)
-    with rasterio.open(file_path, "w", **out_meta) as dest:
+    with rasterio.open(img_path, "w", **out_meta) as dest:
         dest.write(image)
-    return file_path
+    return img_path
 
 
 def getImage(
@@ -157,13 +152,13 @@ def getImage(
         nonzero_pixel_threshold (float): Fraction of image pixels that must be non-zero
     """
 
-
+    img_out_path = os.path.join(path_temp_data, moment, name)
     with rasterio.open(source_image) as source:
         image, transform = rasterio.mask.mask(source, geometry, crop=True)
         out_meta = source.meta.copy()
         good_pixel_frac = np.count_nonzero(image) / image.size
         if np.sum(image) > 0 and good_pixel_frac > nonzero_pixel_threshold:
-            return saveImage(image, transform, out_meta, moment, name, path_temp_data)
+            return saveImage(image, transform, out_meta, img_out_path)
         return None
 
 
@@ -292,36 +287,36 @@ def createDatapoints(
             # identify data point
             objectID = row["uid"]
 
-            try:
-                # call function to crop the image to the building, which in turn calls function to save the cropped image
-                before_file = getImage(
-                    os.path.join(path_images_before, row["file_pre"]),
-                    geoms_pre,
-                    "before",
-                    "{}.png".format(objectID),
-                    path_temp_data,
-                )
-                after_file = getImage(
-                    os.path.join(path_images_after, row["file_post"]),
-                    geoms_post,
-                    "after",
-                    "{}.png".format(objectID),
-                    path_temp_data,
-                )
-                if (
-                    (before_file is not None)
-                    and os.path.isfile(before_file)
-                    and (after_file is not None)
-                    and os.path.isfile(after_file)
-                ):
-                    labels_file.write(
-                        "{0}.png {1:.4f}\n".format(
-                            objectID, damage_quantifier(damage, label_type)
-                        )
+            # try:
+            # call function to crop the image to the building, which in turn calls function to save the cropped image
+            before_file = getImage(
+                os.path.join(path_images_before, row["file_pre"]),
+                geoms_pre,
+                "before",
+                "{}.png".format(objectID),
+                path_temp_data,
+            )
+            after_file = getImage(
+                os.path.join(path_images_after, row["file_post"]),
+                geoms_post,
+                "after",
+                "{}.png".format(objectID),
+                path_temp_data,
+            )
+            if (
+                (before_file is not None)
+                and os.path.isfile(before_file)
+                and (after_file is not None)
+                and os.path.isfile(after_file)
+            ):
+                labels_file.write(
+                    "{0}.png {1:.4f}\n".format(
+                        objectID, damage_quantifier(damage, label_type)
                     )
-                    count += 1
-            except ValueError:  # as ve:
-                continue
+                )
+                count += 1
+            # except ValueError:  # as ve:
+            #     continue
 
     logger.info("Created {} Datapoints".format(count))
     return filepath_labels
@@ -453,15 +448,19 @@ def create_folders(input_folder, output_folder, image_extension):
     if len(os.listdir(BEFORE_FOLDER)) == 0:
         logger.info("Splitting images: images --> before")
         for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_pre_*.'+image_extension)):
-            copy(file, BEFORE_FOLDER)
+            if not os.path.exists(os.path.join(BEFORE_FOLDER, os.path.basename(file))):
+                copy(file, BEFORE_FOLDER)
         logger.info("Splitting images: images --> after")
         for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_post_*.'+image_extension)):
-            copy(file, AFTER_FOLDER)
+            if not os.path.exists(os.path.join(AFTER_FOLDER, os.path.basename(file))):
+                copy(file, AFTER_FOLDER)
         #rmtree(IMAGES_FOLDER)
 
     # cache
     TEMP_DATA_FOLDER = os.path.join(output_folder, "temp")
     os.makedirs(TEMP_DATA_FOLDER, exist_ok=True)
+    os.makedirs(os.path.join(TEMP_DATA_FOLDER, "before"), exist_ok=True)
+    os.makedirs(os.path.join(TEMP_DATA_FOLDER, "after"), exist_ok=True)
 
     return BEFORE_FOLDER, AFTER_FOLDER, JSON_FOLDER, TEMP_DATA_FOLDER
 
