@@ -273,62 +273,60 @@ def createDatapoints(
 
         for index_img, row_img in tqdm(df_img.iterrows(), total=df_img.shape[0]):
 
-            source_pre = rasterio.open(os.path.join(path_images_before, row_img["file_pre"]))
-            source_post = rasterio.open(os.path.join(path_images_after, row_img["file_post"]))
-            df_buildings = df[df['file_pre']==row_img["file_pre"]]
+            df_buildings = df[df['file_pre'] == row_img["file_pre"]]
 
-            for index, row in df_buildings.iterrows():
+            with rasterio.open(os.path.join(path_images_before, row_img["file_pre"])) as source_pre:
+                with rasterio.open(os.path.join(path_images_after, row_img["file_post"])) as source_post:
 
-                # filter based on damage. Only accept described damage types. Un-classified is filtered out
-                damage = row["_damage"]
-                if damage not in list_damage_types:
-                    continue
+                    for index, row in df_buildings.iterrows():
 
-                # pre geom
-                # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
-                bounds_pre = row["geometry_pre"].bounds
-                geoms_pre = makesquare(*bounds_pre)
+                        # filter based on damage. Only accept described damage types. Un-classified is filtered out
+                        damage = row["_damage"]
+                        if damage not in list_damage_types:
+                            continue
 
-                # post geom
-                bounds_post = row["geometry_post"].bounds
-                geoms_post = makesquare(*bounds_post)
+                        # pre geom
+                        # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
+                        bounds_pre = row["geometry_pre"].bounds
+                        geoms_pre = makesquare(*bounds_pre)
 
-                # identify data point
-                objectID = row["uid"]
+                        # post geom
+                        bounds_post = row["geometry_post"].bounds
+                        geoms_post = makesquare(*bounds_post)
 
-                # try:
-                # call function to crop the image to the building, which in turn calls function to save the cropped image
-                before_file = getImage(
-                    source_pre,
-                    geoms_pre,
-                    "before",
-                    "{}.png".format(objectID),
-                    path_temp_data,
-                )
-                after_file = getImage(
-                    source_post,
-                    geoms_post,
-                    "after",
-                    "{}.png".format(objectID),
-                    path_temp_data,
-                )
-                if (
-                    (before_file is not None)
-                    and os.path.isfile(before_file)
-                    and (after_file is not None)
-                    and os.path.isfile(after_file)
-                ):
-                    labels_file.write(
-                        "{0}.png {1:.4f}\n".format(
-                            objectID, damage_quantifier(damage, label_type)
+                        # identify data point
+                        objectID = row["uid"]
+
+                        # try:
+                        # call function to crop the image to the building, which in turn calls function to save the cropped image
+                        before_file = getImage(
+                            source_pre,
+                            geoms_pre,
+                            "before",
+                            "{}.png".format(objectID),
+                            path_temp_data,
                         )
-                    )
-                    count += 1
-                # except ValueError:  # as ve:
-                #     continue
-
-            source_pre.close()
-            source_post.close()
+                        after_file = getImage(
+                            source_post,
+                            geoms_post,
+                            "after",
+                            "{}.png".format(objectID),
+                            path_temp_data,
+                        )
+                        if (
+                            (before_file is not None)
+                            and os.path.isfile(before_file)
+                            and (after_file is not None)
+                            and os.path.isfile(after_file)
+                        ):
+                            labels_file.write(
+                                "{0}.png {1:.4f}\n".format(
+                                    objectID, damage_quantifier(damage, label_type)
+                                )
+                            )
+                            count += 1
+                        # except ValueError:  # as ve:
+                        #     continue
 
     logger.info("Created {} Datapoints".format(count))
     return filepath_labels
