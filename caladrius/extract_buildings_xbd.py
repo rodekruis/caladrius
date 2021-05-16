@@ -156,6 +156,8 @@ def getImage(
         name (str): name with which the image with the cropped building should be saved
         nonzero_pixel_threshold (float): Fraction of image pixels that must be non-zero
     """
+
+
     with rasterio.open(source_image) as source:
         image, transform = rasterio.mask.mask(source, geometry, crop=True)
         out_meta = source.meta.copy()
@@ -288,38 +290,38 @@ def createDatapoints(
             geoms_post = makesquare(*bounds_post)
 
             # identify data point
-            objectID = row["OBJECTID"]
+            objectID = row["uid"]
 
-            # try:
-            # call function to crop the image to the building, which in turn calls function to save the cropped image
-            before_file = getImage(
-                os.path.join(path_images_before, row["file_pre"]),
-                geoms_pre,
-                "before",
-                "{}.png".format(objectID),
-                path_temp_data,
-            )
-            after_file = getImage(
-                os.path.join(path_images_after, row["file_post"]),
-                geoms_post,
-                "after",
-                "{}.png".format(objectID),
-                path_temp_data,
-            )
-            if (
-                (before_file is not None)
-                and os.path.isfile(before_file)
-                and (after_file is not None)
-                and os.path.isfile(after_file)
-            ):
-                labels_file.write(
-                    "{0}.png {1:.4f}\n".format(
-                        objectID, damage_quantifier(damage, label_type)
-                    )
+            try:
+                # call function to crop the image to the building, which in turn calls function to save the cropped image
+                before_file = getImage(
+                    os.path.join(path_images_before, row["file_pre"]),
+                    geoms_pre,
+                    "before",
+                    "{}.png".format(objectID),
+                    path_temp_data,
                 )
-                count += 1
-            # except ValueError:  # as ve:
-            #     continue
+                after_file = getImage(
+                    os.path.join(path_images_after, row["file_post"]),
+                    geoms_post,
+                    "after",
+                    "{}.png".format(objectID),
+                    path_temp_data,
+                )
+                if (
+                    (before_file is not None)
+                    and os.path.isfile(before_file)
+                    and (after_file is not None)
+                    and os.path.isfile(after_file)
+                ):
+                    labels_file.write(
+                        "{0}.png {1:.4f}\n".format(
+                            objectID, damage_quantifier(damage, label_type)
+                        )
+                    )
+                    count += 1
+            except ValueError:  # as ve:
+                continue
 
     logger.info("Created {} Datapoints".format(count))
     return filepath_labels
