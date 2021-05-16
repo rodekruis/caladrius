@@ -266,7 +266,7 @@ def createDatapoints(
     before_files.sort()
     filepath_labels = os.path.join(path_temp_data, "labels.txt")
 
-    df_img = df[df['file_pre'], df['file_post']].drop_duplicates()
+    df_img = df[['file_pre', 'file_post']].drop_duplicates()
 
     with open(filepath_labels, "w+") as labels_file:
         count = 0
