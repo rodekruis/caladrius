@@ -238,6 +238,59 @@ def splitDatapoints(
     return split_mappings
 
 
+def cropSaveImage(path_before, path_after, df_buildings, count, label_type, list_damage_types):
+    with rasterio.open(path_before) as source_pre, rasterio.open(path_after) as source_post:
+
+        for index, row in df_buildings.iterrows():
+
+            # filter based on damage. Only accept described damage types. Un-classified is filtered out
+            damage = row["_damage"]
+            if damage not in list_damage_types:
+                continue
+
+            # pre geom
+            # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
+            bounds_pre = row["geometry_pre"].bounds
+            geoms_pre = makesquare(*bounds_pre)
+
+            # post geom
+            bounds_post = row["geometry_post"].bounds
+            geoms_post = makesquare(*bounds_post)
+
+            # identify data point
+            objectID = row["uid"]
+
+            # try:
+            # call function to crop the image to the building, which in turn calls function to save the cropped image
+            before_file = getImage(
+                source_pre,
+                geoms_pre,
+                "before",
+                "{}.png".format(objectID),
+                path_temp_data,
+            )
+            after_file = getImage(
+                source_post,
+                geoms_post,
+                "after",
+                "{}.png".format(objectID),
+                path_temp_data,
+            )
+            if (
+                    (before_file is not None)
+                    and os.path.isfile(before_file)
+                    and (after_file is not None)
+                    and os.path.isfile(after_file)
+            ):
+                labels_file.write(
+                    "{0}.png {1:.4f}\n".format(
+                        objectID, damage_quantifier(damage, label_type)
+                    )
+                )
+                count += 1
+    return count
+
+
 def createDatapoints(
     df,
     path_images_before,
@@ -275,58 +328,11 @@ def createDatapoints(
 
             df_buildings = df[df['file_pre'] == row_img["file_pre"]]
 
-            with rasterio.open(os.path.join(path_images_before, row_img["file_pre"])) as source_pre:
-                with rasterio.open(os.path.join(path_images_after, row_img["file_post"])) as source_post:
-
-                    for index, row in df_buildings.iterrows():
-
-                        # filter based on damage. Only accept described damage types. Un-classified is filtered out
-                        damage = row["_damage"]
-                        if damage not in list_damage_types:
-                            continue
-
-                        # pre geom
-                        # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
-                        bounds_pre = row["geometry_pre"].bounds
-                        geoms_pre = makesquare(*bounds_pre)
-
-                        # post geom
-                        bounds_post = row["geometry_post"].bounds
-                        geoms_post = makesquare(*bounds_post)
-
-                        # identify data point
-                        objectID = row["uid"]
-
-                        # try:
-                        # call function to crop the image to the building, which in turn calls function to save the cropped image
-                        before_file = getImage(
-                            source_pre,
-                            geoms_pre,
-                            "before",
-                            "{}.png".format(objectID),
-                            path_temp_data,
-                        )
-                        after_file = getImage(
-                            source_post,
-                            geoms_post,
-                            "after",
-                            "{}.png".format(objectID),
-                            path_temp_data,
-                        )
-                        if (
-                            (before_file is not None)
-                            and os.path.isfile(before_file)
-                            and (after_file is not None)
-                            and os.path.isfile(after_file)
-                        ):
-                            labels_file.write(
-                                "{0}.png {1:.4f}\n".format(
-                                    objectID, damage_quantifier(damage, label_type)
-                                )
-                            )
-                            count += 1
-                        # except ValueError:  # as ve:
-                        #     continue
+            count = crop_save_image(os.path.join(path_images_before, row_img["file_pre"]),
+                                    os.path.join(path_images_after, row_img["file_post"]),
+                                    df_buildings, count,
+                                    label_type,
+                                    list_damage_types)
 
     logger.info("Created {} Datapoints".format(count))
     return filepath_labels
