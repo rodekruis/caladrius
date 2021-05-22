@@ -238,7 +238,7 @@ def splitDatapoints(
     return split_mappings
 
 
-def cropSaveImage(path_before, path_after, df_buildings, count, label_type, list_damage_types):
+def cropSaveImage(path_before, path_after, df_buildings, count, label_type, list_damage_types, path_temp_data):
     with rasterio.open(path_before) as source_pre, rasterio.open(path_after) as source_post:
 
         for index, row in df_buildings.iterrows():
@@ -332,7 +332,8 @@ def createDatapoints(
                                     os.path.join(path_images_after, row_img["file_post"]),
                                     df_buildings, count,
                                     label_type,
-                                    list_damage_types)
+                                    list_damage_types,
+                                  path_temp_data)
 
     logger.info("Created {} Datapoints".format(count))
     return filepath_labels
