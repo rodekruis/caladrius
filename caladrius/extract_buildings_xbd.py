@@ -328,7 +328,7 @@ def createDatapoints(
 
             df_buildings = df[df['file_pre'] == row_img["file_pre"]]
 
-            count = crop_save_image(os.path.join(path_images_before, row_img["file_pre"]),
+            count = cropSaveImage(os.path.join(path_images_before, row_img["file_pre"]),
                                     os.path.join(path_images_after, row_img["file_post"]),
                                     df_buildings, count,
                                     label_type,
