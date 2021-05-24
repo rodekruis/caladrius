@@ -8,13 +8,13 @@ import numpy as np
 import pandas as pd
 from pandas import json_normalize
 import rasterio
-
+from cv2 import imwrite
 from tqdm import tqdm
 
 import rasterio.mask
 import rasterio.features
 import rasterio.warp
-
+from PIL import Image
 from shutil import move, rmtree, copy
 
 import shapely.wkt
@@ -103,16 +103,19 @@ def makesquare(minx, miny, maxx, maxy, extension_factor=20):
     maxx += rangeX / extension_factor
     miny -= rangeY / extension_factor
     maxy += rangeY / extension_factor
-    geoms = [
-        {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [[[minx, miny], [minx, maxy], [maxx, maxy], [maxx, miny], [minx, miny]]]
-            ],
-        }
-    ]
 
-    return geoms
+    return [minx, miny, maxx, maxy]
+
+    # geoms = [
+    #     {
+    #         "type": "MultiPolygon",
+    #         "coordinates": [
+    #             [[[minx, miny], [minx, maxy], [maxx, maxy], [maxx, miny], [minx, miny]]]
+    #         ],
+    #     }
+    # ]
+    #
+    # return geoms
 
 
 def saveImage(image, transform, out_meta, img_path):
@@ -240,55 +243,51 @@ def splitDatapoints(
 
 def cropSaveImage(path_before, path_after, df_buildings, count, label_type, list_damage_types, path_temp_data,
                   labels_file):
-    with rasterio.open(path_before) as source_pre, rasterio.open(path_after) as source_post:
 
-        for index, row in df_buildings.iterrows():
+    image_pre = np.array(Image.open(path_before))
+    image_post = np.array(Image.open(path_after))
 
-            # filter based on damage. Only accept described damage types. Un-classified is filtered out
-            damage = row["_damage"]
-            if damage not in list_damage_types:
-                continue
+    for index, row in df_buildings.iterrows():
 
-            # pre geom
-            # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
-            bounds_pre = row["geometry_pre"].bounds
-            geoms_pre = makesquare(*bounds_pre)
+        # filter based on damage. Only accept described damage types. Un-classified is filtered out
+        damage = row["_damage"]
+        if damage not in list_damage_types:
+            continue
 
-            # post geom
-            bounds_post = row["geometry_post"].bounds
-            geoms_post = makesquare(*bounds_post)
+        # pre geom
+        # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
+        minx, miny, maxx, maxy = row["geometry_pre"].bounds
+        minx, miny, maxx, maxy = makesquare(minx, miny, maxx, maxy)
+        bounds_pre = [minx, miny, maxx, maxy]
+        bounds_pre = [max(0, int(x)) for x in bounds_pre]
 
-            # identify data point
-            objectID = row["uid"]
+        # post geom
+        minx, miny, maxx, maxy = row["geometry_post"].bounds
+        minx, miny, maxx, maxy = makesquare(minx, miny, maxx, maxy)
+        bounds_post = [minx, miny, maxx, maxy]
+        bounds_post = [max(0, int(x)) for x in bounds_post]
 
-            # try:
-            # call function to crop the image to the building, which in turn calls function to save the cropped image
-            before_file = getImage(
-                source_pre,
-                geoms_pre,
-                "before",
-                "{}.png".format(objectID),
-                path_temp_data,
-            )
-            after_file = getImage(
-                source_post,
-                geoms_post,
-                "after",
-                "{}.png".format(objectID),
-                path_temp_data,
-            )
-            if (
-                    (before_file is not None)
-                    and os.path.isfile(before_file)
-                    and (after_file is not None)
-                    and os.path.isfile(after_file)
-            ):
-                labels_file.write(
-                    "{0}.png {1:.4f}\n".format(
-                        objectID, damage_quantifier(damage, label_type)
-                    )
+        # identify data point
+        objectID = row["uid"]
+
+        crop_pre = image_pre[bounds_pre[1]:bounds_pre[3], bounds_pre[0]:bounds_pre[2]]
+        before_file = os.path.join(path_temp_data, "before", "{}.png".format(objectID))
+        imwrite(before_file, crop_pre)
+        crop_post = image_post[bounds_post[1]:bounds_post[3], bounds_post[0]:bounds_post[2]]
+        after_file = os.path.join(path_temp_data, "after", "{}.png".format(objectID))
+        imwrite(after_file, crop_post)
+        if (
+                (before_file is not None)
+                and os.path.isfile(before_file)
+                and (after_file is not None)
+                and os.path.isfile(after_file)
+        ):
+            labels_file.write(
+                "{0}.png {1:.4f}\n".format(
+                    objectID, damage_quantifier(damage, label_type)
                 )
-                count += 1
+            )
+            count += 1
     return count
 
 
