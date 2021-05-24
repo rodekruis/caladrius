@@ -1,4 +1,4 @@
-import os
+import os, gc
 import sys
 import argparse
 import glob
@@ -244,7 +244,10 @@ def splitDatapoints(
 def cropSaveImage(path_before, path_after, df_buildings, count, label_type, list_damage_types, path_temp_data,
                   labels_file):
 
-    with np.array(Image.open(path_before)) as image_pre, np.array(Image.open(path_after)) as image_post:
+    with Image.open(path_before) as pilimage_pre, Image.open(path_after) as pilimage_post:
+
+        image_pre = np.array(pilimage_pre)
+        image_post = np.array(pilimage_post)
 
         for index, row in df_buildings.iterrows():
 
@@ -335,6 +338,7 @@ def createDatapoints(
                                     list_damage_types,
                                   path_temp_data,
                                   labels_file)
+            gc.collect()
 
     logger.info("Created {} Datapoints".format(count))
     return filepath_labels
