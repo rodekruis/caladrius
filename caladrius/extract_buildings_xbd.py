@@ -6,7 +6,7 @@ import json
 import numpy as np
 
 import pandas as pd
-from pandas import json_normalize
+from pandas.io.json import json_normalize
 import rasterio
 from cv2 import imwrite
 from tqdm import tqdm
