@@ -57,8 +57,8 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
     Returns:
         Composition of transformations for given set name
     """
-    mean = [0.5, 0.5, 0.5]
-    std = [0.5, 0.5, 0.5]
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
     scale = 360
     input_shape = 299
 
@@ -88,7 +88,7 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
                 # This is needed for the inception model.
                 # we first scale and then crop to have translation variation, i.e. buildings is not always in the centre.
                 # In this way model is less sensitive to translation variation in the test set.
-                transforms.RandomResizedCrop(input_shape),
+                transforms.RandomResizedCrop(size=input_shape, scale=(0.75,1.), ratio=(1.,1.)),
                 # flips image horizontally with a probability of 0.5 (i.e. half of images are flipped)
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomVerticalFlip(),
@@ -103,9 +103,8 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
 
         test_transform = transforms.Compose(
             [
-                # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
-                transforms.Resize(scale),
-                transforms.CenterCrop(input_shape),
+                # for testing and validation we don't want any permutations of the image, solely resizing and normalizing
+                transforms.Resize(input_shape),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
@@ -128,7 +127,7 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
 
         test_transform = transforms.Compose(
             [
-                # for testing and validation we don't want any permutations of the image, solely cropping and normalizing
+                # for testing and validation we don't want any permutations of the image, solely resizing and normalizing
                 transforms.Resize((input_shape, input_shape)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
@@ -152,7 +151,6 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
         test_transform = A.Compose(
             [
                 A.Resize(scale, scale),
-                A.CenterCrop(input_shape, input_shape),
                 A.CLAHE(p=1),
                 A.Normalize(mean=mean, std=std),
                 ToTensorV2(),
