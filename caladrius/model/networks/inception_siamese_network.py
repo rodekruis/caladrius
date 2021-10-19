@@ -83,7 +83,7 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
         train_transform = transforms.Compose(
             [
                 # resize every image to scale x scale pixels
-                transforms.Resize(scale),
+                transforms.Resize((scale, scale)),
                 # crop every image to input_shape x input_shape pixels.
                 # This is needed for the inception model.
                 # we first scale and then crop to have translation variation, i.e. buildings is not always in the centre.
@@ -104,7 +104,7 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
         test_transform = transforms.Compose(
             [
                 # for testing and validation we don't want any permutations of the image, solely resizing and normalizing
-                transforms.Resize(input_shape),
+                transforms.Resize((input_shape, input_shape)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
@@ -112,7 +112,7 @@ def get_pretrained_iv3_transforms(set_name, no_augment=False, augment_type="orig
     elif augment_type == "paper":
         train_transform = transforms.Compose(
             [
-                transforms.Resize(input_shape),
+                transforms.Resize((input_shape, input_shape)),
                 # # accidentally added rotation twice, one of the tests was run with this
                 # transforms.RandomRotation(degrees=40),
                 transforms.RandomAffine(degrees=40, translate=(0.2, 0.2), shear=11.5),
