@@ -172,7 +172,7 @@ def configuration():
     parser.add_argument(
         "--output-type",
         type=str,
-        default="regression",
+        default="classification",
         choices=["regression", "classification"],
         help="choose if want regression or classification model",
     )
@@ -213,9 +213,10 @@ def configuration():
 
     parser.add_argument(
         "--weighted-loss",
-        default=False,
-        action="store_true",
-        help="If True, the loss will be weighted according to the amount of data per damage category",
+        type=str,
+        default=None,
+        choices=["numsamples", "effnumsamples", "medianperc"],
+        help="choose weighting strategy for loss function (default: none)",
     )
 
     parser.add_argument(

@@ -3,6 +3,7 @@ import copy
 import time
 import pickle
 from datetime import datetime
+import numpy as np
 import torch
 from statistics import mode, mean, median
 
@@ -129,14 +130,29 @@ class QuasiSiameseNetwork(object):
                     label = dataset.load_datapoint(idx)[-1]
                     label_to_count[label] += 1
 
-                label_percentage = {
-                    l: label_to_count[l] / num_samples for l in label_to_count.keys()
-                }
-                median_perc = median(list(label_percentage.values()))
-                class_weights = [
-                    median_perc / label_percentage[c] if label_percentage[c] != 0 else 0
-                    for c in range(self.number_classes)
-                ]
+                if self.weighted_loss == "numsamples":
+                    # weights based on number of samples
+                    class_weights = [
+                        1 / label_to_count[c] for c in range(self.number_classes)
+                    ]
+                    class_weights = [float(i)/sum(class_weights) for i in class_weights]
+                elif self.weighted_loss == "effnumsamples":
+                    # weights based on effective number of samples (arXiv:1901.05555)
+                    beta = (num_samples - 1) / num_samples
+                    class_weights = [
+                        (1 - beta) / (1 - np.power(beta, label_to_count[c])) for c in range(self.number_classes)
+                    ]
+                    class_weights = [float(i) / sum(class_weights) for i in class_weights]
+                elif self.weighted_loss == "medianperc":
+                    # weights based on inverse median percentage
+                    label_percentage = {
+                        l: label_to_count[l] / num_samples for l in label_to_count.keys()
+                    }
+                    median_perc = median(list(label_percentage.values()))
+                    class_weights = [
+                        median_perc / label_percentage[c] if label_percentage[c] != 0 else 0
+                        for c in range(self.number_classes)
+                    ]
                 weights = torch.FloatTensor(class_weights).to(self.device)
 
             else:
