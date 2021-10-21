@@ -265,12 +265,12 @@ def cropSaveImage(path_before, path_after, df_buildings, count, label_type, list
                   labels_file, normalization):
 
     if normalization == "clahe":
-        logging.info('Applying CLAHE normalization')
+        logger.info(f'Applying CLAHE normalization on {path_before}')
         pilimage_pre = clahe(path_before)
+        pilimage_pre.save(path_before)
+        logger.info(f'Applying CLAHE normalization on {path_after}')
         pilimage_post = clahe(path_after)
-        logging.info('Saving results')
-        pilimage_pre.save(path_before.replace(".png", "-clahe.png"))
-        pilimage_post.save("geeks.jpg")
+        pilimage_post.save(path_after)
     else:
         pilimage_pre = Image.open(path_before)
         pilimage_post = Image.open(path_after)
@@ -600,7 +600,7 @@ def main():
 
     parser.add_argument(
         "--label-type",
-        default="regression",
+        default="classification",
         type=str,
         choices=["regression", "classification"],
         metavar="label_type",
