@@ -264,6 +264,7 @@ def splitDatapoints(
 def cropSaveImage(path_before, path_after, df_buildings, count, label_type, list_damage_types, path_temp_data,
                   labels_file, normalization):
 
+    logger.info(f'cropSaveImage with {normalization}')
     if normalization == "clahe":
         logger.info(f'Applying CLAHE normalization on {path_before}')
         pilimage_pre = clahe(path_before)
@@ -651,6 +652,7 @@ def main():
             TEMP_DATA_FOLDER,
             args.label_type,
             args.damage,
+            args.normalization
         )
         splitDatapoints(
             LABELS_FILE,
