@@ -10,7 +10,7 @@ from pandas.io.json import json_normalize
 import rasterio
 from cv2 import imwrite
 from tqdm import tqdm
-
+import cv2
 import rasterio.mask
 import rasterio.features
 import rasterio.warp
@@ -25,6 +25,26 @@ logging.getLogger("fiona").setLevel(logging.ERROR)
 logging.getLogger("fiona.collection").setLevel(logging.ERROR)
 logging.getLogger("rasterio").setLevel(logging.ERROR)
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.ERROR)
+
+
+def clahe(image_path, clip_limit=2):
+    image = cv2.imread(image_path)
+    # convert image to LAB color model
+    image_lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    # split the image into L, A, and B channels
+    l_channel, a_channel, b_channel = cv2.split(image_lab)
+    # apply CLAHE to lightness channel
+    clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(8, 8))
+    cl = clahe.apply(l_channel)
+    # merge the CLAHE enhanced L channel with the original A and B channel
+    merged_channels = cv2.merge((cl, a_channel, b_channel))
+    # convert iamge from LAB color model back to RGB color model
+    final_image = cv2.cvtColor(merged_channels, cv2.COLOR_LAB2BGR)
+    return cv2_to_pil(final_image)
+
+
+def cv2_to_pil(cv2_image):
+    return Image.fromarray(cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB))
 
 
 def damage_quantifier(category, label_type):
@@ -242,66 +262,69 @@ def splitDatapoints(
 
 
 def cropSaveImage(path_before, path_after, df_buildings, count, label_type, list_damage_types, path_temp_data,
-                  labels_file):
+                  labels_file, normalization):
 
-    with Image.open(path_before) as pilimage_pre, Image.open(path_after) as pilimage_post:
+    if normalization == "clahe":
+        logging.info('Applying CLAHE normalization')
+        pilimage_pre = clahe(path_before)
+        pilimage_post = clahe(path_after)
+        logging.info('Saving results')
+        pilimage_pre.save(path_before.replace(".png", "-clahe.png"))
+        pilimage_post.save("geeks.jpg")
+    else:
+        pilimage_pre = Image.open(path_before)
+        pilimage_post = Image.open(path_after)
 
-        image_pre = np.array(pilimage_pre)
-        image_post = np.array(pilimage_post)
+    image_pre = np.array(pilimage_pre)
+    image_post = np.array(pilimage_post)
 
-        for index, row in df_buildings.iterrows():
+    for index, row in df_buildings.iterrows():
 
-            # filter based on damage. Only accept described damage types. Un-classified is filtered out
-            damage = row["_damage"]
-            if damage not in list_damage_types:
-                continue
+        # filter based on damage. Only accept described damage types. Un-classified is filtered out
+        damage = row["_damage"]
+        if damage not in list_damage_types:
+            continue
 
-            # pre geom
-            # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
-            minx, miny, maxx, maxy = row["geometry_pre"].bounds
-            minx, miny, maxx, maxy = makesquare(minx, miny, maxx, maxy)
-            bounds_pre = [minx, miny, maxx, maxy]
-            bounds_pre = [max(0, int(x)) for x in bounds_pre]
+        # pre geom
+        # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
+        minx, miny, maxx, maxy = row["geometry_pre"].bounds
+        minx, miny, maxx, maxy = makesquare(minx, miny, maxx, maxy)
+        bounds_pre = [minx, miny, maxx, maxy]
+        bounds_pre = [max(0, int(x)) for x in bounds_pre]
 
-            # post geom
-            minx, miny, maxx, maxy = row["geometry_post"].bounds
-            minx, miny, maxx, maxy = makesquare(minx, miny, maxx, maxy)
-            bounds_post = [minx, miny, maxx, maxy]
-            bounds_post = [max(0, int(x)) for x in bounds_post]
+        # post geom
+        minx, miny, maxx, maxy = row["geometry_post"].bounds
+        minx, miny, maxx, maxy = makesquare(minx, miny, maxx, maxy)
+        bounds_post = [minx, miny, maxx, maxy]
+        bounds_post = [max(0, int(x)) for x in bounds_post]
 
-            # identify data point
-            objectID = row["uid"]
+        # identify data point
+        objectID = row["uid"]
 
-            crop_pre = image_pre[bounds_pre[1]:bounds_pre[3], bounds_pre[0]:bounds_pre[2]]
-            before_file = os.path.join(path_temp_data, "before", "{}.png".format(objectID))
-            imwrite(before_file, crop_pre)
-            crop_post = image_post[bounds_post[1]:bounds_post[3], bounds_post[0]:bounds_post[2]]
-            after_file = os.path.join(path_temp_data, "after", "{}.png".format(objectID))
-            imwrite(after_file, crop_post)
-            if (
-                    (before_file is not None)
-                    and os.path.isfile(before_file)
-                    and (after_file is not None)
-                    and os.path.isfile(after_file)
-            ):
-                labels_file.write(
-                    "{0}.png {1:.4f}\n".format(
-                        objectID, damage_quantifier(damage, label_type)
-                    )
+        crop_pre = image_pre[bounds_pre[1]:bounds_pre[3], bounds_pre[0]:bounds_pre[2]]
+        before_file = os.path.join(path_temp_data, "before", "{}.png".format(objectID))
+        imwrite(before_file, crop_pre)
+        crop_post = image_post[bounds_post[1]:bounds_post[3], bounds_post[0]:bounds_post[2]]
+        after_file = os.path.join(path_temp_data, "after", "{}.png".format(objectID))
+        imwrite(after_file, crop_post)
+        if (
+                (before_file is not None)
+                and os.path.isfile(before_file)
+                and (after_file is not None)
+                and os.path.isfile(after_file)
+        ):
+            labels_file.write(
+                "{0}.png {1:.4f}\n".format(
+                    objectID, damage_quantifier(damage, label_type)
                 )
-                count += 1
+            )
+            count += 1
 
     return count
 
 
-def createDatapoints(
-    df,
-    path_images_before,
-    path_images_after,
-    path_temp_data,
-    label_type,
-    list_damage_types,
-):
+def createDatapoints(df, path_images_before, path_images_after, path_temp_data,
+                     label_type, list_damage_types, normalization="none"):
     """
     Loops through all the building polygons and calls functions which create an image per polygon.
     Args:
@@ -332,12 +355,13 @@ def createDatapoints(
             df_buildings = df[df['file_pre'] == row_img["file_pre"]]
 
             count = cropSaveImage(os.path.join(path_images_before, row_img["file_pre"]),
-                                    os.path.join(path_images_after, row_img["file_post"]),
-                                    df_buildings, count,
-                                    label_type,
-                                    list_damage_types,
+                                  os.path.join(path_images_after, row_img["file_post"]),
+                                  df_buildings, count,
+                                  label_type,
+                                  list_damage_types,
                                   path_temp_data,
-                                  labels_file)
+                                  labels_file,
+                                  normalization)
             gc.collect()
 
     logger.info("Created {} Datapoints".format(count))
@@ -556,6 +580,14 @@ def main():
         metavar="disaster_names",
         help="List of disasters to be included, as a delimited string. E.g. 'typhoon','flood'."
              "This can be types or specific occurences, as long as the json and image files contain these names.",
+    )
+
+    parser.add_argument(
+        "--normalization",
+        default="none",
+        type=str,
+        choices=["none", "clahe"],
+        help="Normalize images",
     )
 
     parser.add_argument(
