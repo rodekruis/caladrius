@@ -615,8 +615,9 @@ class QuasiSiameseNetwork(object):
             train_set, _ = datasets.load("train")
         else:
             state_dict = torch.load(self.model_path, map_location=self.device)
-
             try:
+                self.model.load_state_dict(state_dict)
+            except RuntimeError:
                 new_state_dict = OrderedDict()
                 for k, v in state_dict.items():
                     if 'module' not in k:
@@ -625,8 +626,6 @@ class QuasiSiameseNetwork(object):
                         k = k.replace('features.module.', 'module.features.')
                     new_state_dict[k] = v
                 self.model.load_state_dict(new_state_dict)
-            except:
-                self.model.load_state_dict(state_dict)
 
         inference_set, inference_loader = datasets.load("inference")
         start_time = time.time()
