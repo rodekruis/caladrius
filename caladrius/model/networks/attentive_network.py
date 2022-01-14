@@ -168,6 +168,8 @@ class AttentiveNetwork(nn.Module):
         elif output_type == "classification":
             self.output = nn.Linear(output_size, n_classes)
 
+        self.relu = nn.ReLU()
+
     def forward(self, image_1, image_2):
         left_features = image_1
         right_features = image_2

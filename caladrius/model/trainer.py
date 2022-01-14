@@ -76,6 +76,7 @@ class QuasiSiameseNetwork(object):
         self.save_all = args.save_all
         self.probability = args.probability
         self.classification_loss_type = args.classification_loss_type
+        self.disable_cuda = args.disable_cuda
         network_architecture_class = InceptionSiameseNetwork
         network_architecture_transforms = get_pretrained_iv3_transforms
         if args.model_type == "shared":
@@ -130,7 +131,7 @@ class QuasiSiameseNetwork(object):
             self.optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=True
         )
 
-        if not args.disable_cuda:
+        if not self.disable_cuda:
             self.scaler = torch.cuda.amp.GradScaler()
         else:
             self.scaler = None
@@ -291,6 +292,13 @@ class QuasiSiameseNetwork(object):
         if self.probability:
             output_probability_list = []
 
+        class Dummy:
+            def __enter__(self):
+                pass
+
+            def __exit__(self):
+                pass
+
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(self.device)
             image2 = image2.to(self.device)
@@ -304,7 +312,9 @@ class QuasiSiameseNetwork(object):
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
 
-            with torch.set_grad_enabled(phase == "train"):
+
+            with torch.set_grad_enabled(phase == "train"),\
+                    torch.cuda.amp.autocast() if not self.disable_cuda else Dummy():
                 outputs, preds = self.get_outputs_preds(
                     image1, image2, labels.shape, labels.shape
                 )
