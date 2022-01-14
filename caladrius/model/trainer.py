@@ -27,6 +27,11 @@ from model.networks.vgg_siamese_network import (
     get_pretrained_vgg_transforms,
 )
 
+from model.networks.attentive_network import (
+    AttentiveNetwork,
+    get_pretrained_attentive_transforms
+)
+
 from model.networks.inception_cnn_network import InceptionCNNNetwork
 
 from utils import create_logger, readable_float, dynamic_report_key
@@ -76,15 +81,18 @@ class QuasiSiameseNetwork(object):
         if args.model_type == "shared":
             network_architecture_class = InceptionSiameseShared
             network_architecture_transforms = get_pretrained_iv3_transforms
-        if args.model_type == "light":
+        elif args.model_type == "light":
             network_architecture_class = LightSiameseNetwork
             network_architecture_transforms = get_light_siamese_transforms
-        if args.model_type == "after":
+        elif args.model_type == "after":
             network_architecture_class = InceptionCNNNetwork
             network_architecture_transforms = get_pretrained_iv3_transforms
-        if args.model_type == "vgg":
+        elif args.model_type == "vgg":
             network_architecture_class = VggSiameseNetwork
             network_architecture_transforms = get_pretrained_vgg_transforms
+        elif args.model_type == "attentive":
+            network_architecture_class = AttentiveNetwork
+            network_architecture_transforms = get_pretrained_attentive_transforms
 
         # define the loss measure
         if self.output_type == "regression":
