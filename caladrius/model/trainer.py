@@ -43,6 +43,18 @@ except NameError:
         return x
 
 
+def log_f1_micro_loss(prob, logit, target):
+    assert len(target.shape) == 1
+
+    target_long = target.long()
+
+    ids = torch.arange(prob.size(0))
+    prob_target = prob[ids, target_long]
+
+    # V3
+    return torch.mean(torch.log(prob_target + 1)) + torch.nn.functional.cross_entropy(logit, target_long, reduction='mean')
+
+
 class QuasiSiameseNetwork(object):
     def __init__(self, args):
         input_size = (args.input_size, args.input_size)
@@ -58,6 +70,7 @@ class QuasiSiameseNetwork(object):
         self.weighted_loss = args.weighted_loss
         self.save_all = args.save_all
         self.probability = args.probability
+        self.classification_loss_type = args.classification_loss_type
         network_architecture_class = InceptionSiameseNetwork
         network_architecture_transforms = get_pretrained_iv3_transforms
         if args.model_type == "shared":
@@ -85,7 +98,10 @@ class QuasiSiameseNetwork(object):
                 freeze=self.freeze,
             )
 
-            self.criterion = nnloss.CrossEntropyLoss()
+            if self.classification_loss_type == 'cross-entropy':
+                self.criterion = nnloss.CrossEntropyLoss()
+            else:
+                self.criterion = log_f1_micro_loss
 
         self.transforms = {}
 
@@ -149,7 +165,11 @@ class QuasiSiameseNetwork(object):
 
             else:
                 weights = None
-            self.criterion = nnloss.CrossEntropyLoss(weight=weights)
+
+            if self.classification_loss_type == 'cross-entropy':
+                self.criterion = nnloss.CrossEntropyLoss(weight=weights)
+            else:
+                raise NotImplementedError
 
     def get_random_output_values(self, output_shape):
         return torch.rand(output_shape)
@@ -278,7 +298,15 @@ class QuasiSiameseNetwork(object):
                 outputs, preds = self.get_outputs_preds(
                     image1, image2, labels.shape, labels.shape
                 )
-                loss = self.criterion(outputs, labels)
+
+                if self.classification_loss_type == 'cross-entropy':
+                    loss = self.criterion(outputs, labels)
+                else:
+                    if self.probability:
+                        prob = outputs
+                    else:
+                        prob = nn.functional.softmax(outputs)
+                    loss = self.criterion(prob, outputs, labels)
 
                 if phase == "train":
                     if self.scaler is None:

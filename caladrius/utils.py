@@ -225,6 +225,12 @@ def configuration():
     )
 
     parser.add_argument(
+        "--classification-loss-type",
+        default="cross-entropy",
+        choices=["cross-entropy", "f1"]
+    )
+
+    parser.add_argument(
         "--freeze",
         default=False,
         action="store_true",
