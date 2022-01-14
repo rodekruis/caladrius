@@ -60,6 +60,14 @@ def log_f1_micro_loss(prob, logit, target):
     return torch.mean(torch.log(prob_target + 1)) + torch.nn.functional.cross_entropy(logit, target_long, reduction='mean')
 
 
+class Dummy:
+    def __enter__(self):
+        pass
+
+    def __exit__(self):
+        pass
+
+
 class QuasiSiameseNetwork(object):
     def __init__(self, args):
         input_size = (args.input_size, args.input_size)
@@ -291,13 +299,6 @@ class QuasiSiameseNetwork(object):
 
         if self.probability:
             output_probability_list = []
-
-        class Dummy:
-            def __enter__(self):
-                pass
-
-            def __exit__(self):
-                pass
 
         for idx, (filename, image1, image2, labels) in enumerate(loader, 1):
             image1 = image1.to(self.device)
@@ -614,14 +615,19 @@ class QuasiSiameseNetwork(object):
             train_set, _ = datasets.load("train")
         else:
             state_dict = torch.load(self.model_path, map_location=self.device)
-            new_state_dict = OrderedDict()
-            for k, v in state_dict.items():
-                if 'module' not in k:
-                    k = 'module.' + k
-                else:
-                    k = k.replace('features.module.', 'module.features.')
-                new_state_dict[k] = v
-            self.model.load_state_dict(new_state_dict)
+
+            try:
+                new_state_dict = OrderedDict()
+                for k, v in state_dict.items():
+                    if 'module' not in k:
+                        k = 'module.' + k
+                    else:
+                        k = k.replace('features.module.', 'module.features.')
+                    new_state_dict[k] = v
+                self.model.load_state_dict(new_state_dict)
+            except:
+                self.model.load_state_dict(state_dict)
+
         inference_set, inference_loader = datasets.load("inference")
         start_time = time.time()
 
@@ -639,9 +645,10 @@ class QuasiSiameseNetwork(object):
             image1 = image1.to(self.device)
             image2 = image2.to(self.device)
 
-            outputs, preds = self.get_outputs_preds(
-                image1, image2, image1.shape, [image1.shape[0]]
-            )
+            with torch.set_grad_enabled(False), torch.cuda.amp.autocast() if not self.disable_cuda else Dummy():
+                outputs, preds = self.get_outputs_preds(
+                    image1, image2, image1.shape, [image1.shape[0]]
+                )
 
             prediction_file.writelines(
                 [
