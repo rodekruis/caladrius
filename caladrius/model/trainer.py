@@ -105,6 +105,12 @@ class QuasiSiameseNetwork(object):
         self.lr_scheduler = ReduceLROnPlateau(
             self.optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=True
         )
+
+        if not args.disable_cuda:
+            self.scaler = torch.cuda.amp.GradScaler()
+        else:
+            self.scaler = None
+
         # creates tracking file for tensorboard
         self.writer = SummaryWriter(args.checkpoint_path)
 
@@ -275,8 +281,13 @@ class QuasiSiameseNetwork(object):
                 loss = self.criterion(outputs, labels)
 
                 if phase == "train":
-                    loss.backward()
-                    self.optimizer.step()
+                    if self.scaler is None:
+                        loss.backward()
+                        self.optimizer.step()
+                    else:
+                        self.scaler.scale(loss).backward()
+                        self.scaler.step(self.optimizer)
+                        self.scaler.update()
 
                 if self.probability:
                     output_probability_list.extend(outputs.tolist())
