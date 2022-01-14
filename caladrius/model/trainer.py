@@ -177,7 +177,9 @@ class QuasiSiameseNetwork(object):
             if self.classification_loss_type == 'cross-entropy':
                 self.criterion = nnloss.CrossEntropyLoss(weight=weights)
             else:
-                raise NotImplementedError
+                if weights is not None:
+                    raise NotImplementedErrore
+                self.criterion = log_f1_micro_loss
 
     def get_random_output_values(self, output_shape):
         return torch.rand(output_shape)
