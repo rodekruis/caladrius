@@ -27,6 +27,11 @@ from model.networks.vgg_siamese_network import (
     get_pretrained_vgg_transforms,
 )
 
+from model.networks.attentive_network import (
+    AttentiveNetwork,
+    get_pretrained_attentive_transforms
+)
+
 from model.networks.inception_cnn_network import InceptionCNNNetwork
 
 from utils import create_logger, readable_float, dynamic_report_key
@@ -41,6 +46,26 @@ except NameError:
 
     def profile(x):
         return x
+
+
+def log_f1_micro_loss(prob, logit, target):
+    assert len(target.shape) == 1
+
+    target_long = target.long()
+
+    ids = torch.arange(prob.size(0))
+    prob_target = prob[ids, target_long]
+
+    # V3
+    return torch.mean(torch.log(prob_target + 1)) + torch.nn.functional.cross_entropy(logit, target_long, reduction='mean')
+
+
+class Dummy:
+    def __enter__(self):
+        pass
+
+    def __exit__(self):
+        pass
 
 
 class QuasiSiameseNetwork(object):
@@ -58,20 +83,25 @@ class QuasiSiameseNetwork(object):
         self.weighted_loss = args.weighted_loss
         self.save_all = args.save_all
         self.probability = args.probability
+        self.classification_loss_type = args.classification_loss_type
+        self.disable_cuda = args.disable_cuda
         network_architecture_class = InceptionSiameseNetwork
         network_architecture_transforms = get_pretrained_iv3_transforms
         if args.model_type == "shared":
             network_architecture_class = InceptionSiameseShared
             network_architecture_transforms = get_pretrained_iv3_transforms
-        if args.model_type == "light":
+        elif args.model_type == "light":
             network_architecture_class = LightSiameseNetwork
             network_architecture_transforms = get_light_siamese_transforms
-        if args.model_type == "after":
+        elif args.model_type == "after":
             network_architecture_class = InceptionCNNNetwork
             network_architecture_transforms = get_pretrained_iv3_transforms
-        if args.model_type == "vgg":
+        elif args.model_type == "vgg":
             network_architecture_class = VggSiameseNetwork
             network_architecture_transforms = get_pretrained_vgg_transforms
+        elif args.model_type == "attentive":
+            network_architecture_class = AttentiveNetwork
+            network_architecture_transforms = get_pretrained_attentive_transforms
 
         # define the loss measure
         if self.output_type == "regression":
@@ -85,7 +115,10 @@ class QuasiSiameseNetwork(object):
                 freeze=self.freeze,
             )
 
-            self.criterion = nnloss.CrossEntropyLoss()
+            if self.classification_loss_type == 'cross-entropy':
+                self.criterion = nnloss.CrossEntropyLoss()
+            else:
+                self.criterion = log_f1_micro_loss
 
         self.transforms = {}
 
@@ -105,6 +138,12 @@ class QuasiSiameseNetwork(object):
         self.lr_scheduler = ReduceLROnPlateau(
             self.optimizer, factor=0.1, patience=10, min_lr=1e-5, verbose=True
         )
+
+        if not self.disable_cuda:
+            self.scaler = torch.cuda.amp.GradScaler()
+        else:
+            self.scaler = None
+
         # creates tracking file for tensorboard
         self.writer = SummaryWriter(args.checkpoint_path)
 
@@ -143,7 +182,13 @@ class QuasiSiameseNetwork(object):
 
             else:
                 weights = None
-            self.criterion = nnloss.CrossEntropyLoss(weight=weights)
+
+            if self.classification_loss_type == 'cross-entropy':
+                self.criterion = nnloss.CrossEntropyLoss(weight=weights)
+            else:
+                if weights is not None:
+                    raise NotImplementedErrore
+                self.criterion = log_f1_micro_loss
 
     def get_random_output_values(self, output_shape):
         return torch.rand(output_shape)
@@ -268,15 +313,30 @@ class QuasiSiameseNetwork(object):
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
 
-            with torch.set_grad_enabled(phase == "train"):
+
+            with torch.set_grad_enabled(phase == "train"),\
+                    torch.cuda.amp.autocast() if not self.disable_cuda else Dummy():
                 outputs, preds = self.get_outputs_preds(
                     image1, image2, labels.shape, labels.shape
                 )
-                loss = self.criterion(outputs, labels)
+
+                if self.classification_loss_type == 'cross-entropy':
+                    loss = self.criterion(outputs, labels)
+                else:
+                    if self.probability:
+                        prob = outputs
+                    else:
+                        prob = nn.functional.softmax(outputs)
+                    loss = self.criterion(prob, outputs, labels)
 
                 if phase == "train":
-                    loss.backward()
-                    self.optimizer.step()
+                    if self.scaler is None:
+                        loss.backward()
+                        self.optimizer.step()
+                    else:
+                        self.scaler.scale(loss).backward()
+                        self.scaler.step(self.optimizer)
+                        self.scaler.update()
 
                 if self.probability:
                     output_probability_list.extend(outputs.tolist())
@@ -584,9 +644,10 @@ class QuasiSiameseNetwork(object):
             image1 = image1.to(self.device)
             image2 = image2.to(self.device)
 
-            outputs, preds = self.get_outputs_preds(
-                image1, image2, image1.shape, [image1.shape[0]]
-            )
+            with torch.set_grad_enabled(False), torch.cuda.amp.autocast() if not self.disable_cuda else Dummy():
+                outputs, preds = self.get_outputs_preds(
+                    image1, image2, image1.shape, [image1.shape[0]]
+                )
 
             prediction_file.writelines(
                 [

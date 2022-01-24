@@ -9,7 +9,7 @@ import json
 
 import torch
 
-NEURAL_MODELS = ["inception", "light", "after", "shared", "vgg"]
+NEURAL_MODELS = ["inception", "light", "after", "shared", "vgg", "attentive"]
 STATISTICAL_MODELS = ["average", "random"]
 
 # logging
@@ -222,6 +222,12 @@ def configuration():
         default=False,
         action="store_true",
         help="If True, the loss will be weighted according to the amount of data per damage category",
+    )
+
+    parser.add_argument(
+        "--classification-loss-type",
+        default="cross-entropy",
+        choices=["cross-entropy", "f1"]
     )
 
     parser.add_argument(
