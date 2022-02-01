@@ -12,7 +12,7 @@ dependencies:
   - ca-certificates=2019.11.27
   - certifi=2019.11.28
   - cffi=1.12.3
-  - cudatoolkit=9.0
+  - cudatoolkit=10.2
   - expat=2.2.6
   - freetype=2.9.1
   - future=0.18.2
@@ -60,7 +60,7 @@ dependencies:
   - sqlite=3.29.0
   - tensorboard=2.0.0
   - tk=8.6.9
-  - torch=1.10.1
+  - pytorch=1.10.1
   - torchvision=0.11.2
   - werkzeug=0.16.0
   - wheel=0.33.6
