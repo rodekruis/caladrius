@@ -74,7 +74,6 @@ dependencies:
   - idna=3.3=pyhd8ed1ab_0
   - imagecodecs=2021.11.20=py37h4167934_1
   - imageio=2.14.1=pyh239f2a4_0
-  - imgaug=0.4.0=pyhd8ed1ab_1
   - importlib-metadata=4.10.1=py37h89c1867_0
   - intel-openmp=2021.4.0=h06a4308_3561
   - jasper=2.0.33=ha77e612_0
@@ -196,8 +195,6 @@ dependencies:
   - python=3.7.12=hb7a2778_100_cpython
   - python-dateutil=2.8.2=pyhd8ed1ab_0
   - python_abi=3.7=2_cp37m
-  - pytorch=1.10.2=py3.7_cuda10.2_cudnn7.6.5_0
-  - pytorch-mutex=1.0=cuda
   - pytz=2021.3=pyhd8ed1ab_0
   - pywavelets=1.2.0=py37hb1e94ed_1
   - pyyaml=6.0=py37h5e8e339_3
@@ -221,8 +218,6 @@ dependencies:
   - tiledb=2.5.3=h2038895_0
   - tk=8.6.11=h1ccaba5_0
   - toolz=0.11.2=pyhd8ed1ab_0
-  - torchaudio=0.10.2=py37_cu102
-  - torchvision=0.11.3=py37_cu102
   - typing_extensions=3.10.0.2=pyh06a4308_0
   - tzcode=2021e=h7f98852_0
   - tzdata=2021e=he74cb21_0
@@ -254,4 +249,9 @@ dependencies:
   - zipp=3.7.0=pyhd8ed1ab_0
   - zlib=1.2.11=h36c2ea0_1013
   - zstd=1.5.2=ha95c52a_0
+  - pip:
+    - albumentations==1.1.0
+    - torch==1.10.2
+    - torchvision==0.11.3
+    - tensorboard==2.8.0
 prefix: /home/NC12user/anaconda3/envs/cal
