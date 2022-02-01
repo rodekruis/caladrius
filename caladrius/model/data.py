@@ -1,4 +1,5 @@
 import os
+import random
 from PIL import Image
 from tqdm import tqdm
 import numpy as np
@@ -86,13 +87,18 @@ class CaladriusDataset(Dataset):
         datapoint = self.load_datapoint(idx)
 
         if self.transforms:
+            seed = random.randint(0, 1000000)
             if self.augment_type == "equalization":
                 datapoint[1] = np.array(datapoint[1])
                 datapoint[2] = np.array(datapoint[2])
+                random.seed(seed)
                 datapoint[1] = self.transforms(image=datapoint[1])["image"].float()
+                random.seed(seed)
                 datapoint[2] = self.transforms(image=datapoint[2])["image"].float()
             else:
+                random.seed(seed)
                 datapoint[1] = self.transforms(datapoint[1])
+                random.seed(seed)
                 datapoint[2] = self.transforms(datapoint[2])
 
         return tuple(datapoint)
