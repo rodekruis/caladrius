@@ -1,0 +1,16 @@
+.scatter-plot-container line,
+.scatter-plot-container circle {
+    cursor: pointer;
+}
+
+.scatter-plot-container .axis {
+    font-size: 4px;
+}
+
+.scatter-plot-container .axis path,
+.scatter-plot-container .axis line,
+.scatter-plot-container .damage-boundary path,
+.scatter-plot-container .damage-boundary line {
+    fill: none;
+    stroke-width: 0.5px;
+}
