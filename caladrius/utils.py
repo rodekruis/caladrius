@@ -9,7 +9,7 @@ import json
 
 import torch
 
-NEURAL_MODELS = ["inception", "light", "probability"]
+NEURAL_MODELS = ["inception", "light", "after", "shared", "vgg", "attentive"]
 STATISTICAL_MODELS = ["average", "random"]
 
 # logging
@@ -96,6 +96,15 @@ def configuration():
         help="data path",
     )
     parser.add_argument(
+        "--model-path",
+        type=str,
+        default=os.path.join(".", "caladrius-models", "best_model_wts.pkl"),
+        help="data path",
+    )
+    parser.add_argument(
+        "--label-file", type=str, default="labels.txt", help="filename of labels",
+    )
+    parser.add_argument(
         "--run-name",
         type=run_name_type,
         default="{:.0f}".format(time.time()),
@@ -173,6 +182,11 @@ def configuration():
         choices=["regression", "classification"],
         help="choose if want regression or classification model",
     )
+
+    parser.add_argument(
+        "--number-classes", type=int, default=4,
+    )
+
     parser.add_argument(
         "--selection-metric",
         type=str,
@@ -187,6 +201,69 @@ def configuration():
             "f1_weighted",
         ],
         help="choose metric to use for tracking best model",
+    )
+
+    parser.add_argument(
+        "--test-epoch",
+        default=False,
+        action="store_true",
+        help="If true, run model on test set every epoch. For research purposes.",
+    )
+
+    parser.add_argument(
+        "--sample-data",
+        default=False,
+        action="store_true",
+        help="If true, resample data such that classes are balanced. For research purposes.",
+    )
+
+    parser.add_argument(
+        "--weighted-loss",
+        default=False,
+        action="store_true",
+        help="If True, the loss will be weighted according to the amount of data per damage category",
+    )
+
+    parser.add_argument(
+        "--classification-loss-type",
+        default="cross-entropy",
+        choices=["cross-entropy", "f1"]
+    )
+
+    parser.add_argument(
+        "--freeze",
+        default=False,
+        action="store_true",
+        help="If true, Inception part will not be retrained.",
+    )
+
+    parser.add_argument(
+        "--no-augment",
+        default=False,
+        action="store_true",
+        help="If False, no augmentations will be applied to the data.",
+    )
+
+    parser.add_argument(
+        "--augment-type",
+        type=str,
+        default="original",
+        choices=["original", "paper", "equalization"],
+        help="choose which data augmentation steps should be applied",
+    )
+
+    parser.add_argument(
+        "--save-all",
+        default=False,
+        action="store_true",
+        help="If True, whole model will be saved not only state dict. Only for testing purposes",
+    )
+
+    parser.add_argument(
+        "--probability",
+        default=False,
+        action="store_true",
+        help="If True, probabilistic predictions will be given",
     )
 
     args = parser.parse_args()
@@ -216,11 +293,11 @@ def configuration():
     arg_vars["checkpoint_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], arg_vars["model_directory"])
     )
+    arg_vars["trained_model_path"] = os.path.join(
+        arg_vars["checkpoint_path"], "best_model_wts.pkl"
+    )
     arg_vars["prediction_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], "predictions")
-    )
-    arg_vars["model_path"] = os.path.join(
-        arg_vars["checkpoint_path"], "best_model_wts.pkl"
     )
     arg_vars["run_report_path"] = os.path.join(
         arg_vars["checkpoint_path"], "run_report.json"

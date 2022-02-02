@@ -1,4 +1,4 @@
-[![stable: 0.6.5](https://img.shields.io/badge/stable-0.6.5-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
+[![stable: 0.6.6](https://img.shields.io/badge/stable-0.6.6-ED2E26.svg?style=flat-square)](https://github.com/rodekruis/caladrius)
 [![F.A.C.T.: 42](https://img.shields.io/badge/F\.A\.C\.T\.-42-291AE0.svg?style=flat-square)](https://rodekruis.sharepoint.com/sites/510-Team/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={FD66FFCB-C34C-433E-9706-F672A8EFAB3D})
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)

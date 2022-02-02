@@ -36,7 +36,7 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash &&\
 
 # Install Caladrius
 RUN /bin/bash caladrius_install.sh &&\
-    echo "source activate caladriusenv" >> ~/.bashrc
+    echo "source activate cal" >> ~/.bashrc
 
 # Make port 5000 available to the world outside this container
 EXPOSE 5000
