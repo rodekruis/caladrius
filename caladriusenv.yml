@@ -1,6 +1,5 @@
 name: cal
 channels:
-  - pytorch
   - conda-forge
   - defaults
 dependencies:
@@ -101,7 +100,6 @@ dependencies:
   - python=3.7.3=h33d41f4_1
   - python-dateutil=2.8.0=py_0
   - python_abi=3.7=2_cp37m
-  - pytorch=1.1.0=py3.7_cuda9.0.176_cudnn7.5.1_0
   - pytz=2019.2=py_0
   - pywavelets=1.1.1=py37h161383b_3
   - pyyaml=5.3.1=py37hb5d75c8_1
@@ -115,7 +113,6 @@ dependencies:
   - tensorboard=2.0.0=pyhb38c66f_1
   - tk=8.6.9=hed695b0_1003
   - toolz=0.11.2=pyhd8ed1ab_0
-  - torchvision=0.3.0=py37_cu9.0.176_1
   - tornado=6.1=py37h4abf009_0
   - werkzeug=0.16.0=py_0
   - wheel=0.33.6=py37_0
@@ -181,7 +178,10 @@ dependencies:
     - spectral==0.19
     - tifffile==2019.7.26
     - toml==0.10.0
+    - torch==1.11.0
+    - torchvision==0.12.0
     - tqdm==4.35.0
+    - typing-extensions==4.1.1
     - urllib3==1.25.3
     - utm==0.5.0
     - virtualenv==16.7.6
