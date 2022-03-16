@@ -255,4 +255,3 @@ dependencies:
     - torchvision==0.11.3
     - tensorboard==2.8.0
     - tqdm==4.62.3
-prefix: /home/NC12user/anaconda3/envs/cal
