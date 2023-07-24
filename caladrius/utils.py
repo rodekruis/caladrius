@@ -9,7 +9,7 @@ import json
 
 import torch
 
-NEURAL_MODELS = ["inception", "light", "after", "shared", "vgg", "attentive"]
+NEURAL_MODELS = ["inception", "light", "after", "shared", "vgg"]
 STATISTICAL_MODELS = ["average", "random"]
 
 # logging
@@ -82,23 +82,97 @@ def configuration():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
+    #Added polle
+    parser.add_argument(
+        "--pretrained_model_path",
+        type=str,
+        default=False,
+        help="pretrained model path",
+    )
+
+    parser.add_argument(
+        "--pretrained_model_name",
+        type=str,
+        default='best_model_wts.pkl',
+        help="pretrained model name",
+    )
+
+    parser.add_argument(
+        "--active",
+        type=str,
+        default=False,
+        help="Use active learning, possible types: random, bald, batchbald or WAAL",
+    ) #Todo: could be set to either False or 'random'/ True
+    parser.add_argument(
+        "--initial_number_active",
+        type=int,
+        default=100,
+        help="specifies the number of instances that should be labelled initially when active learning",
+    )
+    parser.add_argument(
+        "--active_images_per_iteration",
+        type=int,
+        default=100,
+        help="specifies the number of instances that should be labelled in each active iteration",
+    )
+    parser.add_argument(
+        "--active_iterations",
+        type=int,
+        default=10,
+        help="specifies the number of iterations in which samples are labelled",
+    )
+    parser.add_argument(
+        "--MC_iterations",
+        type=int,
+        default=10,
+        help="specifies the number of monte carlo iterations used for each instance to compute uncertainty in BCNN",
+    )#Todo: irrelevant
+    parser.add_argument(
+        "--tsne",
+        type=str,
+        default=False,
+        help="Whether or not to create a t-SNE plot",
+    ) #Todo: irrelevant
+    parser.add_argument(
+        "--num_draw_batchbald",
+        type=int,
+        default=500,
+        help="number of draws used for batchbald, default value is found to be theh best together with default MC_iterations. With a large dataset, it may be decreased",
+    )#Todo: irrelevant
+
+    parser.add_argument(
+        "--reinitialize_model",
+        type=bool,
+        default=False,
+        help="denotes whether or not model should be reset to original (pre-trained) model after each iteration",
+    )
+
+    parser.add_argument(
+        "--num_epochs_last_actiter",
+        type=int,
+        default=False,
+        help="Can be used to set a different number of epochs for the last active iteration, especially useful when "
+             "using reinitialization of the model",
+    ) #todo: irrelevant for now, could be useful to test
+
     # General arguments
+    parser.add_argument(
+        "--input-set",
+        type=str,
+        default=os.path.join("."),
+        help="input path",
+    ) #Niet aanwezig in Jacopo's filmpje
     parser.add_argument(
         "--checkpoint-path",
         type=str,
         default=os.path.join(".", "runs"),
         help="output path",
     )
+
     parser.add_argument(
         "--data-path",
         type=str,
         default=os.path.join(".", "data", "Sint-Maarten-2017"),
-        help="data path",
-    )
-    parser.add_argument(
-        "--model-path",
-        type=str,
-        default=os.path.join(".", "caladrius-models", "best_model_wts.pkl"),
         help="data path",
     )
     parser.add_argument(
@@ -225,12 +299,6 @@ def configuration():
     )
 
     parser.add_argument(
-        "--classification-loss-type",
-        default="cross-entropy",
-        choices=["cross-entropy", "f1"]
-    )
-
-    parser.add_argument(
         "--freeze",
         default=False,
         action="store_true",
@@ -241,7 +309,7 @@ def configuration():
         "--no-augment",
         default=False,
         action="store_true",
-        help="If False, no augmentations will be applied to the data.",
+        help="If False, no augmentations will be applied to the data.", #Klopt False = no augmentation? Even checken
     )
 
     parser.add_argument(
@@ -280,7 +348,6 @@ def configuration():
         arg_vars["run_name"] = "{}_max_data_points_{}".format(
             arg_vars["run_name"], arg_vars["max_data_points"]
         )
-
     arg_vars[
         "model_directory"
     ] = "{}-input_size_{}-learning_rate_{}-batch_size_{}".format(
@@ -293,11 +360,14 @@ def configuration():
     arg_vars["checkpoint_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], arg_vars["model_directory"])
     )
-    arg_vars["trained_model_path"] = os.path.join(
-        arg_vars["checkpoint_path"], "best_model_wts.pkl"
-    )
     arg_vars["prediction_path"] = make_directory(
         os.path.join(arg_vars["checkpoint_path"], "predictions")
+    )
+    # arg_vars["distance_path"] = make_directory(
+    #     os.path.join(arg_vars["distance_path"], "distances")
+    # ) seems unnecessary now
+    arg_vars["model_path"] = os.path.join(
+        arg_vars["checkpoint_path"], "best_model_wts.pkl"
     )
     arg_vars["run_report_path"] = os.path.join(
         arg_vars["checkpoint_path"], "run_report.json"
@@ -369,3 +439,34 @@ def create_logger(module_name):
     logger.setLevel(logging.DEBUG)
 
     return logger
+
+# def create_logger_local(module_name, args):
+#     # args = configuration()
+#
+#     debug_filehandler = logging.FileHandler(
+#         os.path.join(args.checkpoint_path, "run_debug.log")
+#     )
+#     info_filehandler = logging.FileHandler(
+#         os.path.join(args.checkpoint_path, "run_info.log")
+#     )
+#
+#     formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+#     debug_filehandler.setFormatter(formatter)
+#     info_filehandler.setFormatter(formatter)
+#
+#     debug_filehandler.setLevel(logging.DEBUG)
+#     info_filehandler.setLevel(logging.INFO)
+#
+#     streamhandler = logging.StreamHandler(sys.stdout)
+#     streamhandler.setFormatter(formatter)
+#     streamhandler.setLevel(logging.DEBUG)
+#
+#     logger = logging.getLogger(module_name)
+#
+#     logger.addHandler(debug_filehandler)
+#     logger.addHandler(info_filehandler)
+#     logger.addHandler(streamhandler)
+#
+#     logger.setLevel(logging.DEBUG)
+#
+#     return logger

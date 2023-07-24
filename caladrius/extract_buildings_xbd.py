@@ -1,4 +1,4 @@
-import os
+import os, gc
 import sys
 import argparse
 import glob
@@ -6,16 +6,16 @@ import json
 import numpy as np
 
 import pandas as pd
-from pandas.io.json import json_normalize
+from pandas import json_normalize
 import rasterio
-
+from cv2 import imwrite
 from tqdm import tqdm
 
 import rasterio.mask
 import rasterio.features
 import rasterio.warp
-
-from shutil import move, rmtree
+from PIL import Image
+from shutil import move, rmtree, copy
 
 import shapely.wkt
 import logging
@@ -32,9 +32,7 @@ def damage_quantifier(category, label_type):
     Assign value based on damage category.
     Args:
         category (str):damage category
-
     Returns (float): value of damage
-
     """
     if label_type == "classification":
         damage_dict = {
@@ -73,7 +71,6 @@ def makesquare(minx, miny, maxx, maxy, extension_factor=20):
         maxx (float): max x coordinate of bounding box
         maxy (float): max y coordinate of bounding box
         extension_factor (float): How much space should be added around the building. 20 refers to 5% added to each side
-
     Returns:
         geoms (list of dicts): geometry object with polygon coordinates
     """
@@ -103,30 +100,31 @@ def makesquare(minx, miny, maxx, maxy, extension_factor=20):
     maxx += rangeX / extension_factor
     miny -= rangeY / extension_factor
     maxy += rangeY / extension_factor
-    geoms = [
-        {
-            "type": "MultiPolygon",
-            "coordinates": [
-                [[[minx, miny], [minx, maxy], [maxx, maxy], [maxx, miny], [minx, miny]]]
-            ],
-        }
-    ]
 
-    return geoms
+    return [minx, miny, maxx, maxy]
+
+    # geoms = [
+    #     {
+    #         "type": "MultiPolygon",
+    #         "coordinates": [
+    #             [[[minx, miny], [minx, maxy], [maxx, maxy], [maxx, miny], [minx, miny]]]
+    #         ],
+    #     }
+    # ]
+    #
+    # return geoms
 
 
-def saveImage(image, transform, out_meta, folder, name, path_temp_data):
+def saveImage(image, transform, out_meta, img_path):
     """
     Saves the cropped building to a file
     Args:
         image: rasterio mask object that contains the image
         transform: transformation for mapping pixels from whole image to cropped building
         out_meta: meta information of image
-        folder (str): which folder image is located. Either "before" or "after"
-        name (str): image name
-
+        img_path (str): path where image is saved
     Returns:
-        file_path (str): path where image is saved
+        img_path (str): path where image is saved
     """
     out_meta.update(
         {
@@ -136,16 +134,13 @@ def saveImage(image, transform, out_meta, folder, name, path_temp_data):
             "transform": transform,
         }
     )
-    directory = os.path.join(path_temp_data, folder)
-    os.makedirs(directory, exist_ok=True)
-    file_path = os.path.join(directory, name)
-    with rasterio.open(file_path, "w", **out_meta) as dest:
+    with rasterio.open(img_path, "w", **out_meta) as dest:
         dest.write(image)
-    return file_path
+    return img_path
 
 
 def getImage(
-    source_image, geometry, moment, name, path_temp_data, nonzero_pixel_threshold=0.90
+    source, geometry, moment, name, path_temp_data, nonzero_pixel_threshold=0.90
 ):
     """
     Retrieves an image and calls the function saveImage() to save the image
@@ -156,13 +151,15 @@ def getImage(
         name (str): name with which the image with the cropped building should be saved
         nonzero_pixel_threshold (float): Fraction of image pixels that must be non-zero
     """
-    with rasterio.open(source_image) as source:
-        image, transform = rasterio.mask.mask(source, geometry, crop=True)
-        out_meta = source.meta.copy()
-        good_pixel_frac = np.count_nonzero(image) / image.size
-        if np.sum(image) > 0 and good_pixel_frac > nonzero_pixel_threshold:
-            return saveImage(image, transform, out_meta, moment, name, path_temp_data)
-        return None
+
+    img_out_path = os.path.join(path_temp_data, moment, name)
+
+    image, transform = rasterio.mask.mask(source, geometry, crop=True)
+    out_meta = source.meta.copy()
+    good_pixel_frac = np.count_nonzero(image) / image.size
+    if np.sum(image) > 0 and good_pixel_frac > nonzero_pixel_threshold:
+        return saveImage(image, transform, out_meta, img_out_path)
+    return None
 
 
 def splitDatapoints(
@@ -177,9 +174,7 @@ def splitDatapoints(
     Split the dataset in train, validation and test set and move all the images to its corresponding folder.
     Args:
         filepath_labels (str): path where labels.txt is saved, which contains the image names of all buildings and their damage score.
-
     Returns:
-
     """
     if train_split + validation_split + test_split != 1:
         logger.info("Fractions of train, validation and test set must add up to one")
@@ -241,6 +236,59 @@ def splitDatapoints(
     return split_mappings
 
 
+def cropSaveImage(path_before, path_after, df_buildings, count, label_type, list_damage_types, path_temp_data,
+                  labels_file):
+
+    with Image.open(path_before) as pilimage_pre, Image.open(path_after) as pilimage_post:
+
+        image_pre = np.array(pilimage_pre)
+        image_post = np.array(pilimage_post)
+
+        for index, row in df_buildings.iterrows():
+
+            # filter based on damage. Only accept described damage types. Un-classified is filtered out
+            damage = row["_damage"]
+            if damage not in list_damage_types:
+                continue
+
+            # pre geom
+            # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
+            minx, miny, maxx, maxy = row["geometry_pre"].bounds
+            minx, miny, maxx, maxy = makesquare(minx, miny, maxx, maxy)
+            bounds_pre = [minx, miny, maxx, maxy]
+            bounds_pre = [max(0, int(x)) for x in bounds_pre]
+
+            # post geom
+            minx, miny, maxx, maxy = row["geometry_post"].bounds
+            minx, miny, maxx, maxy = makesquare(minx, miny, maxx, maxy)
+            bounds_post = [minx, miny, maxx, maxy]
+            bounds_post = [max(0, int(x)) for x in bounds_post]
+
+            # identify data point
+            objectID = row["uid"]
+
+            crop_pre = image_pre[bounds_pre[1]:bounds_pre[3], bounds_pre[0]:bounds_pre[2]]
+            before_file = os.path.join(path_temp_data, "before", "{}.png".format(objectID))
+            imwrite(before_file, crop_pre)
+            crop_post = image_post[bounds_post[1]:bounds_post[3], bounds_post[0]:bounds_post[2]]
+            after_file = os.path.join(path_temp_data, "after", "{}.png".format(objectID))
+            imwrite(after_file, crop_post)
+            if (
+                    (before_file is not None)
+                    and os.path.isfile(before_file)
+                    and (after_file is not None)
+                    and os.path.isfile(after_file)
+            ):
+                labels_file.write(
+                    "{0}.png {1:.4f}\n".format(
+                        objectID, damage_quantifier(damage, label_type)
+                    )
+                )
+                count += 1
+
+    return count
+
+
 def createDatapoints(
     df,
     path_images_before,
@@ -268,64 +316,30 @@ def createDatapoints(
     ]
     before_files.sort()
     filepath_labels = os.path.join(path_temp_data, "labels.txt")
+
+    df_img = df[['file_pre', 'file_post']].drop_duplicates()
+
     with open(filepath_labels, "w+") as labels_file:
         count = 0
 
-        for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+        for index_img, row_img in tqdm(df_img.iterrows(), total=df_img.shape[0]):
 
-            # filter based on damage. Only accept described damage types. Un-classified is filtered out
-            damage = row["_damage"]
-            if damage not in list_damage_types:
-                continue
+            df_buildings = df[df['file_pre'] == row_img["file_pre"]]
 
-            # pre geom
-            # .bounds gives the bounding box around the polygon defined in row['geometry_pre']
-            bounds_pre = row["geometry_pre"].bounds
-            geoms_pre = makesquare(*bounds_pre)
-
-            # post geom
-            bounds_post = row["geometry_post"].bounds
-            geoms_post = makesquare(*bounds_post)
-
-            # identify data point
-            objectID = row["OBJECTID"]
-
-            try:
-                # call function to crop the image to the building, which in turn calls function to save the cropped image
-                before_file = getImage(
-                    os.path.join(path_images_before, row["file_pre"]),
-                    geoms_pre,
-                    "before",
-                    "{}.png".format(objectID),
-                    path_temp_data,
-                )
-                after_file = getImage(
-                    os.path.join(path_images_after, row["file_post"]),
-                    geoms_post,
-                    "after",
-                    "{}.png".format(objectID),
-                    path_temp_data,
-                )
-                if (
-                    (before_file is not None)
-                    and os.path.isfile(before_file)
-                    and (after_file is not None)
-                    and os.path.isfile(after_file)
-                ):
-                    labels_file.write(
-                        "{0}.png {1:.4f}\n".format(
-                            objectID, damage_quantifier(damage, label_type)
-                        )
-                    )
-                    count += 1
-            except ValueError:  # as ve:
-                continue
+            count = cropSaveImage(os.path.join(path_images_before, row_img["file_pre"]),
+                                    os.path.join(path_images_after, row_img["file_post"]),
+                                    df_buildings, count,
+                                    label_type,
+                                    list_damage_types,
+                                  path_temp_data,
+                                  labels_file)
+            gc.collect()
 
     logger.info("Created {} Datapoints".format(count))
     return filepath_labels
 
 
-def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaster_types=None):
+def xbd_preprocess(json_labels_path, output_folder, image_extension, disaster_names=None, disaster_types=None):
     """
     Read labels and transform to dataframe with one row per building and needed additional information
     Args:
@@ -380,7 +394,7 @@ def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaste
 
         # if pre file, only get coordinates for creating before image stamps
         elif "pre" in file:
-            df_temp["file_pre"] = file[0:-4] + "png"
+            df_temp["file_pre"] = file[0:-4] + image_extension
             # wkt/geomotry_pre contains the coordinates
             df_temp = df_temp.rename(
                 columns={
@@ -406,7 +420,7 @@ def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaste
                     "properties.uid": "uid",
                 }
             )
-            df_temp.insert(1, "file_post", file[0:-4] + "png", True)
+            df_temp.insert(1, "file_post", file[0:-4] + image_extension, True)
 
             post_df = post_df.append(df_temp, ignore_index=True)
 
@@ -434,33 +448,36 @@ def xbd_preprocess(json_labels_path, output_folder, disaster_names=None, disaste
     return df
 
 
-def create_folders(input_folder, output_folder):
+def create_folders(input_folder, output_folder, image_extension):
 
-    # supported damage types. These are the xBD classification.
-    # xBD also contains the category "un-classified" but we want them to be ignored, so not in this list
-    # DAMAGE_TYPES = ["destroyed", "major-damage", "minor-damage", "no-damage"]
-
-    BEFORE_FOLDER = os.path.join(input_folder, "Before")
-    AFTER_FOLDER = os.path.join(input_folder, "After")
+    # define before, after and label folders
+    BEFORE_FOLDER = os.path.join(output_folder, "before")
+    AFTER_FOLDER = os.path.join(output_folder, "after")
     JSON_FOLDER = os.path.join(input_folder, "labels")
+
+    # make output folder
+    os.makedirs(output_folder, exist_ok=True)
+    os.makedirs(BEFORE_FOLDER, exist_ok=True)
+    os.makedirs(AFTER_FOLDER, exist_ok=True)
 
     # if only a folder 'images' exists, move all images to before/after folders and delete it
     IMAGES_FOLDER = os.path.join(input_folder, "images")
-    if not os.path.exists(BEFORE_FOLDER) and os.path.exists(IMAGES_FOLDER):
-        os.makedirs(BEFORE_FOLDER, exist_ok=True)
-        os.makedirs(AFTER_FOLDER, exist_ok=True)
-        for file in glob.glob(IMAGES_FOLDER+'/*_pre_*.png'):
-            move(file, BEFORE_FOLDER)
-        for file in glob.glob(IMAGES_FOLDER+'/*_post_*.png'):
-            move(file, AFTER_FOLDER)
-        rmtree(IMAGES_FOLDER)
-
-    # output
-    os.makedirs(output_folder, exist_ok=True)
+    if len(os.listdir(BEFORE_FOLDER)) == 0:
+        logger.info("Splitting images: images --> before")
+        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_pre_*.'+image_extension)):
+            if not os.path.exists(os.path.join(BEFORE_FOLDER, os.path.basename(file))):
+                copy(file, BEFORE_FOLDER)
+        logger.info("Splitting images: images --> after")
+        for file in tqdm(glob.glob(IMAGES_FOLDER+'/*_post_*.'+image_extension)):
+            if not os.path.exists(os.path.join(AFTER_FOLDER, os.path.basename(file))):
+                copy(file, AFTER_FOLDER)
+        #rmtree(IMAGES_FOLDER)
 
     # cache
     TEMP_DATA_FOLDER = os.path.join(output_folder, "temp")
     os.makedirs(TEMP_DATA_FOLDER, exist_ok=True)
+    os.makedirs(os.path.join(TEMP_DATA_FOLDER, "before"), exist_ok=True)
+    os.makedirs(os.path.join(TEMP_DATA_FOLDER, "after"), exist_ok=True)
 
     return BEFORE_FOLDER, AFTER_FOLDER, JSON_FOLDER, TEMP_DATA_FOLDER
 
@@ -502,6 +519,13 @@ def main():
         default=os.path.join("../data", "xBD"),
         metavar="/path/to/dataset",
         help="Full path to the directory with /Before , /After and /labels",
+    )
+
+    parser.add_argument(
+        "--image-extension",
+        default="png",
+        type=str,
+        help="Input image extension: png or tif",
     )
 
     parser.add_argument(
@@ -578,9 +602,10 @@ def main():
     if args.create_image_stamps or args.run_all:
         logger.info("Creating training dataset.")
         BEFORE_FOLDER, AFTER_FOLDER, JSON_FOLDER, TEMP_DATA_FOLDER = create_folders(
-            args.input, args.output
+            args.input, args.output, args.image_extension
         )
-        df = xbd_preprocess(JSON_FOLDER, args.output, disaster_names=args.disaster_names,
+        df = xbd_preprocess(JSON_FOLDER, args.output, args.image_extension,
+                            disaster_names=args.disaster_names,
                             disaster_types=args.disaster_types)
         LABELS_FILE = createDatapoints(
             df,

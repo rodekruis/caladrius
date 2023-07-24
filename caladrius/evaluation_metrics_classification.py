@@ -11,7 +11,7 @@ from shutil import move
 import pickle
 
 import seaborn as sns
-from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc, mean_absolute_error, mean_squared_error
 import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
 
@@ -101,6 +101,7 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
             "1": "Damage",
         }
 
+    import glob
     preds_file = open(preds_filename)
     lines = preds_file.readlines()[1:]
     pred_info = []
@@ -143,6 +144,19 @@ def gen_score_overview(preds_filename, binary=False, switch=False):
         ].T.iterrows()
     ]
 
+    # From here made new by Polle
+    unique, counts = np.unique(labels, return_counts=True)
+    if any(unique != np.array([0,1,2,3])):
+        raise Exception('WARNING: something is going wrong with the weighting: either the order is not 0,1,2,3 or the '
+                        'number of classes is not 4')
+    weights_labels = np.ones(shape = (1,len(labels)))[0]*np.nan
+    for (index, damage_class) in enumerate(labels):
+        weights_labels[index] = 1 / (counts[damage_class]*len(counts))
+
+    score_overview["MAE"] = np.nan
+    score_overview["MAE"]['weighted avg'] = mean_absolute_error(labels,preds)
+    score_overview["MAE"]['macro avg'] = mean_absolute_error(labels, preds, sample_weight=weights_labels)
+    # After this old part Tinka
     if damage_present:
         # create report only for damage categories (represented by 1,2,3)
         dam_report = classification_report(
@@ -593,6 +607,111 @@ def main():
 
         else:
             print("No predictions for prediction type {}".format(preds_type))
+
+def create_dict_arrays_outcomes(path, num_epochs=20, num_active_iter=20, type = 'validation', num_ep_first_iter=False,
+                                test=False, pick_maxperiter=False): #Todo: irrelevant
+    files = os.listdir(path)
+    # filtering only files of interest
+    if test:
+        pass
+    else:
+        files = [x for x in files if type in x]
+    # Filtering only last epoch
+    if test:
+        files = [x for x in files if ('split_test' in x)]
+    if pick_maxperiter:
+        files_new = [x for x in files if ('pre_trained' in x)]
+        for i in range(num_active_iter+1):
+            files_actiter = [x for x in files if (('active_iteration_' + str(i)) in x)]
+            files_new.append(files_actiter[-1])
+            breakpoint
+        files = files_new
+    elif not num_ep_first_iter:
+        if num_epochs < 10:
+            files = [x for x in files if (('epoch_00' + str(num_epochs)) in x) or ('pre_trained' in x)]
+        elif not num_epochs > 99:
+            files = [x for x in files if (('epoch_0' + str(num_epochs)) in x) or ('pre_trained' in x)]
+        else:
+            files = [x for x in files if (('epoch_' + str(num_epochs)) in x) or ('pre_trained' in x)]
+    elif num_ep_first_iter < 10:
+        if num_epochs < 10:
+            files = [x for x in files if (('epoch_00' + str(num_epochs)) in x) or ('pre_trained' in x) or ((('epoch_00' + str(num_ep_first_iter)) in x) and ('active_iteration_0' in x))]
+        elif not num_epochs > 99:
+            files = [x for x in files if (('epoch_0' + str(num_epochs)) in x) or ('pre_trained' in x) or ((('epoch_00' + str(num_ep_first_iter)) in x) and ('active_iteration_0' in x))]
+        else:
+            files = [x for x in files if (('epoch_' + str(num_epochs)) in x) or ('pre_trained' in x) or ((('epoch_00' + str(num_ep_first_iter)) in x) and ('active_iteration_0' in x))]
+
+    else:
+        if num_epochs < 10:
+            files = [x for x in files if (('epoch_00' + str(num_epochs)) in x) or ('pre_trained' in x) or ((('epoch_0' + str(num_ep_first_iter)) in x) and ('active_iteration_0' in x))]
+        elif not num_epochs > 99:
+            files = [x for x in files if (('epoch_0' + str(num_epochs)) in x) or ('pre_trained' in x) or ((('epoch_0' + str(num_ep_first_iter)) in x) and ('active_iteration_0' in x))]
+        else:
+            files = [x for x in files if (('epoch_' + str(num_epochs)) in x) or ('pre_trained' in x) or ((('epoch_0' + str(num_ep_first_iter)) in x) and ('active_iteration_0' in x))]
+    dict_scores = {}
+    for i, file in enumerate(files):
+        score_overview, df_pred, damage_mapping = gen_score_overview(os.path.join(path, file))
+        # extract the iteration to fill into dictionary
+        if 'pre_trained' in file:
+            dict_scores[0] = score_overview
+        elif 'split_test' in file:
+            dict_scores[0] = score_overview
+        else:
+            extr_number = file.replace('active_iteration_', '')
+            iteration = extr_number.split('-')
+            iteration = iteration[0]
+            dict_scores[
+                int(iteration) + 1] = score_overview  # Note: random initialization is iteration 1 in the plot
+    unique_labels = np.unique(np.array(df_pred.label))
+
+    if test:
+        length_array = 1
+    else:
+        length_array = num_active_iter + 2
+    accuracy = np.zeros(length_array)
+    macro_average_f1 = np.zeros(length_array)
+    weighted_average_f1 = np.zeros(length_array)
+    harmonic_average_f1 = np.zeros(length_array)
+    MAE = np.zeros(length_array)
+    macro_MAE = np.zeros(length_array)
+
+    for i in range(length_array):
+        accuracy[i] = dict_scores[i]['f1-score']['accuracy']
+        macro_average_f1[i] = dict_scores[i]['f1-score']['macro avg']
+        weighted_average_f1[i] = dict_scores[i]['f1-score']['weighted avg']
+        harmonic_average_f1[i] = dict_scores[i]['f1-score']['harmonized avg']
+        MAE[i] = dict_scores[i]['MAE']['weighted avg']
+        macro_MAE[i] = dict_scores[i]['MAE']['macro avg']
+
+    return dict_scores, accuracy, macro_average_f1, weighted_average_f1, harmonic_average_f1, MAE, macro_MAE
+
+def get_average_validation_multiple_runs(directory, num_epochs, num_active_iter, num_ep_first_iter=False, test=False, pick_maxperiter=False): #Todo: irrelevant
+    iter = 0
+    if test:
+        length_array =  1
+    else:
+        length_array = num_active_iter + 2
+    accuracy_full = np.empty([len(next(os.walk(directory))[1]), length_array])
+    macro_average_f1_full = np.empty([len(next(os.walk(directory))[1]), length_array])
+    MAE_full = np.empty([len(next(os.walk(directory))[1]), length_array])
+    macro_MAE_full = np.empty([len(next(os.walk(directory))[1]), length_array])
+    for x in next(os.walk(directory))[1]:
+        dict_scores, accuracy, macro_average_f1, weighted_average_f1, harmonic_average_f1, MAE, macro_MAE = \
+            create_dict_arrays_outcomes(os.path.join(directory,x,'predictions'), num_epochs=num_epochs,num_active_iter=num_active_iter, num_ep_first_iter=num_ep_first_iter, test=test, pick_maxperiter=pick_maxperiter)
+        accuracy_full[iter] = accuracy
+        macro_average_f1_full[iter] = macro_average_f1
+        MAE_full[iter] = MAE
+        macro_MAE_full[iter] = macro_MAE
+        iter+=1
+    accuracy_mean = np.mean(accuracy_full, axis=0)
+    accuracy_standard_error = np.std(accuracy_full, axis=0)
+    macro_average_f1_mean = np.mean(macro_average_f1_full, axis=0)
+    macro_average_f1_standard_error = np.std(macro_average_f1_full, axis=0)
+    MAE_mean = np.mean(MAE_full, axis=0)
+    MAE_standard_error = np.std(MAE_full, axis=0)
+    macro_MAE_mean = np.mean(macro_MAE_full, axis=0)
+    macro_MAE_standard_error = np.std(macro_MAE_full, axis=0)
+    return accuracy_mean,macro_average_f1_mean,MAE_mean, macro_MAE_mean, accuracy_standard_error, macro_average_f1_standard_error, MAE_standard_error, macro_MAE_standard_error
 
 
 if __name__ == "__main__":

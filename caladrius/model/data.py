@@ -1,5 +1,4 @@
 import os
-import random
 from PIL import Image
 from tqdm import tqdm
 import numpy as np
@@ -57,13 +56,16 @@ class CaladriusDataset(Dataset):
         self,
         directory,
         set_name,
+        active_idx,
         labels_filename,
         transforms=None,
         max_data_points=None,
         augment_type="original",
     ):
         self.set_name = set_name
-        self.directory = os.path.join(directory, set_name)
+        #self.directory = "./test_small/"
+        #os.chdir("pipplegeneral1/xview_set/")
+        self.directory = os.path.join(directory, set_name) #"./test_small"
         self.labels_filename = labels_filename
         self.augment_type = augment_type
         if self.set_name == "inference":
@@ -72,12 +74,18 @@ class CaladriusDataset(Dataset):
                 for filename in tqdm(os.listdir(os.path.join(self.directory, "before")))
             ]
         else:
+            #print(os.getcwd())
             with open(
-                os.path.join(self.directory, self.labels_filename)  # "labels.txt")
+                os.path.join(self.directory, self.labels_filename) # "labels.txt")
             ) as labels_file:
                 self.datapoints = [x.strip() for x in tqdm(labels_file.readlines())]
         if max_data_points is not None:
             self.datapoints = self.datapoints[:max_data_points]
+        if type(active_idx) == np.ndarray and self.set_name == 'train': #If active, only select the labelled images to train on. Todo: In practical situation, these still need to be labelled and added to a file, a framework for this is needed
+            datapoints_numpy = np.array(self.datapoints)
+            datapoints_numpy = datapoints_numpy[active_idx]
+            self.datapoints = np.ndarray.tolist(datapoints_numpy)
+
         self.transforms = transforms
 
     def __len__(self):
@@ -87,18 +95,13 @@ class CaladriusDataset(Dataset):
         datapoint = self.load_datapoint(idx)
 
         if self.transforms:
-            seed = random.randint(0, 1000000)
             if self.augment_type == "equalization":
                 datapoint[1] = np.array(datapoint[1])
                 datapoint[2] = np.array(datapoint[2])
-                random.seed(seed)
                 datapoint[1] = self.transforms(image=datapoint[1])["image"].float()
-                random.seed(seed)
                 datapoint[2] = self.transforms(image=datapoint[2])["image"].float()
             else:
-                random.seed(seed)
                 datapoint[1] = self.transforms(datapoint[1])
-                random.seed(seed)
                 datapoint[2] = self.transforms(datapoint[2])
 
         return tuple(datapoint)
@@ -139,11 +142,12 @@ class Datasets(object):
         self.sample_data = args.sample_data
         self.augment_type = args.augment_type
 
-    def load(self, set_name):
+    def load(self, set_name, active_idx = False, active_inference = False, tsne = False):
         assert set_name in {"train", "validation", "test", "inference"}
         dataset = CaladriusDataset(
             self.data_path,
             set_name,
+            active_idx,
             self.label_file,
             transforms=self.transforms[set_name],
             max_data_points=self.max_data_points,
@@ -162,13 +166,21 @@ class Datasets(object):
                 else None,
             )
         else:
-            data_loader = DataLoader(
-                dataset,
-                batch_size=self.batch_size,
-                shuffle=(set_name == "train"),
-                num_workers=self.number_of_workers,
-                drop_last=True,
-            )
+            if active_inference:
+                data_loader = DataLoader(
+                    dataset,
+                    batch_size=self.batch_size,
+                    shuffle = False,
+                    num_workers=self.number_of_workers,
+                )
+            else:
+                data_loader = DataLoader(
+                    dataset,
+                    batch_size=self.batch_size,
+                    shuffle=(set_name == "train"),
+                    num_workers=self.number_of_workers,
+                    drop_last=True,
+                )
 
             # function to plot some examples of the data augmentation. Used for testing and research purposes
             # if set_name == "train":

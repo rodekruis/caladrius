@@ -1,0 +1,6 @@
+{
+    "subscription_id": "20e890c7-3c3e-4d1e-8dce-7d0258f2fda7",
+    "resource_group": "azureml-general-rg",
+    "workspace_name": "pipplegeneral1",
+    "auth": "credential"
+}

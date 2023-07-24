@@ -19,8 +19,9 @@ class RollingEval(object):
         self.lower_bound = 0.3
 
     def add(self, labels, predictions, loss):
-        self.labels = self.labels.to(labels.device)
+        self.labels = torch.Tensor([])#self.labels.to(labels.device)
         self.predictions = self.predictions.to(predictions.device)
+        self.predictions = torch.Tensor([])#self.predictions.to(predictions.device)
         if self.output_type == "regression":
             self.labels = self.labels.float()
             self.predictions = self.predictions.float()
@@ -31,7 +32,9 @@ class RollingEval(object):
             self.predictions = self.predictions.long()
             labels = labels.long()
             predictions = predictions.long()
+        self.labels = self.labels.to(labels.device)
         self.labels = torch.cat([self.labels, labels], dim=0)
+        self.predictions = self.predictions.to(predictions.device)
         self.predictions = torch.cat([self.predictions, predictions], dim=0)
         self.total_loss += loss * predictions.size(0)
         batch_score = self.score((labels, predictions))
