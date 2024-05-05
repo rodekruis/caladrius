@@ -76,6 +76,7 @@ class CaladriusDataset(Dataset):
                 os.path.join(self.directory, self.labels_filename)  # "labels.txt")
             ) as labels_file:
                 self.datapoints = [x.strip() for x in tqdm(labels_file.readlines())]
+
         if max_data_points is not None:
             self.datapoints = self.datapoints[:max_data_points]
         self.transforms = transforms
@@ -92,9 +93,9 @@ class CaladriusDataset(Dataset):
                 datapoint[1] = np.array(datapoint[1])
                 datapoint[2] = np.array(datapoint[2])
                 random.seed(seed)
-                datapoint[1] = self.transforms(image=datapoint[1])["image"].float()
+                datapoint[1] = self.transforms(image=datapoint[1])
                 random.seed(seed)
-                datapoint[2] = self.transforms(image=datapoint[2])["image"].float()
+                datapoint[2] = self.transforms(image=datapoint[2])
             else:
                 random.seed(seed)
                 datapoint[1] = self.transforms(datapoint[1])

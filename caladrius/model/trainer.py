@@ -47,25 +47,20 @@ except NameError:
     def profile(x):
         return x
 
+from contextlib import nullcontext
+
+from torch.optim import Optimizer
+
 
 def log_f1_micro_loss(prob, logit, target):
-    assert len(target.shape) == 1
-
-    target_long = target.long()
-
+    target_long = torch.round(target).long()
     ids = torch.arange(prob.size(0))
-    prob_target = prob[ids, target_long]
 
-    # V3
-    return torch.mean(torch.log(prob_target + 1)) + torch.nn.functional.cross_entropy(logit, target_long, reduction='mean')
+    prob_target = prob[ids, torch.clamp(target_long, min=0)]
+    loss = torch.mean(torch.log(prob_target + 1))
+    loss += nn.CrossEntropyLoss()(logit, target_long)
 
-
-class Dummy:
-    def __enter__(self):
-        pass
-
-    def __exit__(self):
-        pass
+    return loss
 
 
 class QuasiSiameseNetwork(object):
@@ -187,7 +182,7 @@ class QuasiSiameseNetwork(object):
                 self.criterion = nnloss.CrossEntropyLoss(weight=weights)
             else:
                 if weights is not None:
-                    raise NotImplementedErrore
+                    raise NotImplementedError
                 self.criterion = log_f1_micro_loss
 
     def get_random_output_values(self, output_shape):
@@ -214,7 +209,6 @@ class QuasiSiameseNetwork(object):
         return average_label
 
     def create_prediction_file(self, phase, epoch):
-
         if self.probability:
             prediction_file_name = "{}-split_{}-epoch_{:03d}-model_probability-predictions.txt".format(
                 self.run_name, phase, epoch
@@ -314,8 +308,7 @@ class QuasiSiameseNetwork(object):
                 self.optimizer.zero_grad()
 
 
-            with torch.set_grad_enabled(phase == "train"),\
-                    torch.cuda.amp.autocast() if not self.disable_cuda else Dummy():
+            with torch.set_grad_enabled(phase == "train"):
                 outputs, preds = self.get_outputs_preds(
                     image1, image2, labels.shape, labels.shape
                 )
@@ -327,6 +320,7 @@ class QuasiSiameseNetwork(object):
                         prob = outputs
                     else:
                         prob = nn.functional.softmax(outputs)
+
                     loss = self.criterion(prob, outputs, labels)
 
                 if phase == "train":
@@ -644,7 +638,7 @@ class QuasiSiameseNetwork(object):
             image1 = image1.to(self.device)
             image2 = image2.to(self.device)
 
-            with torch.set_grad_enabled(False), torch.cuda.amp.autocast() if not self.disable_cuda else Dummy():
+            with torch.set_grad_enabled(False), torch.cuda.amp.autocast() if not self.disable_cuda else nullcontext():
                 outputs, preds = self.get_outputs_preds(
                     image1, image2, image1.shape, [image1.shape[0]]
                 )
