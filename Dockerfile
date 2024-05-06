@@ -15,7 +15,7 @@ ENV PATH="$HOME/conda/bin:$PATH"
 
 # Install any needed packages
 RUN apt-get update &&\
-    apt-get install -y --no-install-recommends curl vim less
+    apt-get install -y --no-install-recommends curl vim less libgl1-mesa-glx
 
 ENV HOME="/root"
 
@@ -27,6 +27,7 @@ RUN mkdir $HOME/.conda &&\
     /bin/bash $HOME/miniconda.sh -b -p $HOME/conda &&\
     rm $HOME/miniconda.sh &&\
     $HOME/conda/bin/conda update -n base -c defaults conda
+
 
 # Install NodeJS
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash &&\

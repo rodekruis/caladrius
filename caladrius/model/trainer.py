@@ -53,7 +53,7 @@ from torch.optim import Optimizer
 
 
 def log_f1_micro_loss(prob, logit, target):
-    target_long = torch.round(target).long()
+    target_long = target.long()
     ids = torch.arange(prob.size(0))
 
     prob_target = prob[ids, torch.clamp(target_long, min=0)]
@@ -351,7 +351,7 @@ class QuasiSiameseNetwork(object):
 
             if idx % self.log_step == 0:
                 logger.debug(
-                    "Epoch: {:03d} Phase: {:10s} Batch {:04d}/{:04d}: Loss: {:.4f} Accuracy: {:.4f} Correct: {:d} Total: {:d}".format(
+                    "Epoch: {:03d} Phase: {:10s} Batch {:04d}/{:04d}: Loss: {:.4f} Accuracy: {:.4f} Correct: {:.0f} Total: {:.0f}".format(
                         epoch,
                         phase,
                         idx,
