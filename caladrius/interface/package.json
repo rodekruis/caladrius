@@ -35,7 +35,7 @@
     },
     "homepage": "https://github.com/rodekruis/caladrius#readme",
     "dependencies": {
-        "bcrypt": "^5.0.0",
+        "bcrypt": "^5.1.1",
         "body-parser": "^1.18.3",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
