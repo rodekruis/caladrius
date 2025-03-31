@@ -7,7 +7,7 @@
 
 ## Created by: Artificial Incompetence for the Red Cross #1 Challenge in the 2018 Hackathon for Peace, Justice and Security
 
-*Note: Parts of this project are not made public for privacy and operational reasons. If you would like to access any restricted content, please send an email to grahman@rodekruis.nl with the relevant details (content url, purpose of request, et cetera).*
+*Note: Parts of this project are not made public for privacy and operational reasons. If you would like to access any restricted content, please send an email to grahman@redcross.nl with the relevant details (content url, purpose of request, et cetera).*
 
 ## Documentation
 1. [Presentation 2020](https://rodekruis.sharepoint.com/sites/510-Team/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={0DCCBEB8-91CC-4021-A0DF-CC5239CC5EBD})
@@ -63,7 +63,7 @@ docker exec -it caladrius bash
 ##### 1. Download Raw Dataset:
 
 The Sint Maarten 2017 dataset can be downloaded from
-[here](https://rodekruis.sharepoint.com/sites/510-Team/Gedeelde%20%20documenten/%5BPRJ%5D%20Automated%20Damage%20Assessment/DATASET/Sint-Maarten-2017/rc.tgz "RC Challenge 1 Raw Dataset").
+[here](https://caladrius.blob.core.windows.net/datasets/rc.tgz "RC Challenge 1 Raw Dataset").
 
 ##### 2. Extract Raw Dataset:
 
@@ -147,7 +147,7 @@ python caladrius/run.py --run-name caladrius_2019
 python caladrius/run.py --run-name caladrius_2019 --test
 ```
 
-[Click here to download the trained model.](https://rodekruis.sharepoint.com/sites/510-Team/Gedeelde%20%20documenten/%5BPRJ%5D%20Automated%20Damage%20Assessment/MODEL/Sint-Maarten-2017/Sint-Maarten-2017v0.4.tgz)
+[Click here to download the trained model.](https://caladrius.blob.core.windows.net/models/Sint-Maarten-2017v0.4.tgz)
 
 ## Configuration
 
