@@ -10,10 +10,10 @@
 *Note: Parts of this project are not made public for privacy and operational reasons. If you would like to access any restricted content, please send an email to grahman@redcross.nl with the relevant details (content url, purpose of request, et cetera).*
 
 ## Documentation
-1. [Presentation 2020](https://rodekruis.sharepoint.com/sites/510-Team/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={0DCCBEB8-91CC-4021-A0DF-CC5239CC5EBD})
-2. [Project Specification Document](https://rodekruis.sharepoint.com/sites/510-Team/Gedeelde%20%20documenten/%5BPRJ%5D%20Automated%20Damage%20Assessment/DOCUMENTATION/caladrius.pdf)
-3. [Presentation 2019](https://rodekruis.sharepoint.com/sites/510-Team/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={CD3544E2-69A7-4389-AEA0-7349DCA2A6DD})
-4. [Performance Spreadsheet](https://rodekruis.sharepoint.com/sites/510-Team/_layouts/15/Doc.aspx?OR=teams&action=edit&sourcedoc={5F134334-1E86-448D-BE78-BE76C1C7ED22})
+1. [Presentation 2020](https://caladrius.blob.core.windows.net/docs/510%20HACKATHON%20AUTOMATED%20DAMAGE%20ASSESSMENT%20FEBRUARY%202020.pdf)
+2. [Project Specification Document](https://caladrius.blob.core.windows.net/docs/caladrius.pdf)
+3. [Presentation 2019](https://caladrius.blob.core.windows.net/docs/510%20HACKATHON%20AUTOMATED%20DAMAGE%20ASSESSMENT%20FEBRUARY%202019.pdf)
+4. [Performance Spreadsheet](https://caladrius.blob.core.windows.net/docs/Performance.xlsx)
 
 ## Network Architecture
 
@@ -31,7 +31,7 @@ Download the
 docker pull gulfaraz/caladrius
 ```
 
-Create a [data](#dataset) folder in your local machine.
+Create a [data](#dataset---sint-maarten-2017-hurricane-irma) folder in your local machine.
 
 Create a docker container using,
 
