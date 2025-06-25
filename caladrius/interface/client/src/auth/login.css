@@ -1,9 +1,0 @@
-.login-form {
-    width: 100%;
-}
-
-@media (min-width: 480px) {
-    .login-container {
-        min-height: 500px;
-    }
-}
